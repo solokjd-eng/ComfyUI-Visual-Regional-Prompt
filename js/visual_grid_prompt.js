@@ -1,6 +1,8 @@
 import { app } from "../../scripts/app.js";
 
-// 다국어 UI 텍스트 사전
+// =============================================================================
+// I18N Localization Dictionary
+// =============================================================================
 const I18N = {
     "한국어": {
         aspectRatio: "화면비",
@@ -10,35 +12,38 @@ const I18N = {
         format: "출력 포맷",
         lang: "UI:",
         whiteBg: "⚪ 백색 배경",
-        whiteBgTooltip: "배경을 깔끔한 순백색 스튜디오(White Studio Backdrop)로 설정",
+        whiteBgTooltip: "배경을 깔끔한 순백색 스튜디오(White Studio Backdrop)로 설정 (화풍 전환 시에도 상태 유지)",
         blackGrid: "🔳 검정 실선 격자",
         blackGridTooltip: "각 구역을 얇은 검정색 실선(Black Divider Lines)으로 명확하게 분할",
-        charSheet: "👤 캐릭터 시트용 추천 효과",
-        charSheetTooltip: "동일 인물 일관성, 균일한 스튜디오 조명, 전 패널 선명도 효과를 접두사/접미사에 자동 적용",
+        mockup: "🧍 실루엣 가이드",
+        mockupTooltip: "구도 및 포즈에 맞춘 정밀 벡터 실루엣을 캔버스 영역에 동적 표시",
+        charProfile: "👤 인물 공통 외모 묘사 (Character Profile)",
+        charProfilePlaceholder: "예: 20대 한국 여성, 긴 흑발 포니테일, 검은 뿔테 안경...",
+        applyProfile: "적용",
+        saveProfile: "⭐ 저장",
+        clearProfile: "비우기",
         prefix: "접두사 (Prefix):",
         prefixPlaceholder: "공통 스타일, 조명 등 (예: masterpiece, cinematic lighting)...",
         suffix: "접미사 (Suffix):",
         suffixPlaceholder: "공통 마감 태그 (예: 8k resolution, photorealistic)...",
         generate: "✨ 프롬프트 생성 & 동기화",
         clearAll: "전체 초기화",
-        guide1: "🖱️ 마우스 드래그: 원하는 크기의 직사각형 구역(Area) 생성",
-        guide2: "✏️ 번호 구역 클릭: 프롬프트 입력 및 자동 영문 번역",
-        guide3: "❌ 우클릭 / [×] 클릭: 구역 삭제",
-        modalTitle: "구역 프롬프트 설정 (한글 입력 시 자동 영문 번역)",
+        guide: "🖱️ 드래그: 영역 생성 | ✏️ 클릭: 프롬프트 편집 | ❌ 우클릭: 삭제",
+        modalTitle: "구역 프롬프트 설정 (1:1 구도 교체 & 실시간 자동 번역)",
         modalArea: "구역",
         modalPos: "위치",
-        presetLabel: "⚡ 프리셋 선택 (원클릭 샷/각도):",
-        presetDefault: "▼ ⚡ 프리셋 선택 (샷/구도)",
-        directInputLabel: "✏️ 직접 한글 입력 (실시간 자동 번역):",
-        directPlaceholder: "예: 전신 정면, 양손으로 볼을 당기는...",
-        modalKoLabel: "🇰🇷 한글 프롬프트 (프리셋 선택 또는 직접 입력):",
-        modalKoPlaceholder: "예: 전신 정면, 얼굴 클로즈업 측면, 사이버펑크 도시 배경...",
+        presetTreeLabel: "📂 샷/구도 탐색기 (10대 캐릭터 시트 분류):",
+        presetTreeDefault: "▼ 📂 샷/구도 선택 (탐색기 열기)",
+        presetSearchPlaceholder: "🔍 구도 검색 (예: 쇄골, 발등, 워킹, 누운, 정면)...",
+        customPresetSelectLabel: "⭐ 나만의 프리셋:",
+        customPresetSelectDefault: "▼ ⭐ 나만의 프리셋 선택",
+        toggleCustomDrawer: "⚙️ 커스텀 프리셋 관리 서랍",
+        addCustomBtn: "➕ 새 프리셋",
+        saveCurrentBtn: "💾 현재 입력 등록",
+        modalKoLabel: "🇰🇷 한글 프롬프트 (프리셋 선택 시 1:1 교체):",
+        modalKoPlaceholder: "예: 전신 45도 측면, 양손으로 볼을 당기는...",
         modalEnLabel: "🇺🇸 영문 자동 번역 (AI 전달용 / 직접 수정 가능):",
-        modalEnPlaceholder: "full body, front view, 1girl, smiling...",
-        apiBadgeReady: "🌐 무료 실시간 번역 API 연동",
-        apiBadgeTranslating: "⏳ 실시간 번역 중...",
-        apiBadgeDone: "✅ 실시간 번역 완료",
-        apiBadgePreset: "⚡ 프리셋 적용 완료",
+        modalEnPlaceholder: "full body, three-quarter view, 45-degree angle...",
         modalSave: "적용 (Ctrl+Enter)",
         modalCancel: "취소 (Esc)",
         modalDelete: "구역 삭제",
@@ -55,35 +60,38 @@ const I18N = {
         format: "Format",
         lang: "UI:",
         whiteBg: "⚪ White BG",
-        whiteBgTooltip: "Set clean pure solid white background",
+        whiteBgTooltip: "Set clean pure solid white studio backdrop (persists across art style changes)",
         blackGrid: "🔳 Black Grid Lines",
         blackGridTooltip: "Demarcate each area with thin black border lines",
-        charSheet: "👤 Char Sheet Preset",
-        charSheetTooltip: "Automatically apply character model sheet consistency, even studio lighting, and sharp focus to prefix/suffix",
+        mockup: "🧍 Silhouette Guide",
+        mockupTooltip: "Render dynamic vector silhouette guides inside canvas areas",
+        charProfile: "👤 Master Character Profile (Consistency)",
+        charProfilePlaceholder: "e.g. 20yo Korean woman, long black ponytail, glasses...",
+        applyProfile: "Apply",
+        saveProfile: "⭐ Save",
+        clearProfile: "Clear",
         prefix: "Prefix Prompt:",
         prefixPlaceholder: "Global style, lighting (e.g. masterpiece, cinematic lighting)...",
         suffix: "Suffix Prompt:",
         suffixPlaceholder: "Global suffix tags (e.g. 8k resolution, photorealistic)...",
         generate: "✨ Generate & Sync Prompt",
         clearAll: "Clear All",
-        guide1: "🖱️ Mouse Drag: Create custom rectangular Area",
-        guide2: "✏️ Click Area: Edit Prompt & Auto-translate",
-        guide3: "❌ Right Click / [×]: Delete Area",
-        modalTitle: "Area Prompt Editor (Auto-Translate enabled)",
+        guide: "🖱️ Drag: Create Area | ✏️ Click: Edit Prompt | ❌ Right-click: Delete",
+        modalTitle: "Area Prompt Editor (1:1 Replace & Auto-Translate)",
         modalArea: "Area",
         modalPos: "Position",
-        presetLabel: "⚡ Quick Preset (Shot/Angle):",
-        presetDefault: "▼ ⚡ Select Preset (Shot/Angle)",
-        directInputLabel: "✏️ Custom Input (Real-time translation):",
-        directPlaceholder: "e.g. full body, pulling cheeks...",
-        modalKoLabel: "🇰🇷 Korean Prompt (Preset or Custom):",
-        modalKoPlaceholder: "e.g. full body front, cyberpunk city...",
+        presetTreeLabel: "📂 Shot & Angle Tree (10 Character Categories):",
+        presetTreeDefault: "▼ 📂 Select Shot/Angle (Open Explorer)",
+        presetSearchPlaceholder: "🔍 Search presets (e.g. collarbone, feet, walking, front)...",
+        customPresetSelectLabel: "⭐ Custom Presets:",
+        customPresetSelectDefault: "▼ ⭐ Select Custom Preset",
+        toggleCustomDrawer: "⚙️ Custom Presets Drawer",
+        addCustomBtn: "➕ New Preset",
+        saveCurrentBtn: "💾 Save Current",
+        modalKoLabel: "🇰🇷 Korean Prompt (1:1 Replaced on select):",
+        modalKoPlaceholder: "e.g. full body, three-quarter view...",
         modalEnLabel: "🇺🇸 English Prompt (Sent to AI / Editable):",
-        modalEnPlaceholder: "full body, front view, cyberpunk city...",
-        apiBadgeReady: "🌐 Real-time Translation API",
-        apiBadgeTranslating: "⏳ Translating in real-time...",
-        apiBadgeDone: "✅ Translated successfully",
-        apiBadgePreset: "⚡ Preset applied",
+        modalEnPlaceholder: "full body, three-quarter view, 45-degree angle...",
         modalSave: "Apply (Ctrl+Enter)",
         modalCancel: "Cancel (Esc)",
         modalDelete: "Delete Area",
@@ -94,101 +102,188 @@ const I18N = {
     }
 };
 
-// 엑셀 표 기반 체계적 샷/구도 프리셋 그룹 (한국어 + 영어)
+// =============================================================================
+// 🎨 5 Art Styles Presets
+// =============================================================================
+const ART_STYLES = [
+    {
+        id: "photorealistic",
+        name: "📷 극실사 사진 (Photorealistic RAW)",
+        icon: "📷",
+        prefix: "RAW candid photo, authentic portrait photography, shot on 50mm f/1.8 lens, natural human skin texture with subtle pores, soft daylight studio lighting, unretouched real person photography",
+        suffix: "clean neutral background, true-to-life skin tones, natural shadows, sharp focus, 35mm film grain, high dynamic range",
+        whiteBg: false,
+        gridBorders: true
+    },
+    {
+        id: "semi_realistic",
+        name: "✨ 반실사 (Semi-Realistic / 2.5D)",
+        icon: "✨",
+        prefix: "semi-realistic 2.5D digital painting, refined facial features, smooth shading, aesthetic webtoon cover illustration style, intricate hair detailing, soft ambient lighting",
+        suffix: "clean studio backdrop, luminous skin highlights, vibrant harmonious palette, crisp artwork, high resolution digital art",
+        whiteBg: false,
+        gridBorders: true
+    },
+    {
+        id: "anime",
+        name: "🎨 2D 애니 / 웹툰 (Anime & Manga)",
+        icon: "🎨",
+        prefix: "masterpiece anime illustration, crisp line art, vibrant cel shading, modern webtoon aesthetic, dynamic studio key visual, expressive features",
+        suffix: "clean comic panel divider lines, rich saturated colors, sharp linework, high quality 2D art",
+        whiteBg: false,
+        gridBorders: true
+    },
+    {
+        id: "concept_sheet",
+        name: "📐 캐릭터 설정화 (Concept Art Sheet)",
+        icon: "📐",
+        prefix: "concept art character model sheet, character design turnaround reference, multiple views and poses of the same character, production design documentation",
+        suffix: "clean pure white background, studio white backdrop, uniform neutral lighting, clean production artwork, sharp focus on all panels",
+        whiteBg: true,
+        gridBorders: true
+    },
+    {
+        id: "cg_3d",
+        name: "🎮 3D CG 캐릭터 (3D CGI / Unreal 5)",
+        icon: "🎮",
+        prefix: "3D character model render, Octane Render, Unreal Engine 5, Subsurface Scattering (SSS) realistic skin shader, ray tracing reflections, cinematic 3D lighting",
+        suffix: "clean studio void backdrop, physically based rendering (PBR) materials, ambient occlusion, 8k textures, volumetric lighting",
+        whiteBg: false,
+        gridBorders: true
+    }
+];
+
+// =============================================================================
+// 📂 10-Category Character Sheet Presets Tree
+// =============================================================================
 const PRESET_GROUPS = [
     {
-        group: "얼굴 - 일반 (Face)",
+        group: "얼굴 (헤어부터 쇄골까지)",
+        icon: "👤",
         items: [
-            { label: "얼굴 일반: 정면 (Front View)", ko: "얼굴 정면", en: "face, front view, detailed facial features" },
-            { label: "얼굴 일반: 측면 (Side View)", ko: "얼굴 측면", en: "face, side profile view" },
-            { label: "얼굴 일반: 45도 측면 (3/4 View)", ko: "얼굴 45도 측면", en: "face, three-quarter view, 45-degree angle" },
-            { label: "얼굴 일반: 후면 (Back View)", ko: "얼굴 후면", en: "back of head, from behind" },
-            { label: "얼굴 일반: 위에서 내려다 보기 (High Angle)", ko: "얼굴 하이앵글 (위에서)", en: "face, high angle, from above" },
-            { label: "얼굴 일반: 아래에서 올려다 보기 (Low Angle)", ko: "얼굴 로우앵글 (아래에서)", en: "face, low angle, from below" }
+            { label: "정면", ko: "얼굴 (헤어부터 쇄골까지): 정면", en: "portrait from hair to collarbone, front view, detailed face and hairstyle" },
+            { label: "측면", ko: "얼굴 (헤어부터 쇄골까지): 측면", en: "portrait from hair to collarbone, side profile view" },
+            { label: "45도 측면", ko: "얼굴 (헤어부터 쇄골까지): 45도 측면", en: "portrait from hair to collarbone, three-quarter view, 45-degree angle" },
+            { label: "위에서 본", ko: "얼굴 (헤어부터 쇄골까지): 위에서 본 (하이앵글)", en: "portrait from hair to collarbone, high angle, from above" },
+            { label: "아래에서 본", ko: "얼굴 (헤어부터 쇄골까지): 아래에서 본 (로우앵글)", en: "portrait from hair to collarbone, low angle, from below" },
+            { label: "후면", ko: "얼굴 (헤어부터 쇄골까지): 후면 (뒷모습)", en: "back of head and hairstyle, back view, from behind, collarbone line" }
         ]
     },
     {
-        group: "얼굴 - 초근접 (Extreme Close-Up)",
+        group: "얼굴 초근접",
+        icon: "👁️",
         items: [
-            { label: "얼굴 초근접: 정면 (Front View)", ko: "얼굴 초근접 정면", en: "extreme close-up face, front view, macro detail" },
-            { label: "얼굴 초근접: 측면 (Side View)", ko: "얼굴 초근접 측면", en: "extreme close-up face, side profile view" },
-            { label: "얼굴 초근접: 45도 측면 (3/4 View)", ko: "얼굴 초근접 45도 측면", en: "extreme close-up face, three-quarter view, 45-degree angle" },
-            { label: "얼굴 초근접: 후면 (Back View)", ko: "얼굴 초근접 후면", en: "extreme close-up back of head" },
-            { label: "얼굴 초근접: 위에서 내려다 보기 (High Angle)", ko: "얼굴 초근접 하이앵글", en: "extreme close-up face, high angle, from above" },
-            { label: "얼굴 초근접: 아래에서 올려다 보기 (Low Angle)", ko: "얼굴 초근접 로우앵글", en: "extreme close-up face, low angle, from below" }
+            { label: "정면", ko: "얼굴 초근접: 정면", en: "extreme macro close-up of face, front view, macro eyes and lips detail" },
+            { label: "측면", ko: "얼굴 초근접: 측면", en: "extreme macro close-up of face, side profile view" },
+            { label: "45도 측면", ko: "얼굴 초근접: 45도 측면", en: "extreme macro close-up of face, three-quarter view, 45-degree angle" }
         ]
     },
     {
-        group: "상반신 - 가슴까지 (Bust Shot)",
+        group: "상반신 가슴까지",
+        icon: "👚",
         items: [
-            { label: "상반신 (가슴): 정면 (Front View)", ko: "상반신 가슴 정면", en: "bust shot, upper body, front view" },
-            { label: "상반신 (가슴): 측면 (Side View)", ko: "상반신 가슴 측면", en: "bust shot, upper body, side profile view" },
-            { label: "상반신 (가슴): 45도 측면 (3/4 View)", ko: "상반신 가슴 45도 측면", en: "bust shot, upper body, three-quarter view, 45-degree angle" },
-            { label: "상반신 (가슴): 후면 (Back View)", ko: "상반신 가슴 후면", en: "bust shot, upper body, back view, from behind" },
-            { label: "상반신 (가슴): 위에서 내려다 보기 (High Angle)", ko: "상반신 가슴 하이앵글", en: "bust shot, upper body, high angle, from above" },
-            { label: "상반신 (가슴): 아래에서 올려다 보기 (Low Angle)", ko: "상반신 가슴 로우앵글", en: "bust shot, upper body, low angle, from below" }
+            { label: "정면", ko: "상반신 가슴까지: 정면", en: "bust shot, upper body to chest, front view, neckline detail" },
+            { label: "측면", ko: "상반신 가슴까지: 측면", en: "bust shot, upper body to chest, side profile view" },
+            { label: "45도 측면", ko: "상반신 가슴까지: 45도 측면", en: "bust shot, upper body to chest, three-quarter view" },
+            { label: "위에서 본", ko: "상반신 가슴까지: 위에서 본 (하이앵글)", en: "bust shot, upper body to chest, high angle, looking down" },
+            { label: "아래에서 본", ko: "상반신 가슴까지: 아래에서 본 (로우앵글)", en: "bust shot, upper body to chest, low angle, looking up" }
         ]
     },
     {
-        group: "상반신 - 허리까지 (Waist Shot)",
+        group: "상반신 허리까지",
+        icon: "👗",
         items: [
-            { label: "상반신 (허리): 정면 (Front View)", ko: "상반신 허리 정면", en: "waist shot, waist up, front view" },
-            { label: "상반신 (허리): 측면 (Side View)", ko: "상반신 허리 측면", en: "waist shot, waist up, side profile view" },
-            { label: "상반신 (허리): 45도 측면 (3/4 View)", ko: "상반신 허리 45도 측면", en: "waist shot, waist up, three-quarter view, 45-degree angle" },
-            { label: "상반신 (허리): 후면 (Back View)", ko: "상반신 허리 후면", en: "waist shot, waist up, back view, from behind" },
-            { label: "상반신 (허리): 위에서 내려다 보기 (High Angle)", ko: "상반신 허리 하이앵글", en: "waist shot, waist up, high angle, from above" },
-            { label: "상반신 (허리): 아래에서 올려다 보기 (Low Angle)", ko: "상반신 허리 로우앵글", en: "waist shot, waist up, low angle, from below" }
+            { label: "정면", ko: "상반신 허리까지: 정면", en: "waist shot, upper body to waist, front view, outfit detail" },
+            { label: "측면", ko: "상반신 허리까지: 측면", en: "waist shot, upper body to waist, side profile view" },
+            { label: "45도 측면", ko: "상반신 허리까지: 45도 측면", en: "waist shot, upper body to waist, three-quarter view" },
+            { label: "위에서 본", ko: "상반신 허리까지: 위에서 본 (하이앵글)", en: "waist shot, upper body to waist, high angle, from above" },
+            { label: "아래에서 본", ko: "상반신 허리까지: 아래에서 본 (로우앵글)", en: "waist shot, upper body to waist, low angle, from below" }
         ]
     },
     {
-        group: "전신 - 일반 (Full Body)",
+        group: "가슴 클로즈업",
+        icon: "✨",
         items: [
-            { label: "전신: 정면 (Front View)", ko: "전신 정면", en: "full body, front view" },
-            { label: "전신: 측면 (Side View)", ko: "전신 측면", en: "full body, side profile view" },
-            { label: "전신: 45도 측면 (3/4 View)", ko: "전신 45도 측면", en: "full body, three-quarter view, 45-degree angle" },
-            { label: "전신: 후면 (Back View)", ko: "전신 후면", en: "full body, back view, from behind" },
-            { label: "전신: 위에서 내려다 보기 (High Angle)", ko: "전신 하이앵글", en: "full body, high angle, bird-eye view, from above" },
-            { label: "전신: 아래에서 올려다 보기 (Low Angle)", ko: "전신 로우앵글", en: "full body, low angle, worm-eye view, from below" }
+            { label: "정면", ko: "가슴 클로즈업: 정면", en: "close-up shot focused on chest and neckline, front view, outfit detail" },
+            { label: "측면", ko: "가슴 클로즈업: 측면", en: "close-up shot focused on chest, side profile view" },
+            { label: "45도 측면", ko: "가슴 클로즈업: 45도 측면", en: "close-up shot focused on chest, three-quarter angle" },
+            { label: "위에서 본", ko: "가슴 클로즈업: 위에서 본 (하이앵글)", en: "close-up shot focused on chest, high angle, top-down view" },
+            { label: "아래에서 본", ko: "가슴 클로즈업: 아래에서 본 (로우앵글)", en: "close-up shot focused on chest, low angle, looking up" }
         ]
     },
     {
-        group: "하반신 - 일반 (Lower Body)",
+        group: "전신",
+        icon: "🧍",
         items: [
-            { label: "하반신: 정면 (Front View)", ko: "하반신 정면", en: "lower body, legs, front view" },
-            { label: "하반신: 측면 (Side View)", ko: "하반신 측면", en: "lower body, legs, side profile view" },
-            { label: "하반신: 45도 측면 (3/4 View)", ko: "하반신 45도 측면", en: "lower body, legs, three-quarter view, 45-degree angle" },
-            { label: "하반신: 후면 (Back View)", ko: "하반신 후면", en: "lower body, legs, back view, from behind" },
-            { label: "하반신: 위에서 내려다 보기 (High Angle)", ko: "하반신 하이앵글", en: "lower body, legs, high angle, from above" },
-            { label: "하반신: 아래에서 올려다 보기 (Low Angle)", ko: "하반신 로우앵글", en: "lower body, legs, low angle, from below" }
+            { label: "정면", ko: "전신: 정면", en: "full body shot, front view, standing pose" },
+            { label: "측면", ko: "전신: 측면", en: "full body shot, side profile view, standing" },
+            { label: "45도 측면", ko: "전신: 45도 측면", en: "full body shot, three-quarter view, 45-degree angle standing" },
+            { label: "후면", ko: "전신: 후면 (뒷모습)", en: "full body shot from behind, back view, full outfit and hair details" },
+            { label: "자연스러운 워킹 포즈", ko: "전신: 자연스러운 워킹 포즈", en: "full body shot, natural walking pose on runway, dynamic posture" }
         ]
     },
     {
-        group: "소품 & 배경 (Props & Background)",
+        group: "하반신 엉덩이부터 다리까지 (각선미 강조)",
+        icon: "🦵",
         items: [
-            { label: "소품 / 오브젝트 (Props)", ko: "소품 오브젝트", en: "detailed prop, focused object" },
-            { label: "사이버펑크 도시 (Cyberpunk City)", ko: "사이버펑크 도시", en: "cyberpunk neon city, glowing holographic lights" },
-            { label: "자연 / 숲 (Lush Forest)", ko: "자연 숲 배경", en: "lush forest, trees, dappled sunlight" },
-            { label: "해변 / 바다 (Ocean Beach)", ko: "해변 바다 배경", en: "ocean, sandy beach, sea waves" },
-            { label: "아늑한 실내 (Cozy Room)", ko: "아늑한 실내 방", en: "indoor room, cozy interior" }
+            { label: "정면", ko: "하반신 엉덩이부터 다리까지: 정면", en: "lower body shot from hips to legs, legs focus, front view, slender leg lines" },
+            { label: "측면", ko: "하반신 엉덩이부터 다리까지: 측면", en: "lower body shot from hips to legs, side profile view" },
+            { label: "45도 측면", ko: "하반신 엉덩이부터 다리까지: 45도 측면", en: "lower body shot from hips to legs, three-quarter view" },
+            { label: "후면", ko: "하반신 엉덩이부터 다리까지: 후면 (뒷모습)", en: "lower body shot from hips to legs, back view, hips and legs focus" },
+            { label: "매혹적인 포즈", ko: "하반신 엉덩이부터 다리까지: 매혹적인 각선미 포즈", en: "lower body shot from hips to legs, graceful leg lines, seductive posture" }
+        ]
+    },
+    {
+        group: "엉덩이부",
+        icon: "🍑",
+        items: [
+            { label: "정면", ko: "엉덩이부: 골반 정면", en: "pelvis and hip area focus shot, front view" },
+            { label: "측면", ko: "엉덩이부: 엉덩이 측면", en: "hip and buttocks side profile shot" },
+            { label: "후면", ko: "엉덩이부: 엉덩이 후면 (뒷모습)", en: "buttocks and rear hip focus shot, back view" },
+            { label: "아래에서 본", ko: "엉덩이부: 아래에서 본 (로우앵글)", en: "hip and buttocks shot, low angle, looking up" }
+        ]
+    },
+    {
+        group: "손 클로즈업",
+        icon: "🖐️",
+        items: [
+            { label: "손등", ko: "손 클로즈업: 손등", en: "detailed close-up of back of hand, elegant hand gesture, clean manicure" },
+            { label: "손바닥", ko: "손 클로즈업: 손바닥", en: "detailed close-up of open palm, graceful hand gesture, finger detail" }
+        ]
+    },
+    {
+        group: "발 클로즈업",
+        icon: "🦶",
+        items: [
+            { label: "발등", ko: "발 클로즈업: 발등 (맨발)", en: "detailed close-up of top of feet and toes, feet arch, bare feet" },
+            { label: "발바닥", ko: "발 클로즈업: 발바닥", en: "detailed close-up of sole of bare foot, foot sole texture" },
+            { label: "발 정면", ko: "발 클로즈업: 발 정면", en: "detailed close-up of feet front view, toes and ankle detail" },
+            { label: "발 45도 측면", ko: "발 클로즈업: 발 45도 측면", en: "detailed close-up of feet three-quarter view, ankle line" },
+            { label: "발 측면", ko: "발 클로즈업: 발 측면", en: "detailed close-up of feet side profile, ankle and heel line" }
         ]
     }
 ];
 
-// 고유 파스텔 컬러 팔레트
-const AREA_COLORS = [
-    { bg: "rgba(59, 130, 246, 0.45)", border: "#3b82f6", text: "#93c5fd" }, // Blue
-    { bg: "rgba(16, 185, 129, 0.45)", border: "#10b981", text: "#6ee7b7" }, // Emerald
-    { bg: "rgba(245, 158, 11, 0.45)", border: "#f59e0b", text: "#fcd34d" }, // Amber
-    { bg: "rgba(239, 68, 68, 0.45)",  border: "#ef4444", text: "#fca5a5" }, // Red
-    { bg: "rgba(168, 85, 247, 0.45)", border: "#a855f7", text: "#d8b4fe" }, // Purple
-    { bg: "rgba(236, 72, 153, 0.45)", border: "#ec4899", text: "#f9a8d4" }, // Pink
-    { bg: "rgba(20, 184, 166, 0.45)", border: "#14b8a6", text: "#5eead4" }, // Teal
-    { bg: "rgba(249, 115, 22, 0.45)", border: "#f97316", text: "#fdba74" }, // Orange
+// =============================================================================
+// 🎨 Neon Pastel Area Palette
+// =============================================================================
+const COLOR_PALETTE = [
+    { border: "#00f0ff", bg: "rgba(0, 240, 255, 0.22)", glow: "rgba(0, 240, 255, 0.6)", text: "#00f0ff" },
+    { border: "#ff007f", bg: "rgba(255, 0, 127, 0.22)", glow: "rgba(255, 0, 127, 0.6)", text: "#ff007f" },
+    { border: "#ffe600", bg: "rgba(255, 230, 0, 0.22)", glow: "rgba(255, 230, 0, 0.6)", text: "#ffe600" },
+    { border: "#a100ff", bg: "rgba(161, 0, 255, 0.22)", glow: "rgba(161, 0, 255, 0.6)", text: "#a100ff" },
+    { border: "#00ff66", bg: "rgba(0, 255, 102, 0.22)", glow: "rgba(0, 255, 102, 0.6)", text: "#00ff66" },
+    { border: "#ff5e00", bg: "rgba(255, 94, 0, 0.22)", glow: "rgba(255, 94, 0, 0.6)", text: "#ff5e00" },
+    { border: "#00e5ff", bg: "rgba(0, 229, 255, 0.22)", glow: "rgba(0, 229, 255, 0.6)", text: "#00e5ff" },
+    { border: "#ff0055", bg: "rgba(255, 0, 85, 0.22)", glow: "rgba(255, 0, 85, 0.6)", text: "#ff0055" },
+    { border: "#b8ff00", bg: "rgba(184, 255, 0, 0.22)", glow: "rgba(184, 255, 0, 0.6)", text: "#b8ff00" },
+    { border: "#e056fd", bg: "rgba(224, 86, 253, 0.22)", glow: "rgba(224, 86, 253, 0.6)", text: "#e056fd" }
 ];
 
-// 한글 ➡️ 영문 AI 프롬프트 규칙 기반 번역 사전
+// =============================================================================
+// 🔤 Comprehensive Translation Rules
+// =============================================================================
 const PROMPT_TRANSLATIONS = [
-    // 1. 복합 샷 & 부위 & 각도 (가장 긴 복합 패턴 우선 매칭)
     [/(얼굴\s*)?클로즈업\s*(45도(\s*측면|\s*각도)?|반측면|쿼터뷰)/gi, "close-up shot, detailed face, three-quarter view, 45-degree angle"],
     [/(얼굴\s*)?클로즈업\s*측면/gi, "close-up shot, detailed face, side profile view"],
     [/(얼굴\s*)?클로즈업\s*정면/gi, "close-up shot, detailed face, front view"],
@@ -216,7 +311,6 @@ const PROMPT_TRANSLATIONS = [
     [/하반신\s*(후면|뒷모습)/gi, "lower body, legs, back view"],
     [/하반신/gi, "lower body, legs"],
 
-    // 2. 헤어 & 눈 & 캐릭터 외모 (단일 음절 신체 부위보다 먼저 매칭하여 '은발'이 '은+feet'로 오치환되는 것 방지)
     [/은발/gi, "silver hair"],
     [/백발/gi, "white hair"],
     [/금발/gi, "blonde hair"],
@@ -225,256 +319,217 @@ const PROMPT_TRANSLATIONS = [
     [/붉은\s*머리|적발/gi, "red hair"],
     [/파란\s*머리|청발/gi, "blue hair"],
     [/분홍\s*머리|핑크\s*(헤어|머리)/gi, "pink hair"],
-    [/보라색\s*머리/gi, "purple hair"],
-    [/녹색\s*머리|초록\s*머리/gi, "green hair"],
     [/단발/gi, "short bob hair"],
     [/장발|긴\s*머리/gi, "long flowing hair"],
     [/숏컷/gi, "pixie cut, short hair"],
     [/포니테일/gi, "ponytail hair"],
     [/트윈테일|양갈래/gi, "twintails hair"],
-    [/땋은\s*머리/gi, "braided hair"],
-    [/웨이브\s*머리|곱슬머리/gi, "wavy curly hair"],
-    [/생머리/gi, "straight hair"],
     [/푸른\s*눈|파란\s*눈/gi, "blue eyes"],
     [/붉은\s*눈|빨간\s*눈/gi, "red eyes"],
-    [/녹색\s*눈|초록\s*눈/gi, "green eyes"],
-    [/보라색\s*눈/gi, "purple eyes"],
-    [/금안|노란\s*눈/gi, "golden eyes"],
     [/오드아이/gi, "heterochromia, odd eyes"],
 
     [/(\d+)\s*세/gi, "$1-year-old"],
     [/한국인|한국\s*(사람|여성|소녀|소년대)?/gi, "korean"],
     [/여고생|고등학교\s*여학생/gi, "high school girl, student"],
-    [/남고생|고등학교\s*남학생/gi, "high school boy, student"],
     [/여대생|대학생\s*여성/gi, "college girl, university student"],
-    [/어여쁜\s*소녀|예쁜\s*소녀|소녀|미소녀/gi, "1girl, beautiful girl"],
+    [/소녀|미소녀/gi, "1girl, beautiful girl"],
     [/여자|여성|미녀/gi, "1woman, beautiful woman"],
     [/소년|미소년/gi, "1boy, handsome boy"],
     [/남자|남성|미남/gi, "1man, handsome man"],
-    [/어린이|아이/gi, "child, cute kid"],
-    [/여우귀/gi, "fox ears, fennec ears"],
-    [/고양이귀/gi, "cat ears"],
-    [/토끼귀/gi, "rabbit ears"],
-    [/엘프귀/gi, "elf ears"],
-    [/날개|천사\s*날개/gi, "angel wings, feathered wings"],
-    [/악마\s*날개/gi, "demon wings, bat wings"],
-    [/꼬리/gi, "fluffy tail"],
 
-    // 3. 앵글 & 시점 & 구도
     [/45도(\s*측면|\s*각도|\s*뷰)?|반측면|쿼터뷰/gi, "three-quarter view, 45-degree angle"],
     [/90도(\s*측면|\s*각도|\s*프로필)?/gi, "side profile view, 90-degree angle"],
     [/정면(\s*샷|\s*뷰)?/gi, "front view"],
     [/측면(\s*샷|\s*뷰)?/gi, "side profile view"],
     [/뒷모습|후면(\s*샷|\s*뷰)?/gi, "back view, from behind"],
-    [/뒤돌아보는/gi, "looking back over shoulder"],
-    [/오버더\s*숄더/gi, "over-the-shoulder shot"],
-    [/바스트샷|가슴위/gi, "bust shot"],
-    [/웨이스트샷|허리위/gi, "waist shot"],
-    [/카우보이샷|무릎위/gi, "cowboy shot"],
-    [/니샷/gi, "knee shot"],
-    [/와이드샷|원경|파노라마/gi, "wide angle shot, panoramic view"],
-    [/하이앵글|위에서|탑뷰|버드아이뷰/gi, "high angle, top-down bird-eye view, from above"],
-    [/로우앵글|아래에서|웜아이뷰/gi, "low angle, worm-eye view, from below"],
-    [/더치앵글|기울어진/gi, "dutch angle, tilted perspective"],
-    [/아이레벨|눈높이/gi, "eye level view"],
+    [/하이앵글|위에서|탑뷰/gi, "high angle, from above"],
+    [/로우앵글|아래에서/gi, "low angle, from below"],
 
-    // 4. 의상 & 아이템
     [/웨딩드레스/gi, "wedding dress, white bridal gown"],
-    [/이브닝드레스/gi, "evening dress, luxury gown"],
     [/원피스|드레스/gi, "dress, elegant outfit"],
-    [/세일러복/gi, "sailor suit uniform"],
     [/교복/gi, "school uniform"],
     [/한복/gi, "hanbok, traditional korean dress"],
-    [/기모노/gi, "kimono, traditional japanese outfit"],
-    [/유카타/gi, "yukata"],
-    [/치파오/gi, "cheongsam, qipao dress"],
     [/정장|수트/gi, "business suit, formal wear"],
     [/셔츠|와이셔츠/gi, "collared shirt"],
-    [/블라우스/gi, "blouse"],
     [/후드티|후드/gi, "hoodie"],
-    [/맨투맨/gi, "sweatshirt"],
     [/청바지/gi, "denim jeans"],
     [/미니스커트/gi, "miniskirt"],
-    [/롱스커트/gi, "long skirt"],
     [/스커트|치마/gi, "skirt"],
-    [/반바지|핫팬츠/gi, "shorts, hotpants"],
     [/수영복|비키니/gi, "swimsuit, bikini"],
-    [/래시가드/gi, "rashguard"],
-    [/메이드복/gi, "maid outfit, maid dress"],
-    [/간호사복/gi, "nurse outfit"],
-    [/갑옷|아머/gi, "armor, battle gear"],
-    [/SF슈트|사이버슈트/gi, "sci-fi bodysuit, cyber armor"],
-    [/코트|트렌치코트/gi, "trench coat, long coat"],
-    [/자켓|재킷/gi, "jacket"],
-    [/가디건/gi, "cardigan"],
-    [/패딩/gi, "puffer jacket"],
-    [/스타킹/gi, "stockings, pantyhose"],
-    [/오버니삭스/gi, "over-knee socks"],
-    [/하이힐/gi, "high heels"],
-    [/부츠/gi, "boots"],
-    [/스니커즈|운동화/gi, "sneakers"],
-    [/안경/gi, "glasses"],
-    [/선글라스/gi, "sunglasses"],
-    [/모자/gi, "hat"],
-    [/헤드폰/gi, "headphones"],
-    [/초커/gi, "choker"],
-    [/목걸이/gi, "necklace"],
+    [/안경/gi, "glasses, stylish spectacles"],
 
-    // 5. 표정 & 시선 & 제스처 & 자세 (얼굴 단일 단어 치환보다 먼저 매칭하여 복합 표현이 분리되지 않도록 처리)
-    [/양손으로\s*볼(을)?\s*(양\s*옆으로\s*)?(잡아\s*당기[가-힣]*|꼬집[가-힣]*|늘리[가-힣]*)(\s*있는|\s*있음|\s*는|\s*며)?/gi, "pulling cheeks sideways with both hands, cheeks stretched"],
-    [/볼(을)?\s*(양\s*옆으로\s*)?(잡아\s*당기[가-힣]*|꼬집[가-힣]*|늘리[가-힣]*)(\s*있는|\s*있음|\s*는|\s*며)?/gi, "pulling cheeks, cheeks stretched"],
+    [/양손으로\s*볼(을)?\s*(양\s*옆으로\s*)?(잡아\s*당기[가-힣]*|꼬집[가-힣]*|늘리[가-힣]*)/gi, "pulling cheeks sideways with both hands, cheeks stretched"],
     [/볼을\s*부풀린|볼\s*빵빵|뿌우/gi, "puffed cheeks, pouty face"],
     [/손가락을\s*입술에\s*댄|쉿\s*포즈/gi, "finger on lips, shh gesture"],
-    [/입을\s*가린|손으로\s*입을\s*가린/gi, "covering mouth with hand"],
-    [/머리를\s*쓸어넘기는/gi, "running fingers through hair"],
-    [/안경을\s*고쳐쓰는|안경\s*올리는/gi, "adjusting glasses"],
-    [/기도하는|두\s*손을\s*모은/gi, "praying hands, hands clasped"],
-    [/양손을\s*허리에|허리에\s*손/gi, "hands on hips"],
     [/손하트|하트\s*포즈/gi, "finger heart, heart hands gesture"],
-    [/양손으로|두\s*손으로/gi, "with both hands"],
-    [/한손으로/gi, "with one hand"],
-    [/활짝\s*웃는\s*얼굴|활짝\s*웃는|환한\s*미소/gi, "bright cheerful smile, laughing happily"],
-    [/웃는\s*얼굴|미소짓는\s*얼굴|미소|웃음/gi, "smiling, gentle smile"],
-    [/무표정한\s*얼굴|무표정|차분한|담담한/gi, "expressionless, calm face, neutral expression"],
+    [/활짝\s*웃는|환한\s*미소/gi, "bright cheerful smile, laughing happily"],
+    [/웃는\s*얼굴|미소/gi, "smiling, gentle smile"],
+    [/무표정|시크한/gi, "expressionless, calm face"],
     [/윙크/gi, "winking"],
-    [/부끄러워하는|홍조|수줍은/gi, "blushing, shy expression"],
-    [/놀란/gi, "surprised expression"],
-    [/진지한|카리스마/gi, "serious charismatic gaze, intense expression"],
-    [/슬픈|눈물/gi, "sad expression, tears"],
-    [/눈을\s*감은|감은\s*눈/gi, "closed eyes"],
-    [/눈을\s*반쯤\s*뜬/gi, "half-closed eyes"],
-    [/카메라를\s*바라보는|바라보는|응시|시선/gi, "looking at viewer, eye contact"],
-    [/시선\s*회피|먼곳을\s*바라보는/gi, "looking away, looking to the side"],
-    [/서있는|서있음/gi, "standing pose"],
-    [/앉아있는|앉음/gi, "sitting pose"],
-    [/무릎\s*꿇은/gi, "kneeling pose"],
-    [/누워있는|누움/gi, "lying down pose"],
-    [/엎드린/gi, "lying on stomach"],
-    [/기대어\s*있는|기댐/gi, "leaning against"],
-    [/쪼그려\s*앉은|웅크린/gi, "squatting, crouching pose"],
-    [/달리는|뜀/gi, "running"],
-    [/걷는|걸어감/gi, "walking"],
-    [/점프|도약/gi, "jumping"],
-    [/춤추는|댄스/gi, "dancing"],
-    [/손을\s*흔드는/gi, "waving hand"],
-    [/팔짱\s*낀/gi, "arms crossed"],
-    [/주머니에\s*손/gi, "hands in pockets"],
-    [/턱을\s*괸/gi, "resting chin on hand"],
-    [/손을\s*뻗은|손을\s*내미는/gi, "reaching out hand towards viewer"],
-    [/브이(\s*포즈)?|V\s*포즈/gi, "peace sign, v gesture"],
-    [/포즈|자세/gi, "pose"],
+    [/부끄러워하는|홍조/gi, "blushing, shy expression"],
+    [/카메라를\s*바라보는|정면\s*응시/gi, "looking at viewer, eye contact"],
 
-    // 6. 인체 부위 & 디테일 (헤어/표정 이후 매칭)
-    [/얼굴/gi, "face, detailed face"],
-    [/목선|쇄골/gi, "collarbone, graceful neck"],
-    [/가슴|바스트/gi, "chest, bust"],
-    [/허리/gi, "slender waist"],
-    [/골반|엉덩이|힙/gi, "hips, buttocks"],
-    [/허벅지/gi, "thighs"],
-    [/다리|각선미/gi, "legs, beautiful slender legs"],
-    [/발목|맨발|발/gi, "feet, ankles"],
-    [/손|손가락/gi, "delicate hands, detailed fingers"],
-    [/어깨/gi, "shoulders"],
+    [/서\s*있는|서있는|직립/gi, "standing pose"],
+    [/앉아\s*있는|앉아있는|앉은|착석/gi, "sitting pose, seated gracefully"],
+    [/무릎을\s*세우고\s*앉[가-힣]*|무릎\s*안고/gi, "sitting with knees bent and hugging knees with hands"],
+    [/태아자세|웅크린\s*자세/gi, "lying in fetal position, curled up body"],
+    [/누워\s*있는|누워있는|누운/gi, "lying down pose, relaxed on floor"],
+    [/걷는|걸어가는|워킹/gi, "walking pose, dynamic stride"],
 
-    // 7. 배경 & 조명 & 환경
+    [/발등\s*\(맨발\)|발등/gi, "top of feet and toes, feet arch, bare feet"],
+    [/발바닥/gi, "sole of bare foot, foot sole texture"],
+    [/손등/gi, "back of hand, elegant hand gesture, clean manicure"],
+    [/손바닥/gi, "open palm, graceful hand gesture, finger detail"],
+    [/엉덩이|골반/gi, "hips and buttocks, pelvis area"],
+    [/가슴/gi, "chest and neckline"],
+    [/쇄골/gi, "collarbone line"],
+    [/손|손가락/gi, "detailed hands, perfect fingers"],
+    [/발|발가락/gi, "feet, toes"],
+    [/다리|각선미/gi, "slender legs, leg lines"],
+
     [/백색\s*배경|흰색\s*배경|화이트\s*배경/gi, "clean solid pure white background, studio white backdrop"],
-    [/검정\s*(색\s*)?실선\s*(격자)?|분할선|격자선/gi, "split-screen multi-panel layout, separated by thin black divider lines"],
-    [/사이버펑크(\s*도시)?/gi, "cyberpunk neon city, glowing holographic lights"],
-    [/미래\s*도시|SF\s*도시/gi, "futuristic sci-fi city, high-tech skyscrapers"],
-    [/도시|빌딩숲|거리/gi, "modern cityscape, streets, skyscrapers"],
-    [/골목길/gi, "narrow alleyway, cozy street"],
-    [/카페/gi, "cafe, cozy coffee shop"],
-    [/실내|방|침실/gi, "indoor room, cozy bedroom interior"],
-    [/도서관/gi, "library, bookshelves"],
-    [/교실|학교/gi, "classroom, school interior"],
-    [/야외|자연/gi, "outdoors, nature"],
-    [/숲|나무|밀림/gi, "lush forest, trees, dappled sunlight"],
-    [/해변|바다|해안가/gi, "ocean, sandy beach, sea waves"],
-    [/하늘|푸른\s*하늘/gi, "blue sky, fluffy white clouds"],
-    [/밤하늘|은하수|우주/gi, "night sky, starry galaxy, nebula outer space"],
-    [/노을|일몰|석양/gi, "sunset, golden hour, warm atmospheric glow"],
-    [/야경|밤/gi, "night scene, dark atmospheric lighting"],
-    [/비오는|비/gi, "rainy day, wet floor reflections"],
-    [/눈오는|눈꽃|눈|설원/gi, "snowing, winter snowfall, snowfield, frost"],
-    [/벚꽃|사쿠라/gi, "cherry blossoms, falling sakura petals"],
-    [/단풍/gi, "autumn leaves, fall foliage"],
-    [/배경/gi, "background"],
-
-    // 8. 화풍 & 조명 & 퀄리티
-    [/실사|사진|포토리얼/gi, "photorealistic, 8k photography, hyperrealistic"],
-    [/애니|일러스트|만화/gi, "anime style, detailed illustration"],
-    [/시네마틱/gi, "cinematic lighting, film still"],
-    [/수채화/gi, "watercolor painting"],
-    [/유화/gi, "oil painting"],
-    [/역광|림라이트/gi, "backlighting, rim light"],
-    [/네온|네온사인/gi, "neon glow, vibrant colors"],
-    [/빛내림|틴들현상/gi, "volumetric god rays, sunbeams"],
-    [/고화질|고품질|최고품질/gi, "masterpiece, best quality, ultra detailed"]
+    [/사이버펑크/gi, "cyberpunk neon city, glowing holographic lights"],
+    [/자연|숲/gi, "lush forest, trees, dappled sunlight"],
+    [/해변|바다/gi, "ocean, sandy beach, sea waves"],
+    [/고화질|고품질|최고품질|마스터피스/gi, "masterpiece, best quality, ultra detailed"]
 ];
 
 function translateToEnglish(text) {
     if (!text || typeof text !== "string") return "";
     let res = text.trim();
-    if (!res) return "";
+    if (!/[가-힣]/.test(res)) return res;
 
-    const hasKorean = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(res);
-    if (!hasKorean) return res;
-
-    for (const [regex, eng] of PROMPT_TRANSLATIONS) {
-        res = res.replace(regex, eng);
+    for (const [pattern, eng] of PROMPT_TRANSLATIONS) {
+        res = res.replace(pattern, eng);
     }
 
-    res = res.replace(/(\s*이|가|을|를|의|에|에서|으로|로|과|와|하고|하며|있는|있음|한|된|인)\b/g, " ");
-    res = res.replace(/\s{2,}/g, " ").trim();
-    res = res.replace(/\s*,\s*/g, ", ");
-    res = res.replace(/(,\s*){2,}/g, ", ");
-    res = res.replace(/^,\s*|,\s*$/g, "");
+    res = res.replace(/(\s*이|가|을|를|의|에|에서|으로|로|과|와|하고|하며|있는|있음|한|된|인)\b/g, ' ');
+    res = res.replace(/\s{2,}/g, ' ').trim();
+    res = res.replace(/\s*,\s*/g, ', ');
+    res = res.replace(/(,\s*){2,}/g, ', ');
+    res = res.replace(/^,\s*|,\s*$/g, '');
     return res;
 }
 
-// 무료 실시간 번역 API 연동 (Google GTX + MyMemory + 로컬 사전 Fallback)
-async function translateTextOnline(text) {
-    if (!text || typeof text !== "string") return "";
-    const clean = text.trim();
-    if (!clean) return "";
+// =============================================================================
+// 🧍 Dynamic SVG Silhouette Vector Generator
+// =============================================================================
+function getMockupSvg(text = "") {
+    const lower = (text || "").toLowerCase();
 
-    const hasKorean = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(clean);
-    if (!hasKorean) return clean;
+    // 1. 태아자세 / 누운 자세
+    if (lower.includes("fetal") || lower.includes("lying") || lower.includes("누워") || lower.includes("태아") || lower.includes("누운") || lower.includes("sleeping")) {
+        return `<svg viewBox="0 0 100 70" class="mockup-svg" fill="none" stroke="currentColor" preserveAspectRatio="xMidYMid meet">
+            <ellipse cx="24" cy="38" rx="10" ry="13" stroke-width="2.4"/>
+            <path d="M 34 26 Q 64 12 86 32 Q 94 44 88 58" stroke-width="2.6" stroke-linecap="round"/>
+            <path d="M 88 58 L 56 64 L 42 48" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M 30 46 L 44 54 L 34 62" stroke-width="2.2" stroke-linecap="round"/>
+            <line x1="6" y1="67" x2="94" y2="67" stroke-width="1.8" stroke-dasharray="4,4" opacity="0.45"/>
+        </svg>`;
+    }
 
-    // 1차 시도: Google Translate GTX 무료 웹 클라이언트 엔드포인트
-    try {
-        const gUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ko&tl=en&dt=t&q=${encodeURIComponent(clean)}`;
-        const gRes = await fetch(gUrl);
-        if (gRes.ok) {
-            const gData = await gRes.json();
-            if (gData && gData[0]) {
-                const resText = gData[0].map(item => item[0]).join("").trim();
-                if (resText) return resText;
-            }
-        }
-    } catch (e) {}
+    // 2. 앉은 자세 / 무릎 세운 자세
+    if (lower.includes("sitting") || lower.includes("seated") || lower.includes("kneeling") || lower.includes("앉아") || lower.includes("앉은") || lower.includes("무릎")) {
+        return `<svg viewBox="0 0 100 100" class="mockup-svg" fill="none" stroke="currentColor" preserveAspectRatio="xMidYMid meet">
+            <ellipse cx="48" cy="16" rx="9" ry="12" stroke-width="2.4"/>
+            <path d="M 40 28 L 56 28 L 52 60 L 36 60 Z" stroke-width="2.4" stroke-linecap="round"/>
+            <path d="M 52 60 L 82 50 L 78 88 L 40 88" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M 36 60 L 24 88 L 40 88" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M 44 34 L 76 52 L 78 70" stroke-width="2.4" stroke-linecap="round"/>
+            <line x1="10" y1="90" x2="90" y2="90" stroke-width="2" opacity="0.5"/>
+        </svg>`;
+    }
 
-    // 2차 시도: MyMemory 무료 번역 API (CORS 프리, 안정적)
-    try {
-        const mUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(clean)}&langpair=ko|en`;
-        const mRes = await fetch(mUrl);
-        if (mRes.ok) {
-            const mData = await mRes.json();
-            if (mData && mData.responseData && mData.responseData.translatedText) {
-                const resText = mData.responseData.translatedText.trim();
-                if (!resText.startsWith("MYMEMORY WARNING:") && !resText.startsWith("INVALID")) {
-                    return resText;
-                }
-            }
-        }
-    } catch (e) {}
+    // 3. 얼굴 초근접 / 매크로
+    if (lower.includes("extreme close-up") || lower.includes("macro") || lower.includes("초근접") || lower.includes("눈") || lower.includes("eye")) {
+        return `<svg viewBox="0 0 100 100" class="mockup-svg" fill="none" stroke="currentColor" preserveAspectRatio="xMidYMid slice">
+            <path d="M 6 22 L 6 6 L 22 6 M 94 22 L 94 6 L 78 6 M 6 78 L 6 94 L 22 94 M 94 78 L 94 94 L 78 94" stroke-width="2.8" stroke-linecap="round"/>
+            <path d="M 8 28 Q 50 14 92 28" stroke-width="3.2" stroke-linecap="round"/>
+            <ellipse cx="50" cy="50" rx="38" ry="24" stroke-width="2.8"/>
+            <circle cx="50" cy="50" r="16" fill="currentColor" opacity="0.25" stroke="currentColor" stroke-width="2.4"/>
+            <circle cx="50" cy="50" r="7" fill="currentColor"/>
+            <circle cx="54" cy="46" r="2.5" fill="#fff"/>
+            <path d="M 24 84 Q 50 96 76 84" stroke-width="2.6" stroke-linecap="round"/>
+        </svg>`;
+    }
 
-    // 3차 Fallback: 내부 정규식/사전 기반 변환
-    return translateToEnglish(clean);
+    // 4. 얼굴 45도 / 측면
+    if ((lower.includes("three-quarter") && (lower.includes("face") || lower.includes("얼굴"))) || (lower.includes("45도") && (lower.includes("얼굴") || lower.includes("face"))) || lower.includes("profile") || (lower.includes("측면") && !lower.includes("전신"))) {
+        return `<svg viewBox="0 0 100 100" class="mockup-svg" fill="none" stroke="currentColor" preserveAspectRatio="xMidYMid meet">
+            <path d="M 40 8 Q 74 10 78 40 Q 80 66 58 78 L 40 78 Q 20 72 22 40 Z" stroke-width="2.4" stroke-linecap="round"/>
+            <path d="M 34 78 L 28 98 M 58 78 L 68 98 M 8 99 Q 50 90 92 99" stroke-width="2.6" stroke-linecap="round"/>
+            <path d="M 58 12 Q 68 42 56 74" stroke-width="1.4" stroke-dasharray="3,3" opacity="0.65"/>
+            <circle cx="44" cy="38" r="3.5" fill="currentColor"/>
+            <circle cx="66" cy="38" r="3.5" fill="currentColor"/>
+            <path d="M 46 60 Q 54 66 62 60" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>`;
+    }
+
+    // 5. 얼굴 정면
+    if (lower.includes("face") || lower.includes("얼굴") || lower.includes("portrait") || (lower.includes("정면") && !lower.includes("전신"))) {
+        return `<svg viewBox="0 0 100 100" class="mockup-svg" fill="none" stroke="currentColor" preserveAspectRatio="xMidYMid meet">
+            <ellipse cx="50" cy="40" rx="27" ry="34" stroke-width="2.4"/>
+            <path d="M 23 30 Q 50 4 77 30" stroke-width="2.4" stroke-linecap="round"/>
+            <path d="M 36 74 L 36 88 M 64 74 L 64 88 M 12 98 Q 50 88 88 98" stroke-width="2.6" stroke-linecap="round"/>
+            <circle cx="39" cy="38" r="3.6" fill="currentColor"/>
+            <circle cx="61" cy="38" r="3.6" fill="currentColor"/>
+            <path d="M 41 64 Q 50 70 59 64" stroke-width="2.4" stroke-linecap="round"/>
+        </svg>`;
+    }
+
+    // 6. 상반신 / 가슴 / 허리
+    if (lower.includes("upper body") || lower.includes("bust") || lower.includes("waist") || lower.includes("상반신") || lower.includes("가슴") || lower.includes("허리")) {
+        return `<svg viewBox="0 0 100 100" class="mockup-svg" fill="none" stroke="currentColor" preserveAspectRatio="xMidYMid meet">
+            <ellipse cx="50" cy="18" rx="11" ry="14" stroke-width="2.4"/>
+            <path d="M 14 48 Q 50 38 86 48 L 78 98 L 22 98 Z" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M 14 48 L 6 94 M 86 48 L 94 94" stroke-width="2.4" stroke-linecap="round"/>
+        </svg>`;
+    }
+
+    // 7. 하반신 / 다리
+    if (lower.includes("lower body") || lower.includes("legs") || lower.includes("하반신") || lower.includes("다리")) {
+        return `<svg viewBox="0 0 100 100" class="mockup-svg" fill="none" stroke="currentColor" preserveAspectRatio="xMidYMid meet">
+            <path d="M 30 14 L 70 14 L 62 38 L 38 38 Z" stroke-width="2.4"/>
+            <path d="M 40 38 L 36 94 L 26 96 M 60 38 L 64 94 L 74 96" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="50" y1="38" x2="50" y2="76" stroke-width="2"/>
+        </svg>`;
+    }
+
+    // 8. 전신 (Full Body Standing)
+    if (lower.includes("full body") || lower.includes("전신")) {
+        return `<svg viewBox="0 0 46 100" class="mockup-svg" fill="none" stroke="currentColor" preserveAspectRatio="xMidYMid meet">
+            <ellipse cx="23" cy="9" rx="5.5" ry="7.5" stroke-width="1.8"/>
+            <path d="M 11 21 Q 23 18 35 21 L 31 39 Q 23 44 15 39 Z" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M 11 21 L 7 42 L 6 56 M 35 21 L 39 42 L 40 56" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M 17 40 L 15 70 L 13 96 L 9 98" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M 29 40 L 31 70 L 33 96 L 37 98" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`;
+    }
+
+    // 9. 발 클로즈업
+    if (lower.includes("feet") || lower.includes("foot") || lower.includes("toes") || lower.includes("발") || lower.includes("발등") || lower.includes("발바닥")) {
+        return `<svg viewBox="0 0 100 100" class="mockup-svg" fill="none" stroke="currentColor" preserveAspectRatio="xMidYMid meet">
+            <path d="M 38 12 L 36 48 Q 34 66 18 78 L 18 86 Q 44 86 64 82 Q 86 78 88 64 Q 88 52 74 46 L 52 42 L 52 12" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="24" cy="80" r="3" fill="currentColor"/>
+            <circle cx="32" cy="80" r="2.5" fill="currentColor"/>
+            <line x1="8" y1="92" x2="92" y2="92" stroke-width="2" stroke-dasharray="4,4" opacity="0.5"/>
+        </svg>`;
+    }
+
+    // 10. 손 클로즈업
+    if (lower.includes("hand") || lower.includes("finger") || lower.includes("손") || lower.includes("손등") || lower.includes("손바닥")) {
+        return `<svg viewBox="0 0 100 100" class="mockup-svg" fill="none" stroke="currentColor" preserveAspectRatio="xMidYMid meet">
+            <path d="M 32 94 L 32 64 L 20 54 L 24 44 L 36 50 L 38 24 L 46 24 L 46 48 L 48 18 L 56 18 L 56 48 L 58 24 L 66 24 L 66 52 L 68 34 L 76 36 L 74 64 Q 72 88 56 94 Z" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`;
+    }
+
+    return "";
 }
 
-// 100% 자연어 공간 위치 서술어 생성 함수 (엄격한 분할 비율 및 퍼센트 바운더리 포함)
-function getNaturalSpatialDescription(c1, c2, r1, r2, totalCols, totalRows) {
+// =============================================================================
+// 📐 Spatial Formatting Helper
+// =============================================================================
+function getNaturalSpatialName(c1, c2, r1, r2, totalCols, totalRows) {
     const colSpan = (c2 - c1 + 1) / totalCols;
     const rowSpan = (r2 - r1 + 1) / totalRows;
     const colCenter = (c1 + c2 + 1) / (2.0 * totalCols);
@@ -487,43 +542,24 @@ function getNaturalSpatialDescription(c1, c2, r1, r2, totalCols, totalRows) {
     const y1Pct = Math.round((r1 / totalRows) * 100);
     const y2Pct = Math.round(((r2 + 1) / totalRows) * 100);
 
-    // 1. 전체 영역 (Full frame)
-    if (colSpan >= 0.85 && rowSpan >= 0.85) {
-        return "Across the entire frame (full 100% canvas)";
-    }
+    if (colSpan >= 0.85 && rowSpan >= 0.85) return "Across the entire frame (full 100% canvas)";
 
-    // 2. 전고 세로 띠 (Full-height vertical columns)
     if (rowSpan >= 0.85) {
         const colType = wPct >= 40 ? "wide vertical section" : (wPct <= 25 ? "narrow vertical strip" : "vertical panel");
-        if (colCenter < 0.35) {
-            return `Left ${colType} (occupying exactly ${wPct}% width from 0% to ${x2Pct}%, full 100% height)`;
-        } else if (colCenter > 0.65) {
-            return `Right ${colType} (occupying exactly ${wPct}% width from ${x1Pct}% to 100%, full 100% height)`;
-        } else {
-            return `Center ${colType} (occupying exactly ${wPct}% width from ${x1Pct}% to ${x2Pct}%, full 100% height)`;
-        }
+        if (colCenter < 0.35) return `Left ${colType} (occupying exactly ${wPct}% width from 0% to ${x2Pct}%, full 100% height)`;
+        else if (colCenter > 0.65) return `Right ${colType} (occupying exactly ${wPct}% width from ${x1Pct}% to 100%, full 100% height)`;
+        else return `Center ${colType} (occupying exactly ${wPct}% width from ${x1Pct}% to ${x2Pct}%, full 100% height)`;
     }
 
-    // 3. 전폭 가로 띠 (Full-width horizontal bands)
     if (colSpan >= 0.85) {
         const rowType = hPct >= 40 ? "wide horizontal band" : (hPct <= 25 ? "narrow horizontal strip" : "horizontal panel");
-        if (rowCenter < 0.35) {
-            return `Top ${rowType} (full 100% width, occupying exactly ${hPct}% height from 0% to ${y2Pct}%)`;
-        } else if (rowCenter > 0.65) {
-            return `Bottom ${rowType} (full 100% width, occupying exactly ${hPct}% height from ${y1Pct}% to 100%)`;
-        } else {
-            return `Middle ${rowType} (full 100% width, occupying exactly ${hPct}% height from ${y1Pct}% to ${y2Pct}%)`;
-        }
+        if (rowCenter < 0.35) return `Top ${rowType} (full 100% width, occupying exactly ${hPct}% height from 0% to ${y2Pct}%)`;
+        else if (rowCenter > 0.65) return `Bottom ${rowType} (full 100% width, occupying exactly ${hPct}% height from ${y1Pct}% to 100%)`;
+        else return `Middle ${rowType} (full 100% width, occupying exactly ${hPct}% height from ${y1Pct}% to ${y2Pct}%)`;
     }
 
-    // 4. 분할 사분면 / 그리드 패널 (Quadrants & multi-cells)
-    let hPos = "center";
-    if (colCenter < 0.35) hPos = "left";
-    else if (colCenter > 0.65) hPos = "right";
-
-    let vPos = "middle";
-    if (rowCenter < 0.35) vPos = "top";
-    else if (rowCenter > 0.65) vPos = "bottom";
+    let hPos = colCenter < 0.35 ? "left" : (colCenter > 0.65 ? "right" : "center");
+    let vPos = rowCenter < 0.35 ? "top" : (rowCenter > 0.65 ? "bottom" : "middle");
 
     let panelName = "Center frame";
     if (hPos === "center" && vPos === "middle") panelName = "Center frame";
@@ -534,242 +570,144 @@ function getNaturalSpatialDescription(c1, c2, r1, r2, totalCols, totalRows) {
     return `${panelName} (occupying exactly ${wPct}% width from ${x1Pct}% to ${x2Pct}%, ${hPct}% height from ${y1Pct}% to ${y2Pct}%)`;
 }
 
-// 구조화 태그 및 바운딩 박스용 상세 좌표/퍼센트 정보 생성 함수
-function getSpatialDescription(c1, c2, r1, r2, totalCols, totalRows) {
-    const colCenter = (c1 + c2 + 1) / (2.0 * totalCols);
-    const rowCenter = (r1 + r2 + 1) / (2.0 * totalRows);
-    const colSpan = (c2 - c1 + 1) / totalCols;
-    const rowSpan = (r2 - r1 + 1) / totalRows;
-
-    const pctLeft = Math.round((c1 / totalCols) * 100);
-    const pctRight = Math.round(((c2 + 1) / totalCols) * 100);
-    const pctTop = Math.round((r1 / totalRows) * 100);
-    const pctBottom = Math.round(((r2 + 1) / totalRows) * 100);
-
-    let dirName = "Center Frame";
-    if (colSpan >= 0.85 && rowSpan >= 0.85) {
-        dirName = "Full Background";
-    } else if (colSpan >= 0.85) {
-        if (rowCenter < 0.35) dirName = "Top Full-Width Section";
-        else if (rowCenter > 0.65) dirName = "Bottom Foreground Strip";
-        else dirName = "Middle Panorama Band";
-    } else {
-        let hDir = "Center";
-        if (colCenter < 0.35) hDir = "Left";
-        else if (colCenter > 0.65) hDir = "Right";
-
-        let vDir = "Middle";
-        if (rowCenter < 0.35) vDir = "Top";
-        else if (rowCenter > 0.65) vDir = "Bottom";
-
-        if (hDir === "Center" && vDir === "Middle") dirName = "Center Frame";
-        else if (vDir === "Middle") dirName = `${hDir} Side`;
-        else if (hDir === "Center") dirName = `${vDir} Center`;
-        else dirName = `${vDir}-${hDir}`;
-    }
-
-    const gridInfo = `Cols ${c1 + 1}-${c2 + 1}/${totalCols}, Rows ${r1 + 1}-${r2 + 1}/${totalRows}`;
-    const pctInfo = `${pctLeft}%-${pctRight}% W, ${pctTop}%-${pctBottom}% H`;
-
-    return {
-        direction: dirName,
-        grid: gridInfo,
-        percent: pctInfo,
-        full: `${dirName} | ${gridInfo} | ${pctInfo}`
-    };
-}
-
-// 캔버스 마우스 중간 버튼 드래그(Pan) 핸들러
-function installMiddleMouseCanvasPan(root) {
-    let activePanCleanup = null;
-    root.addEventListener("pointerdown", (e) => {
-        if (e.button !== 1) return; // 중간 버튼만 처리
-        const canvas = app.canvas;
-        if (!canvas?.ds?.offset) return;
-
-        e.preventDefault();
-        e.stopPropagation();
-
-        let lastX = e.clientX;
-        let lastY = e.clientY;
-        let active = true;
-
-        const cleanup = () => {
-            if (!active) return;
-            active = false;
-            window.removeEventListener("pointermove", move, true);
-            window.removeEventListener("pointerup", done, true);
-            window.removeEventListener("pointercancel", done, true);
-            if (activePanCleanup === cleanup) activePanCleanup = null;
-        };
-
-        const move = (ev) => {
-            ev.preventDefault();
-            ev.stopPropagation();
-
-            const scale = canvas.ds.scale || 1;
-            canvas.ds.offset[0] += (ev.clientX - lastX) / scale;
-            canvas.ds.offset[1] += (ev.clientY - lastY) / scale;
-            lastX = ev.clientX;
-            lastY = ev.clientY;
-
-            if (canvas.setDirty) canvas.setDirty(true, true);
-            else app.graph?.setDirtyCanvas?.(true, true);
-        };
-
-        const done = (ev) => {
-            ev?.preventDefault?.();
-            ev?.stopPropagation?.();
-            cleanup();
-        };
-
-        activePanCleanup?.();
-        activePanCleanup = cleanup;
-        window.addEventListener("pointermove", move, true);
-        window.addEventListener("pointerup", done, true);
-        window.addEventListener("pointercancel", done, true);
-    }, true);
-
-    root.addEventListener("auxclick", (e) => {
-        if (e.button === 1) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-    }, true);
-
-    return () => {
-        activePanCleanup?.();
-        activePanCleanup = null;
-    };
-}
-
+// =============================================================================
+// 🧩 ComfyUI Extension Registration
+// =============================================================================
 app.registerExtension({
-    name: "Comfy.VisualGridPrompt",
+    name: "ComfyUI.VisualRegionalPrompt",
     async beforeRegisterNodeDef(nodeType, nodeData, app) {
-        if (nodeData.name !== "VisualGridPrompt") return;
+        if (nodeData.name !== "VisualGridPromptNode" && nodeData.name !== "VisualGridPrompt") return;
 
         const onNodeCreated = nodeType.prototype.onNodeCreated;
         nodeType.prototype.onNodeCreated = function () {
-            if (onNodeCreated) onNodeCreated.apply(this, arguments);
-
+            const r = onNodeCreated ? onNodeCreated.apply(this, arguments) : undefined;
             const node = this;
-            let currentLang = "한국어";
-            let currentRatio = "16:9";
-            let currentFormat = "Natural Spatial (Krea/MiniMax/Gemini/GPT)";
+
+            // Default State
             let cols = 6;
             let rows = 3;
-            let areas = []; // [{id: 1, c1, c2, r1, r2, prompt: "", ko_prompt: ""}]
-            let selectedAreaId = null;
-            let prefixVal = "";
-            let suffixVal = "";
+            let currentRatio = "16:9";
+            let currentLang = "한국어";
+            let currentFormat = "Natural Spatial (Krea/MiniMax/Gemini/GPT)";
+            let activeArtStyle = "photorealistic";
             let whiteBg = false;
-            let gridBorders = false;
-            let charSheet = false;
-            let customPreviewHeight = null;
-            let customGridHeight = null;
+            let gridBorders = true;
+            let mockupEnabled = true;
+            let characterProfile = "";
+            let prefixVal = ART_STYLES[0].prefix;
+            let suffixVal = ART_STYLES[0].suffix;
+            let areas = [];
+            let customPresets = [
+                { id: "cp_1", label: "태아자세 누운 전신", ko: "태아자세로 누워 있는 전신", en: "Full body lying in fetal position" },
+                { id: "cp_2", label: "무릎 안고 앉기", ko: "무릎을 세우고 앉아서 양손으로 자신의 무릎을 감싸고 있는 자세의 전신", en: "Full body sitting with knees bent and covering knees with hands" },
+                { id: "cp_3", label: "핑크 바디슈트", ko: "핑크색 타이트한 운동 전신 슈트, 맨발, 핑크색 발톱", en: "pink tight exercise full body suit, bare feet, pink feet top" }
+            ];
 
-            // 기본 LiteGraph 위젯 숨김 처리 함수 (상단 캔버스에 원시 JSON 등이 그려지는 것 원천 차단)
-            function hideAllBackendWidgets(targetNode) {
-                for (const w of targetNode.widgets || []) {
+            // Drag selection state
+            let isDragging = false;
+            let dragStart = null;
+            let dragCurrent = null;
+            let selectedAreaId = null;
+            let draggedPresetIndex = null;
+
+            // Hide backend native widgets for clean UI
+            function hideAllBackendWidgets(n) {
+                if (!n.widgets) return;
+                for (const w of n.widgets) {
                     if (w.name !== "visual_grid_ui") {
-                        w.type = "hidden";
                         w.hidden = true;
-                        w.computeSize = () => [0, -4];
-                        w.draw = () => {};
+                        w.type = "hidden";
                     }
                 }
             }
+            setTimeout(() => hideAllBackendWidgets(node), 10);
 
-            // 초기 위젯 값 복원 및 숨김
-            for (const w of node.widgets || []) {
-                if (w.name === "grid_data" && w.value && w.value !== "{}") {
-                    try {
-                        const parsed = typeof w.value === "string" ? JSON.parse(w.value) : w.value;
-                        if (parsed.cols) cols = parsed.cols;
-                        if (parsed.rows) rows = parsed.rows;
-                        if (parsed.aspect_ratio) currentRatio = parsed.aspect_ratio;
-                        if (parsed.areas) areas = parsed.areas;
-                        if (parsed.lang) currentLang = parsed.lang;
-                        if (parsed.white_bg !== undefined) whiteBg = !!parsed.white_bg;
-                        if (parsed.grid_borders !== undefined) gridBorders = !!parsed.grid_borders;
-                        if (parsed.char_sheet !== undefined) charSheet = !!parsed.char_sheet;
-                        if (parsed.custom_preview_height !== undefined) customPreviewHeight = parsed.custom_preview_height;
-                        if (parsed.custom_grid_height !== undefined) customGridHeight = parsed.custom_grid_height;
-                    } catch (e) {}
-                }
-                if (w.name === "prefix_prompt" && w.value) prefixVal = w.value;
-                if (w.name === "suffix_prompt" && w.value) suffixVal = w.value;
-                if (w.name === "format" && w.value) currentFormat = w.value;
-            }
-            hideAllBackendWidgets(node);
-
-            // HTML 컨테이너 생성
+            // Container Element
             const container = document.createElement("div");
-            container.className = "visual-grid-prompt-container";
+            container.className = "visual-grid-container";
             container.style.cssText = `
                 width: 100%;
-                background: #111217;
-                border: 1px solid #262933;
-                border-radius: 10px;
-                padding: 12px;
+                background: #111116;
+                color: #e4e4e7;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+                padding: 8px;
                 box-sizing: border-box;
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                color: #e2e8f0;
+                border-radius: 8px;
                 display: flex;
                 flex-direction: column;
-                gap: 10px;
+                gap: 8px;
                 user-select: none;
             `;
 
-            // 마우스 중간 버튼 드래그(Canvas Pan) 활성화
-            const panCleanup = installMiddleMouseCanvasPan(container);
+            // Inject CSS Styles
+            const styleTag = document.createElement("style");
+            styleTag.textContent = `
+                .vg-toolbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+                .vg-btn { background: #27272a; color: #f4f4f5; border: 1px solid #3f3f46; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; transition: all 0.15s ease; }
+                .vg-btn:hover { background: #3f3f46; border-color: #71717a; }
+                .vg-btn.active { background: #4f46e5; border-color: #6366f1; color: #fff; font-weight: 600; box-shadow: 0 0 8px rgba(99, 102, 241, 0.4); }
+                .vg-select { background: #18181b; color: #f4f4f5; border: 1px solid #3f3f46; border-radius: 4px; padding: 3px 6px; font-size: 11px; outline: none; }
+                .vg-input { background: #18181b; color: #f4f4f5; border: 1px solid #3f3f46; border-radius: 4px; padding: 3px 6px; font-size: 11px; }
+                .vg-grid-wrapper { position: relative; width: 100%; background: #18181b; border: 1px solid #27272a; border-radius: 6px; overflow: hidden; }
+                .vg-grid-cells { position: absolute; inset: 0; display: grid; pointer-events: none; }
+                .vg-cell { border-right: 1px dashed rgba(255,255,255,0.06); border-bottom: 1px dashed rgba(255,255,255,0.06); }
+                .vg-area-box { position: absolute; border: 2px solid; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-between; padding: 4px; box-sizing: border-box; cursor: pointer; overflow: hidden; }
+                .vg-area-box.selected { box-shadow: 0 0 16px var(--area-glow), inset 0 0 8px var(--area-glow); }
+                .vg-area-badge { font-weight: 700; font-size: 11px; line-height: 1; padding: 2px 4px; border-radius: 2px; background: rgba(0,0,0,0.6); }
+                .vg-area-prompt { font-size: 10px; font-weight: 500; text-shadow: 0 1px 2px rgba(0,0,0,0.8); line-height: 1.2; word-break: break-word; overflow: hidden; }
+                .mockup-svg { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.28; pointer-events: none; }
+                .vg-tree-popover { position: absolute; top: 100%; left: 0; right: 0; max-height: 260px; background: #18181b; border: 1px solid #3f3f46; border-radius: 6px; z-index: 100; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.8); display: flex; flex-direction: column; gap: 4px; padding: 6px; }
+                .vg-tree-popover.hidden { display: none; }
+                .tree-folder { font-size: 11px; font-weight: 600; color: #a1a1aa; padding: 4px 6px; cursor: pointer; border-radius: 4px; display: flex; align-items: center; gap: 4px; }
+                .tree-folder:hover { background: #27272a; color: #fff; }
+                .tree-children { display: flex; flex-direction: column; gap: 2px; padding-left: 14px; }
+                .tree-children.collapsed { display: none; }
+                .tree-item { font-size: 11px; color: #e4e4e7; padding: 3px 6px; cursor: pointer; border-radius: 3px; }
+                .tree-item:hover { background: #4f46e5; color: #fff; }
+                .vg-drawer { background: #18181b; border: 1px solid #27272a; border-radius: 6px; padding: 6px; display: flex; flex-direction: column; gap: 6px; }
+                .vg-drawer.collapsed { display: none; }
+                .custom-chip { display: flex; align-items: center; justify-content: space-between; background: #27272a; border: 1px solid #3f3f46; border-radius: 4px; padding: 3px 6px; font-size: 11px; cursor: grab; }
+                .custom-chip.dragging { opacity: 0.4; }
+                .custom-chip-del { color: #ef4444; font-weight: 700; cursor: pointer; padding: 0 4px; }
+            `;
+            container.appendChild(styleTag);
 
-            // 마우스 휠 스크롤(Canvas Zoom) 활성화 (스크롤 가능한 텍스트창 내부 제외)
-            container.addEventListener("wheel", (e) => {
-                const target = e.target;
-                if (target && (target.tagName === "TEXTAREA" || target.tagName === "INPUT")) {
-                    const isScrollable = target.scrollHeight > target.clientHeight;
-                    if (isScrollable) {
-                        const atTop = target.scrollTop === 0 && e.deltaY < 0;
-                        const atBottom = Math.abs(target.scrollHeight - target.clientHeight - target.scrollTop) < 1 && e.deltaY > 0;
-                        if (!atTop && !atBottom) {
-                            return; // 텍스트 영역 내부 스크롤 허용
-                        }
-                    }
-                }
+            // =========================================================================
+            // UI Sections Build
+            // =========================================================================
+            
+            // 1. Header Toolbar (Art Styles)
+            const artStyleBar = document.createElement("div");
+            artStyleBar.className = "vg-toolbar";
+            artStyleBar.innerHTML = `<span style="font-size:11px; font-weight:600; color:#a1a1aa;">🎨 화풍:</span>`;
+            
+            ART_STYLES.forEach(st => {
+                const b = document.createElement("button");
+                b.className = `vg-btn ${st.id === activeArtStyle ? "active" : ""}`;
+                b.type = "button";
+                b.textContent = `${st.icon} ${st.name.split(' ')[1] || st.name}`;
+                b.title = st.name;
+                b.addEventListener("click", () => {
+                    activeArtStyle = st.id;
+                    prefixVal = st.prefix;
+                    suffixVal = st.suffix;
+                    prefixInput.value = prefixVal;
+                    suffixInput.value = suffixVal;
+                    artStyleBar.querySelectorAll(".vg-btn").forEach(btn => btn.classList.remove("active"));
+                    b.classList.add("active");
+                    syncToWidgets();
+                });
+                artStyleBar.appendChild(b);
+            });
+            container.appendChild(artStyleBar);
 
-                const cv = app.canvas?.canvas;
-                if (!cv) return;
-                e.preventDefault();
-                cv.dispatchEvent(new WheelEvent("wheel", {
-                    deltaX: e.deltaX,
-                    deltaY: e.deltaY,
-                    deltaZ: e.deltaZ,
-                    deltaMode: e.deltaMode,
-                    clientX: e.clientX,
-                    clientY: e.clientY,
-                    screenX: e.screenX,
-                    screenY: e.screenY,
-                    ctrlKey: e.ctrlKey,
-                    shiftKey: e.shiftKey,
-                    altKey: e.altKey,
-                    metaKey: e.metaKey,
-                    bubbles: true,
-                    cancelable: true,
-                }));
-            }, { passive: false });
-
-            // 1. 상단 컨트롤 툴바
-            const toolbar = document.createElement("div");
-            toolbar.style.cssText = "display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px;";
-
-            // 비율
-            const ratioBox = document.createElement("div");
-            ratioBox.style.cssText = "display: flex; align-items: center; gap: 4px;";
-            const ratioLabel = document.createElement("span");
-            ratioLabel.style.cssText = "font-weight: 600; color: #94a3b8;";
+            // 2. Toggles & Ratio Bar
+            const toggleBar = document.createElement("div");
+            toggleBar.className = "vg-toolbar";
+            
+            // Ratio
             const ratioSelect = document.createElement("select");
-            ratioSelect.style.cssText = "background: #1e212b; color: #f8fafc; border: 1px solid #3b4252; border-radius: 5px; padding: 4px 6px; cursor: pointer; font-size: 12px;";
+            ratioSelect.className = "vg-select";
             ["16:9", "9:16", "1:1", "4:3", "3:4", "3:2", "2:3", "21:9"].forEach(r => {
                 const opt = document.createElement("option");
                 opt.value = r;
@@ -777,54 +715,404 @@ app.registerExtension({
                 if (r === currentRatio) opt.selected = true;
                 ratioSelect.appendChild(opt);
             });
-            ratioBox.appendChild(ratioLabel);
-            ratioBox.appendChild(ratioSelect);
+            ratioSelect.addEventListener("change", (e) => {
+                currentRatio = e.target.value;
+                updateCanvasDimensions();
+                syncToWidgets();
+            });
 
-            // 가로 x 세로 칸수
-            const gridBox = document.createElement("div");
-            gridBox.style.cssText = "display: flex; align-items: center; gap: 4px;";
-            const colsLabel = document.createElement("span");
-            colsLabel.style.cssText = "font-weight: 600; color: #94a3b8;";
+            // Grid Steppers
             const colsInput = document.createElement("input");
             colsInput.type = "number";
+            colsInput.className = "vg-input";
+            colsInput.style.width = "36px";
             colsInput.value = cols;
-            colsInput.min = "1";
-            colsInput.max = "20";
-            colsInput.style.cssText = "width: 38px; background: #1e212b; color: #f8fafc; border: 1px solid #3b4252; border-radius: 5px; padding: 3px; text-align: center; font-size: 12px;";
+            colsInput.min = 1; colsInput.max = 20;
+            colsInput.addEventListener("change", () => {
+                cols = parseInt(colsInput.value) || 6;
+                areas = areas.filter(a => a.c2 < cols);
+                renderGrid();
+                syncToWidgets();
+            });
 
-            const rowsLabel = document.createElement("span");
-            rowsLabel.style.cssText = "font-weight: 600; color: #94a3b8;";
             const rowsInput = document.createElement("input");
             rowsInput.type = "number";
+            rowsInput.className = "vg-input";
+            rowsInput.style.width = "36px";
             rowsInput.value = rows;
-            rowsInput.min = "1";
-            rowsInput.max = "20";
-            rowsInput.style.cssText = "width: 38px; background: #1e212b; color: #f8fafc; border: 1px solid #3b4252; border-radius: 5px; padding: 3px; text-align: center; font-size: 12px;";
+            rowsInput.min = 1; rowsInput.max = 20;
+            rowsInput.addEventListener("change", () => {
+                rows = parseInt(rowsInput.value) || 3;
+                areas = areas.filter(a => a.r2 < rows);
+                renderGrid();
+                syncToWidgets();
+            });
 
-            const applyBtn = document.createElement("button");
-            applyBtn.style.cssText = "background: #3b82f6; color: white; border: none; border-radius: 5px; padding: 4px 10px; font-weight: 600; cursor: pointer; font-size: 12px; transition: 0.15s;";
-            applyBtn.onmouseenter = () => applyBtn.style.background = "#2563eb";
-            applyBtn.onmouseleave = () => applyBtn.style.background = "#3b82f6";
+            // White BG toggle
+            const whiteBgLabel = document.createElement("label");
+            whiteBgLabel.style.cssText = "font-size:11px; display:flex; align-items:center; gap:3px; cursor:pointer;";
+            const whiteBgCheck = document.createElement("input");
+            whiteBgCheck.type = "checkbox";
+            whiteBgCheck.checked = whiteBg;
+            whiteBgCheck.addEventListener("change", () => {
+                whiteBg = whiteBgCheck.checked;
+                syncToWidgets();
+            });
+            whiteBgLabel.appendChild(whiteBgCheck);
+            whiteBgLabel.appendChild(document.createTextNode("⚪ 백색 배경"));
 
-            gridBox.appendChild(colsLabel);
-            gridBox.appendChild(colsInput);
-            gridBox.appendChild(rowsLabel);
-            gridBox.appendChild(rowsInput);
-            gridBox.appendChild(applyBtn);
+            // Grid Borders toggle
+            const gridBorderLabel = document.createElement("label");
+            gridBorderLabel.style.cssText = "font-size:11px; display:flex; align-items:center; gap:3px; cursor:pointer;";
+            const gridBorderCheck = document.createElement("input");
+            gridBorderCheck.type = "checkbox";
+            gridBorderCheck.checked = gridBorders;
+            gridBorderCheck.addEventListener("change", () => {
+                gridBorders = gridBorderCheck.checked;
+                syncToWidgets();
+            });
+            gridBorderLabel.appendChild(gridBorderCheck);
+            gridBorderLabel.appendChild(document.createTextNode("🔳 격자 실선"));
 
-            // 포맷 선택
-            const formatBox = document.createElement("div");
-            formatBox.style.cssText = "display: flex; align-items: center; gap: 4px; flex: 1; min-width: 170px;";
-            const formatLabel = document.createElement("span");
-            formatLabel.style.cssText = "font-weight: 600; color: #94a3b8;";
+            // Silhouette toggle
+            const mockupLabel = document.createElement("label");
+            mockupLabel.style.cssText = "font-size:11px; display:flex; align-items:center; gap:3px; cursor:pointer;";
+            const mockupCheck = document.createElement("input");
+            mockupCheck.type = "checkbox";
+            mockupCheck.checked = mockupEnabled;
+            mockupCheck.addEventListener("change", () => {
+                mockupEnabled = mockupCheck.checked;
+                renderGrid();
+            });
+            mockupLabel.appendChild(mockupCheck);
+            mockupLabel.appendChild(document.createTextNode("🧍 실루엣"));
+
+            toggleBar.appendChild(ratioSelect);
+            toggleBar.appendChild(document.createTextNode("📐"));
+            toggleBar.appendChild(colsInput);
+            toggleBar.appendChild(document.createTextNode("x"));
+            toggleBar.appendChild(rowsInput);
+            toggleBar.appendChild(whiteBgLabel);
+            toggleBar.appendChild(gridBorderLabel);
+            toggleBar.appendChild(mockupLabel);
+            container.appendChild(toggleBar);
+
+            // 3. Character Profile Master Bar
+            const charProfileWrap = document.createElement("div");
+            charProfileWrap.style.cssText = "display:flex; gap:4px; align-items:center;";
+            const charProfileInput = document.createElement("input");
+            charProfileInput.type = "text";
+            charProfileInput.className = "vg-input";
+            charProfileInput.style.flex = "1";
+            charProfileInput.placeholder = "👤 인물 공통 외모 (예: 20대 한국 여성, 긴 흑발 포니테일, 안경...)";
+            charProfileInput.value = characterProfile;
+            charProfileInput.addEventListener("input", () => {
+                characterProfile = charProfileInput.value.trim();
+                syncToWidgets();
+            });
+            charProfileWrap.appendChild(charProfileInput);
+            container.appendChild(charProfileWrap);
+
+            // 4. Interactive Grid Canvas Viewport
+            const canvasWrapper = document.createElement("div");
+            canvasWrapper.className = "vg-grid-wrapper";
+            canvasWrapper.style.height = "220px";
+
+            const gridCellsContainer = document.createElement("div");
+            gridCellsContainer.className = "vg-grid-cells";
+            canvasWrapper.appendChild(gridCellsContainer);
+
+            const areasLayer = document.createElement("div");
+            areasLayer.style.cssText = "position:absolute; inset:0;";
+            canvasWrapper.appendChild(areasLayer);
+
+            const selectionBox = document.createElement("div");
+            selectionBox.style.cssText = "position:absolute; border:2px dashed #6366f1; background:rgba(99,102,241,0.25); pointer-events:none; display:none;";
+            canvasWrapper.appendChild(selectionBox);
+
+            container.appendChild(canvasWrapper);
+
+            // Guide text
+            const guideEl = document.createElement("div");
+            guideEl.style.cssText = "font-size:10px; color:#a1a1aa; text-align:center;";
+            guideEl.textContent = "🖱️ 드래그: 영역 생성 | ✏️ 클릭: 구도 편집 (1:1 교체) | ❌ 우클릭: 삭제";
+            container.appendChild(guideEl);
+
+            // =========================================================================
+            // 5. Area Prompt Editor & Explorer Tree Selector Modal / Drawer
+            // =========================================================================
+            const editorCard = document.createElement("div");
+            editorCard.style.cssText = "background:#18181b; border:1px solid #27272a; border-radius:6px; padding:8px; display:flex; flex-direction:column; gap:6px;";
+            
+            // Header: Active area badge + tree dropdown trigger
+            const editorHeader = document.createElement("div");
+            editorHeader.style.cssText = "display:flex; justify-content:space-between; align-items:center; position:relative;";
+            
+            const activeAreaTitle = document.createElement("span");
+            activeAreaTitle.style.cssText = "font-size:11px; font-weight:700; color:#4f46e5;";
+            activeAreaTitle.textContent = "📍 편집할 영역을 선택하세요";
+
+            // Tree Dropdown Wrapper
+            const treeWrap = document.createElement("div");
+            treeWrap.style.position = "relative";
+            const treeBtn = document.createElement("button");
+            treeBtn.className = "vg-btn";
+            treeBtn.type = "button";
+            treeBtn.textContent = "📂 10대 구도 탐색기 ▼";
+            
+            const treePopover = document.createElement("div");
+            treePopover.className = "vg-tree-popover hidden";
+
+            const treeSearch = document.createElement("input");
+            treeSearch.className = "vg-input";
+            treeSearch.placeholder = "🔍 구도 검색 (쇄골, 발등, 워킹, 누운)...";
+            treePopover.appendChild(treeSearch);
+
+            const treeList = document.createElement("div");
+            treePopover.appendChild(treeList);
+
+            // Render Explorer Tree
+            PRESET_GROUPS.forEach(grp => {
+                const fWrap = document.createElement("div");
+                const fHead = document.createElement("div");
+                fHead.className = "tree-folder";
+                fHead.innerHTML = `<span>▶</span> <span>${grp.icon}</span> <span>${grp.group}</span>`;
+                
+                const fChildren = document.createElement("div");
+                fChildren.className = "tree-children collapsed";
+
+                grp.items.forEach(it => {
+                    const itEl = document.createElement("div");
+                    itEl.className = "tree-item";
+                    itEl.dataset.label = it.label;
+                    itEl.dataset.ko = it.ko;
+                    itEl.dataset.en = it.en;
+                    itEl.textContent = `📄 ${it.label}`;
+                    itEl.addEventListener("click", () => {
+                        applyPresetToActiveArea({ ko: it.ko, en: it.en });
+                        treePopover.classList.add("hidden");
+                    });
+                    fChildren.appendChild(itEl);
+                });
+
+                fHead.addEventListener("click", () => {
+                    fChildren.classList.toggle("collapsed");
+                });
+
+                fWrap.appendChild(fHead);
+                fWrap.appendChild(fChildren);
+                treeList.appendChild(fWrap);
+            });
+
+            treeSearch.addEventListener("input", () => {
+                const q = treeSearch.value.trim().toLowerCase();
+                treeList.querySelectorAll(".tree-children").forEach(c => {
+                    let has = false;
+                    c.querySelectorAll(".tree-item").forEach(it => {
+                        const m = !q || (it.dataset.label + it.dataset.ko + it.dataset.en).toLowerCase().includes(q);
+                        it.style.display = m ? "block" : "none";
+                        if (m) has = true;
+                    });
+                    if (q) c.classList.toggle("collapsed", !has);
+                });
+            });
+
+            treeBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                treePopover.classList.toggle("hidden");
+            });
+
+            document.addEventListener("click", (e) => {
+                if (!treeWrap.contains(e.target)) {
+                    treePopover.classList.add("hidden");
+                }
+            });
+
+            treeWrap.appendChild(treeBtn);
+            treeWrap.appendChild(treePopover);
+            editorHeader.appendChild(activeAreaTitle);
+            editorHeader.appendChild(treeWrap);
+            editorCard.appendChild(editorHeader);
+
+            // 6. Custom Presets 2nd Dropdown & Drawer Toggle
+            const customPresetsBar = document.createElement("div");
+            customPresetsBar.style.cssText = "display:flex; gap:4px; align-items:center;";
+
+            const customSelect = document.createElement("select");
+            customSelect.className = "vg-select";
+            customSelect.style.flex = "1";
+            
+            function updateCustomSelect() {
+                customSelect.innerHTML = `<option value="">▼ ⭐ 나만의 프리셋 (${customPresets.length}개)</option>`;
+                customPresets.forEach(cp => {
+                    const opt = document.createElement("option");
+                    opt.value = cp.en || cp.ko;
+                    opt.textContent = `⭐ ${cp.label || cp.ko}`;
+                    opt.dataset.ko = cp.ko;
+                    opt.dataset.en = cp.en || cp.ko;
+                    customSelect.appendChild(opt);
+                });
+            }
+            updateCustomSelect();
+
+            customSelect.addEventListener("change", (e) => {
+                const opt = e.target.selectedOptions[0];
+                if (opt && opt.value) {
+                    applyPresetToActiveArea({ ko: opt.dataset.ko, en: opt.dataset.en });
+                    e.target.value = "";
+                }
+            });
+
+            const btnToggleDrawer = document.createElement("button");
+            btnToggleDrawer.className = "vg-btn";
+            btnToggleDrawer.type = "button";
+            btnToggleDrawer.textContent = "⚙️ 관리";
+            
+            customPresetsBar.appendChild(customSelect);
+            customPresetsBar.appendChild(btnToggleDrawer);
+            editorCard.appendChild(customPresetsBar);
+
+            // Collapsible Custom Drawer
+            const customDrawer = document.createElement("div");
+            customDrawer.className = "vg-drawer collapsed";
+            
+            const drawerChipsContainer = document.createElement("div");
+            drawerChipsContainer.style.cssText = "display:flex; flex-direction:column; gap:4px; max-height:120px; overflow-y:auto;";
+            
+            function renderCustomDrawer() {
+                updateCustomSelect();
+                drawerChipsContainer.innerHTML = "";
+                customPresets.forEach((cp, idx) => {
+                    const chip = document.createElement("div");
+                    chip.className = "custom-chip";
+                    chip.draggable = true;
+                    chip.innerHTML = `<span>⠿ ${cp.label || cp.ko}</span>`;
+                    
+                    const del = document.createElement("span");
+                    del.className = "custom-chip-del";
+                    del.textContent = "×";
+                    del.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        customPresets.splice(idx, 1);
+                        renderCustomDrawer();
+                    });
+                    
+                    chip.appendChild(del);
+                    chip.addEventListener("click", () => {
+                        applyPresetToActiveArea({ ko: cp.ko, en: cp.en });
+                    });
+
+                    // Reorder drag & drop
+                    chip.addEventListener("dragstart", () => { draggedPresetIndex = idx; chip.classList.add("dragging"); });
+                    chip.addEventListener("dragover", (e) => { e.preventDefault(); });
+                    chip.addEventListener("drop", (e) => {
+                        e.preventDefault();
+                        if (draggedPresetIndex !== null && draggedPresetIndex !== idx) {
+                            const [moved] = customPresets.splice(draggedPresetIndex, 1);
+                            customPresets.splice(idx, 0, moved);
+                            renderCustomDrawer();
+                        }
+                    });
+                    chip.addEventListener("dragend", () => { draggedPresetIndex = null; chip.classList.remove("dragging"); });
+
+                    drawerChipsContainer.appendChild(chip);
+                });
+            }
+            renderCustomDrawer();
+
+            const btnSaveCurrent = document.createElement("button");
+            btnSaveCurrent.className = "vg-btn";
+            btnSaveCurrent.type = "button";
+            btnSaveCurrent.textContent = "💾 현재 구도를 새 프리셋으로 등록";
+            btnSaveCurrent.addEventListener("click", () => {
+                const ko = areaKoInput.value.trim();
+                const en = areaEnInput.value.trim();
+                if (!ko && !en) return;
+                const newPreset = {
+                    id: "cp_" + Date.now(),
+                    label: ko ? ko.slice(0, 15) : en.slice(0, 15),
+                    ko: ko || en,
+                    en: en || translateToEnglish(ko)
+                };
+                customPresets.push(newPreset);
+                renderCustomDrawer();
+            });
+
+            customDrawer.appendChild(drawerChipsContainer);
+            customDrawer.appendChild(btnSaveCurrent);
+            editorCard.appendChild(customDrawer);
+
+            btnToggleDrawer.addEventListener("click", () => {
+                customDrawer.classList.toggle("collapsed");
+            });
+
+            // 7. Area Prompts Inputs (Korean + English)
+            const areaKoInput = document.createElement("input");
+            areaKoInput.className = "vg-input";
+            areaKoInput.placeholder = "🇰🇷 한글 프롬프트 (프리셋 선택 시 1:1 교체)";
+            areaKoInput.addEventListener("input", () => {
+                const area = getSelectedArea();
+                if (area) {
+                    area.ko_prompt = areaKoInput.value;
+                    area.prompt = translateToEnglish(area.ko_prompt);
+                    areaEnInput.value = area.prompt;
+                    renderGrid();
+                    syncToWidgets();
+                }
+            });
+
+            const areaEnInput = document.createElement("input");
+            areaEnInput.className = "vg-input";
+            areaEnInput.placeholder = "🇺🇸 영문 프롬프트 (AI 최종 전달용 / 직접 수정 가능)";
+            areaEnInput.addEventListener("input", () => {
+                const area = getSelectedArea();
+                if (area) {
+                    area.prompt = areaEnInput.value;
+                    renderGrid();
+                    syncToWidgets();
+                }
+            });
+
+            editorCard.appendChild(areaKoInput);
+            editorCard.appendChild(areaEnInput);
+            container.appendChild(editorCard);
+
+            // 8. Global Prefix / Suffix & Format
+            const globalCard = document.createElement("div");
+            globalCard.style.cssText = "display:flex; flex-direction:column; gap:4px;";
+            
+            const prefixInput = document.createElement("textarea");
+            prefixInput.className = "vg-input";
+            prefixInput.rows = 2;
+            prefixInput.placeholder = "접두사 (Prefix: Masterpiece, Photorealistic)...";
+            prefixInput.value = prefixVal;
+            prefixInput.addEventListener("input", () => { prefixVal = prefixInput.value; syncToWidgets(); });
+
+            const suffixInput = document.createElement("textarea");
+            suffixInput.className = "vg-input";
+            suffixInput.rows = 2;
+            suffixInput.placeholder = "접미사 (Suffix: 8k resolution, cinematic lighting)...";
+            suffixInput.value = suffixVal;
+            suffixInput.addEventListener("input", () => { suffixVal = suffixInput.value; syncToWidgets(); });
+
+            globalCard.appendChild(prefixInput);
+            globalCard.appendChild(suffixInput);
+            container.appendChild(globalCard);
+
+            // 9. Output Format Selector & Sync Button
+            const formatBar = document.createElement("div");
+            formatBar.className = "vg-toolbar";
+            
             const formatSelect = document.createElement("select");
-            formatSelect.style.cssText = "flex: 1; background: #1e212b; color: #f8fafc; border: 1px solid #3b4252; border-radius: 5px; padding: 4px 6px; cursor: pointer; font-size: 12px;";
+            formatSelect.className = "vg-select";
+            formatSelect.style.flex = "1";
             [
                 "Natural Spatial (Krea/MiniMax/Gemini/GPT)",
-                "Structured Tags ([Area 1 - Left] ...)",
-                "Coordinates & BoundingBox",
+                "ComfyUI / SD Regional Prompt (BREAK Syntax)",
+                "Structured Tags ([Area 1 | LEFT])",
+                "Coordinates Bounding Box (<area_1 bbox=...>)",
                 "Comma-Separated List",
-                "Raw JSON Data"
+                "Raw JSON"
             ].forEach(f => {
                 const opt = document.createElement("option");
                 opt.value = f;
@@ -832,1149 +1120,278 @@ app.registerExtension({
                 if (f === currentFormat) opt.selected = true;
                 formatSelect.appendChild(opt);
             });
-            formatBox.appendChild(formatLabel);
-            formatBox.appendChild(formatSelect);
-
-            // UI 언어 선택 (명확한 UI 라벨 박스)
-            const langBox = document.createElement("div");
-            langBox.style.cssText = "display: flex; align-items: center; gap: 4px; margin-left: auto;";
-            const langLabel = document.createElement("span");
-            langLabel.style.cssText = "font-weight: 700; color: #10b981; font-size: 11px; letter-spacing: 0.5px;";
-            langLabel.textContent = "UI:";
-            const langSelect = document.createElement("select");
-            langSelect.style.cssText = "background: #1e212b; color: #f8fafc; border: 1px solid #3b4252; border-radius: 5px; padding: 4px 6px; cursor: pointer; font-size: 12px;";
-            ["한국어", "English"].forEach(l => {
-                const opt = document.createElement("option");
-                opt.value = l;
-                opt.textContent = l;
-                if (l === currentLang) opt.selected = true;
-                langSelect.appendChild(opt);
-            });
-            langBox.appendChild(langLabel);
-            langBox.appendChild(langSelect);
-
-            toolbar.appendChild(ratioBox);
-            toolbar.appendChild(gridBox);
-            toolbar.appendChild(formatBox);
-            toolbar.appendChild(langBox);
-
-            // 옵션 토글 바 (백색 배경, 검정 실선 격자, 캐릭터 시트 추천 효과)
-            const optionsBar = document.createElement("div");
-            optionsBar.style.cssText = "display: flex; gap: 8px; align-items: center; font-size: 11px;";
-
-            const whiteBgBtn = document.createElement("button");
-            whiteBgBtn.style.cssText = "flex: 1; padding: 6px 8px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 11px; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap;";
-
-            const gridBorderBtn = document.createElement("button");
-            gridBorderBtn.style.cssText = "flex: 1; padding: 6px 8px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 11px; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap;";
-
-            const charSheetBtn = document.createElement("button");
-            charSheetBtn.style.cssText = "flex: 1.25; padding: 6px 8px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 11px; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap;";
-
-            function updateOptionButtons() {
-                const dict = I18N[currentLang];
-                whiteBgBtn.textContent = `${dict.whiteBg} [${whiteBg ? "ON" : "OFF"}]`;
-                whiteBgBtn.title = dict.whiteBgTooltip;
-                if (whiteBg) {
-                    whiteBgBtn.style.background = "linear-gradient(135deg, #3730a3, #4f46e5)";
-                    whiteBgBtn.style.border = "1.5px solid #818cf8";
-                    whiteBgBtn.style.color = "#ffffff";
-                    whiteBgBtn.style.boxShadow = "0 0 10px rgba(99, 102, 241, 0.45)";
-                    whiteBgBtn.style.fontWeight = "700";
-                } else {
-                    whiteBgBtn.style.background = "#161822";
-                    whiteBgBtn.style.border = "1px solid #2e3444";
-                    whiteBgBtn.style.color = "#94a3b8";
-                    whiteBgBtn.style.boxShadow = "none";
-                    whiteBgBtn.style.fontWeight = "600";
-                }
-
-                gridBorderBtn.textContent = `${dict.blackGrid} [${gridBorders ? "ON" : "OFF"}]`;
-                gridBorderBtn.title = dict.blackGridTooltip;
-                if (gridBorders) {
-                    gridBorderBtn.style.background = "linear-gradient(135deg, #3730a3, #4f46e5)";
-                    gridBorderBtn.style.border = "1.5px solid #818cf8";
-                    gridBorderBtn.style.color = "#ffffff";
-                    gridBorderBtn.style.boxShadow = "0 0 10px rgba(99, 102, 241, 0.45)";
-                    gridBorderBtn.style.fontWeight = "700";
-                } else {
-                    gridBorderBtn.style.background = "#161822";
-                    gridBorderBtn.style.border = "1px solid #2e3444";
-                    gridBorderBtn.style.color = "#94a3b8";
-                    gridBorderBtn.style.boxShadow = "none";
-                    gridBorderBtn.style.fontWeight = "600";
-                }
-
-                charSheetBtn.textContent = `${dict.charSheet} [${charSheet ? "ON" : "OFF"}]`;
-                charSheetBtn.title = dict.charSheetTooltip;
-                if (charSheet) {
-                    charSheetBtn.style.background = "linear-gradient(135deg, #3730a3, #4f46e5)";
-                    charSheetBtn.style.border = "1.5px solid #818cf8";
-                    charSheetBtn.style.color = "#ffffff";
-                    charSheetBtn.style.boxShadow = "0 0 10px rgba(99, 102, 241, 0.45)";
-                    charSheetBtn.style.fontWeight = "700";
-                } else {
-                    charSheetBtn.style.background = "#161822";
-                    charSheetBtn.style.border = "1px solid #2e3444";
-                    charSheetBtn.style.color = "#94a3b8";
-                    charSheetBtn.style.boxShadow = "none";
-                    charSheetBtn.style.fontWeight = "600";
-                }
-            }
-
-            whiteBgBtn.addEventListener("click", () => {
-                whiteBg = !whiteBg;
-                updateOptionButtons();
-                syncToWidgets();
-            });
-
-            gridBorderBtn.addEventListener("click", () => {
-                gridBorders = !gridBorders;
-                updateOptionButtons();
-                syncToWidgets();
-            });
-
-            charSheetBtn.addEventListener("click", () => {
-                charSheet = !charSheet;
-                const charPrefixTag = "character design model sheet, consistent character features, masterpiece, best quality";
-                const charSuffixTag = "soft even studio lighting, crisp sharp focus across all panels, pristine artwork";
-
-                if (charSheet) {
-                    // ON: 접두사와 접미사에 캐릭터 시트 추천 효과 자동 삽입
-                    if (!prefixVal.trim()) {
-                        prefixVal = charPrefixTag;
-                    } else if (!prefixVal.includes("character design model sheet")) {
-                        prefixVal = prefixVal.trim() + ", " + charPrefixTag;
-                    }
-                    prefixInput.value = prefixVal;
-
-                    if (!suffixVal.trim()) {
-                        suffixVal = charSuffixTag;
-                    } else if (!suffixVal.includes("soft even studio lighting")) {
-                        suffixVal = suffixVal.trim() + ", " + charSuffixTag;
-                    }
-                    suffixInput.value = suffixVal;
-                } else {
-                    // OFF: 삽입되었던 캐릭터 시트 추천 태그 깔끔하게 제거
-                    const pTags = [
-                        "character design model sheet, consistent character features, masterpiece, best quality",
-                        "character design model sheet, consistent character features",
-                        "character design model sheet"
-                    ];
-                    for (const t of pTags) {
-                        prefixVal = prefixVal.replace(t, "").replace(/,\s*,/g, ",").replace(/^,\s*|,\s*$/g, "").trim();
-                    }
-                    prefixInput.value = prefixVal;
-
-                    const sTags = [
-                        "soft even studio lighting, crisp sharp focus across all panels, pristine artwork",
-                        "soft even studio lighting, crisp sharp focus across all panels",
-                        "soft even studio lighting, crisp sharp focus"
-                    ];
-                    for (const t of sTags) {
-                        suffixVal = suffixVal.replace(t, "").replace(/,\s*,/g, ",").replace(/^,\s*|,\s*$/g, "").trim();
-                    }
-                    suffixInput.value = suffixVal;
-                }
-
-                updateOptionButtons();
-                syncToWidgets();
-            });
-
-            optionsBar.appendChild(whiteBgBtn);
-            optionsBar.appendChild(gridBorderBtn);
-            optionsBar.appendChild(charSheetBtn);
-
-            // 2. 가이드 텍스트
-            const guideBox = document.createElement("div");
-            guideBox.style.cssText = "display: flex; flex-wrap: wrap; justify-content: space-between; font-size: 11px; color: #94a3b8; background: #181b22; padding: 6px 10px; border-radius: 6px; border-left: 3px solid #6366f1;";
-            const g1 = document.createElement("span");
-            const g2 = document.createElement("span");
-            const g3 = document.createElement("span");
-            guideBox.appendChild(g1);
-            guideBox.appendChild(g2);
-            guideBox.appendChild(g3);
-
-            function updateTexts() {
-                const dict = I18N[currentLang];
-                ratioLabel.textContent = dict.aspectRatio;
-                colsLabel.textContent = dict.cols;
-                rowsLabel.textContent = dict.rows;
-                applyBtn.textContent = dict.apply;
-                formatLabel.textContent = dict.format;
-                g1.textContent = dict.guide1;
-                g2.textContent = dict.guide2;
-                g3.textContent = dict.guide3;
-                prefixLabel.textContent = dict.prefix;
-                prefixInput.placeholder = dict.prefixPlaceholder;
-                suffixLabel.textContent = dict.suffix;
-                suffixInput.placeholder = dict.suffixPlaceholder;
-                generateBtn.textContent = dict.generate;
-                clearBtn.textContent = dict.clearAll;
-                previewTitle.textContent = dict.previewTitle;
-                previewArea.placeholder = dict.previewPlaceholder;
-                copyBtn.textContent = dict.copyBtn;
-                if (langLabel) langLabel.textContent = dict.lang || "UI:";
-                updateOptionButtons();
-                if (typeof populatePresetOptions === "function") populatePresetOptions();
-            }
-
-            // 3. 그리드 캔버스 영역 (모서리 드래그로 상하/확대 축소 조절 가능)
-            const gridWrapper = document.createElement("div");
-            gridWrapper.style.cssText = `
-                position: relative;
-                width: 100%;
-                min-height: 160px;
-                height: ${customGridHeight && customGridHeight >= 140 ? customGridHeight + "px" : "260px"};
-                max-height: 900px;
-                background: #090a0f;
-                border: 1px solid #232733;
-                border-radius: 8px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                padding: 10px;
-                box-sizing: border-box;
-                overflow: hidden;
-                resize: vertical;
-            `;
-
-            // 마우스 드래그로 그리드 캔버스 크기 조절 시 LiteGraph 노드 이동 간섭 방지 (중간 클릭 Pan은 통과)
-            const stopGridWrapperDrag = (e) => {
-                if (e.button === 1) return;
-                // 클릭 위치가 gridContainer 내부가 아닌 gridWrapper의 패딩/모서리 리사이즈 핸들일 때 노드 이동 방지
-                if (e.target === gridWrapper || !gridContainer.contains(e.target)) {
-                    e.stopPropagation();
-                }
-            };
-            gridWrapper.addEventListener("mousedown", stopGridWrapperDrag);
-            gridWrapper.addEventListener("pointerdown", stopGridWrapperDrag);
-            gridWrapper.addEventListener("touchstart", stopGridWrapperDrag);
-
-            // 사용자가 모서리를 직접 드래그해서 크기를 지정했을 때 높이 저장 (새로고침/재렌더링 시에도 유지)
-            const onGridUserResize = () => {
-                const currentH = parseInt(gridWrapper.style.height, 10) || gridWrapper.clientHeight;
-                if (currentH && currentH >= 140 && currentH !== customGridHeight) {
-                    customGridHeight = currentH;
-                    syncToWidgets();
-                    renderGrid();
-                }
-            };
-            gridWrapper.addEventListener("mouseup", onGridUserResize);
-            gridWrapper.addEventListener("pointerup", onGridUserResize);
-
-            // 그리드 래퍼 크기 변경 감지 시 그리드 자동 리사이징
-            const gridResizeObserver = new ResizeObserver(() => {
-                renderGrid();
-            });
-            gridResizeObserver.observe(gridWrapper);
-
-            const gridContainer = document.createElement("div");
-            gridContainer.style.cssText = `
-                position: relative;
-                max-width: 100%;
-                max-height: 100%;
-                display: grid;
-                gap: 3px;
-                background: #161822;
-                border: 1px solid #2e3444;
-                border-radius: 6px;
-                padding: 4px;
-                box-sizing: border-box;
-                transition: width 0.08s ease, height 0.08s ease;
-            `;
-
-            // 4. 모달 프롬프트 설정창 (프리셋 선택 + 직접 입력 + 실시간 API 번역)
-            const modal = document.createElement("div");
-            modal.style.cssText = `
-                display: none;
-                flex-direction: column;
-                gap: 8px;
-                background: #161824;
-                border: 1.5px solid #6366f1;
-                border-radius: 8px;
-                padding: 12px;
-                box-sizing: border-box;
-                font-size: 12px;
-                box-shadow: 0 8px 28px rgba(0,0,0,0.7);
-            `;
-
-            const modalHeader = document.createElement("div");
-            modalHeader.style.cssText = "display: flex; justify-content: space-between; font-weight: bold; color: #a5b4fc; font-size: 13px;";
-
-            // 한글 입력 및 프리셋 선택 섹션 라벨 (2열)
-            const inputLabelsRow = document.createElement("div");
-            inputLabelsRow.style.cssText = "display: flex; justify-content: space-between; font-size: 11px; font-weight: 600;";
-            
-            const presetLabel = document.createElement("span");
-            presetLabel.style.cssText = "color: #38bdf8; flex: 1;";
-            
-            const directInputLabel = document.createElement("span");
-            directInputLabel.style.cssText = "color: #60a5fa; flex: 1;";
-
-            inputLabelsRow.appendChild(presetLabel);
-            inputLabelsRow.appendChild(directInputLabel);
-
-            const inputControlsRow = document.createElement("div");
-            inputControlsRow.style.cssText = "display: flex; gap: 8px; width: 100%; box-sizing: border-box;";
-
-            // 1) 프리셋 선택 드롭다운 (엑셀 표 기반)
-            const presetSelect = document.createElement("select");
-            presetSelect.style.cssText = `
-                flex: 1;
-                background: #0f111a;
-                color: #38bdf8;
-                border: 1.2px solid #3b4252;
-                border-radius: 5px;
-                padding: 6px 8px;
-                font-size: 11px;
-                font-weight: 500;
-                outline: none;
-                cursor: pointer;
-                text-overflow: ellipsis;
-            `;
-
-            function populatePresetOptions() {
-                presetSelect.innerHTML = "";
-                const defOpt = document.createElement("option");
-                defOpt.value = "";
-                defOpt.textContent = I18N[currentLang].presetDefault || "▼ ⚡ 프리셋 선택 (샷/구도)";
-                presetSelect.appendChild(defOpt);
-
-                PRESET_GROUPS.forEach(grp => {
-                    const optGroup = document.createElement("optgroup");
-                    optGroup.label = grp.group;
-                    grp.items.forEach(item => {
-                        const opt = document.createElement("option");
-                        opt.value = JSON.stringify(item);
-                        opt.textContent = item.label;
-                        optGroup.appendChild(opt);
-                    });
-                    presetSelect.appendChild(optGroup);
-                });
-            }
-            populatePresetOptions();
-
-            // 2) 직접 한글 입력 필드
-            const modalKoInput = document.createElement("input");
-            modalKoInput.type = "text";
-            modalKoInput.style.cssText = `
-                flex: 1;
-                background: #0f1117;
-                color: #f8fafc;
-                border: 1px solid #374151;
-                border-radius: 5px;
-                padding: 6px 8px;
-                box-sizing: border-box;
-                font-size: 12px;
-                outline: none;
-            `;
-
-            inputControlsRow.appendChild(presetSelect);
-            inputControlsRow.appendChild(modalKoInput);
-
-            // 영문 자동 번역 결과 라벨 & 실시간 번역 뱃지
-            const enLabelRow = document.createElement("div");
-            enLabelRow.style.cssText = "display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 600; color: #a78bfa; margin-top: 2px;";
-            
-            const enInputLabel = document.createElement("span");
-            const transStatusBadge = document.createElement("span");
-            transStatusBadge.style.cssText = "font-size: 10px; color: #10b981; font-weight: normal;";
-            transStatusBadge.textContent = I18N[currentLang].apiBadgeReady;
-
-            enLabelRow.appendChild(enInputLabel);
-            enLabelRow.appendChild(transStatusBadge);
-
-            const modalEnInput = document.createElement("textarea");
-            modalEnInput.rows = 2;
-            modalEnInput.style.cssText = `
-                width: 100%;
-                background: #090a0f;
-                color: #e2e8f0;
-                border: 1px solid #4f46e5;
-                border-radius: 5px;
-                padding: 7px 9px;
-                box-sizing: border-box;
-                font-family: inherit;
-                font-size: 12px;
-                resize: vertical;
-                outline: none;
-            `;
-
-            // 프리셋 선택 이벤트 (선택 시 저장/적용 버튼을 누르지 않아도 즉시 해당 구역에 자동 적용)
-            presetSelect.addEventListener("change", (e) => {
-                if (e.target.value) {
-                    try {
-                        const item = JSON.parse(e.target.value);
-                        modalKoInput.value = item.ko;
-                        modalEnInput.value = item.en;
-                        transStatusBadge.textContent = I18N[currentLang].apiBadgePreset;
-                        transStatusBadge.style.color = "#38bdf8";
-
-                        // 선택 즉시 해당 구역에 저장 및 모달 닫기
-                        if (selectedAreaId !== null) {
-                            const area = areas.find(a => a.id === selectedAreaId);
-                            if (area) {
-                                area.ko_prompt = item.ko;
-                                area.prompt = item.en;
-                                syncToWidgets();
-                                renderGrid();
-                            }
-                        }
-                        modal.style.display = "none";
-                        selectedAreaId = null;
-                    } catch (err) {}
-                }
-            });
-
-            // 직접 입력 시 실시간 번역 API 연동 (디바운스 350ms)
-            let debounceTimer = null;
-            modalKoInput.addEventListener("input", (e) => {
-                const koText = e.target.value.trim();
-                presetSelect.value = ""; // 직접 입력 시 프리셋 초기화
-
-                if (!koText) {
-                    modalEnInput.value = "";
-                    transStatusBadge.textContent = I18N[currentLang].apiBadgeReady;
-                    transStatusBadge.style.color = "#94a3b8";
-                    return;
-                }
-
-                // 1단계: 즉각적인 로컬 사전 번역 미리보기
-                const quickTrans = translateToEnglish(koText);
-                modalEnInput.value = quickTrans;
-
-                // 2단계: 실시간 번역 API 호출
-                transStatusBadge.textContent = I18N[currentLang].apiBadgeTranslating;
-                transStatusBadge.style.color = "#f59e0b";
-
-                if (debounceTimer) clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(async () => {
-                    try {
-                        const apiResult = await translateTextOnline(koText);
-                        if (apiResult && modalKoInput.value.trim() === koText) {
-                            modalEnInput.value = apiResult;
-                            transStatusBadge.textContent = I18N[currentLang].apiBadgeDone;
-                            transStatusBadge.style.color = "#10b981";
-                        }
-                    } catch (err) {
-                        transStatusBadge.textContent = "⚡ 로컬 사전 번역 적용됨";
-                        transStatusBadge.style.color = "#38bdf8";
-                    }
-                }, 350);
-            });
-
-            const modalActions = document.createElement("div");
-            modalActions.style.cssText = "display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px;";
-
-            const modalSaveBtn = document.createElement("button");
-            modalSaveBtn.style.cssText = "background: #6366f1; color: #fff; border: none; border-radius: 5px; padding: 6px 14px; font-weight: 600; cursor: pointer;";
-            const modalDeleteBtn = document.createElement("button");
-            modalDeleteBtn.style.cssText = "background: #ef4444; color: #fff; border: none; border-radius: 5px; padding: 6px 12px; font-weight: 600; cursor: pointer;";
-            const modalCancelBtn = document.createElement("button");
-            modalCancelBtn.style.cssText = "background: #374151; color: #d1d5db; border: none; border-radius: 5px; padding: 6px 12px; cursor: pointer;";
-
-            modalActions.appendChild(modalDeleteBtn);
-            modalActions.appendChild(modalCancelBtn);
-            modalActions.appendChild(modalSaveBtn);
-
-            modal.appendChild(modalHeader);
-            modal.appendChild(inputLabelsRow);
-            modal.appendChild(inputControlsRow);
-            modal.appendChild(enLabelRow);
-            modal.appendChild(modalEnInput);
-            modal.appendChild(modalActions);
-
-            // 5. Prefix / Suffix 입력 필드
-            const promptInputsBox = document.createElement("div");
-            promptInputsBox.style.cssText = "display: flex; flex-direction: column; gap: 6px;";
-
-            const prefixBox = document.createElement("div");
-            prefixBox.style.cssText = "display: flex; flex-direction: column; gap: 2px;";
-            const prefixLabel = document.createElement("span");
-            prefixLabel.style.cssText = "font-size: 11px; font-weight: 600; color: #94a3b8;";
-            const prefixInput = document.createElement("input");
-            prefixInput.type = "text";
-            prefixInput.value = prefixVal;
-            prefixInput.style.cssText = "width: 100%; background: #161822; color: #f8fafc; border: 1px solid #2e3444; border-radius: 5px; padding: 5px 8px; font-size: 11px; box-sizing: border-box;";
-            prefixInput.addEventListener("input", (e) => {
-                prefixVal = e.target.value;
-                syncToWidgets();
-            });
-            prefixBox.appendChild(prefixLabel);
-            prefixBox.appendChild(prefixInput);
-
-            const suffixBox = document.createElement("div");
-            suffixBox.style.cssText = "display: flex; flex-direction: column; gap: 2px;";
-            const suffixLabel = document.createElement("span");
-            suffixLabel.style.cssText = "font-size: 11px; font-weight: 600; color: #94a3b8;";
-            const suffixInput = document.createElement("input");
-            suffixInput.type = "text";
-            suffixInput.value = suffixVal;
-            suffixInput.style.cssText = "width: 100%; background: #161822; color: #f8fafc; border: 1px solid #2e3444; border-radius: 5px; padding: 5px 8px; font-size: 11px; box-sizing: border-box;";
-            suffixInput.addEventListener("input", (e) => {
-                suffixVal = e.target.value;
-                syncToWidgets();
-            });
-            suffixBox.appendChild(suffixLabel);
-            suffixBox.appendChild(suffixInput);
-
-            promptInputsBox.appendChild(prefixBox);
-            promptInputsBox.appendChild(suffixBox);
-
-            // 6. 하단 버튼 바
-            const bottomBar = document.createElement("div");
-            bottomBar.style.cssText = "display: flex; gap: 8px; align-items: center;";
-
-            const generateBtn = document.createElement("button");
-            generateBtn.style.cssText = `
-                flex: 1;
-                background: linear-gradient(135deg, #4f46e5, #7c3aed);
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 10px 14px;
-                font-weight: bold;
-                font-size: 13px;
-                cursor: pointer;
-                box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-                transition: transform 0.1s, filter 0.2s;
-            `;
-            generateBtn.onmouseenter = () => generateBtn.style.filter = "brightness(1.15)";
-            generateBtn.onmouseleave = () => generateBtn.style.filter = "brightness(1.0)";
-
-            const clearBtn = document.createElement("button");
-            clearBtn.style.cssText = "background: #27272a; color: #cbd5e1; border: 1px solid #3f3f46; border-radius: 6px; padding: 10px 14px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s;";
-            clearBtn.onmouseenter = () => clearBtn.style.background = "#3f3f46";
-            clearBtn.onmouseleave = () => clearBtn.style.background = "#27272a";
-
-            bottomBar.appendChild(generateBtn);
-            bottomBar.appendChild(clearBtn);
-
-            // 7. 실시간 출력 프롬프트 미리보기
-            const previewWrapper = document.createElement("div");
-            previewWrapper.style.cssText = "display: flex; flex-direction: column; gap: 4px;";
-
-            const previewHeader = document.createElement("div");
-            previewHeader.style.cssText = "display: flex; justify-content: space-between; align-items: center;";
-            const previewTitle = document.createElement("span");
-            previewTitle.style.cssText = "font-size: 11px; font-weight: 600; color: #818cf8;";
-
-            const copyBtn = document.createElement("button");
-            copyBtn.style.cssText = "background: #1e212b; color: #94a3b8; border: 1px solid #374151; border-radius: 4px; padding: 2px 8px; font-size: 11px; cursor: pointer;";
-            copyBtn.onclick = () => {
-                navigator.clipboard.writeText(previewArea.value);
-                const originalText = copyBtn.textContent;
-                copyBtn.textContent = I18N[currentLang].copied;
-                setTimeout(() => copyBtn.textContent = originalText, 1500);
-            };
-
-            previewHeader.appendChild(previewTitle);
-            previewHeader.appendChild(copyBtn);
-
-            const previewArea = document.createElement("textarea");
-            previewArea.readOnly = true;
-            previewArea.rows = 4;
-            previewArea.style.cssText = `
-                width: 100%;
-                min-height: 80px;
-                background: #090a0f;
-                color: #e2e8f0;
-                border: 1px solid #232733;
-                border-radius: 6px;
-                padding: 8px;
-                font-size: 11px;
-                box-sizing: border-box;
-                font-family: "Fira Code", Consolas, Monaco, monospace;
-                line-height: 1.45;
-                resize: vertical;
-                overflow-y: auto;
-                cursor: text;
-                transition: height 0.12s ease;
-            `;
-
-            function adjustPreviewHeight() {
-                if (customPreviewHeight && customPreviewHeight >= 60) {
-                    previewArea.style.height = customPreviewHeight + "px";
-                } else {
-                    previewArea.style.height = "auto";
-                    const scrollH = previewArea.scrollHeight;
-                    // 내용 길이에 따라 80px ~ 280px 사이로 자동 신축 (초과 시 스크롤바 제공)
-                    const targetH = Math.min(280, Math.max(80, scrollH + 6));
-                    previewArea.style.height = targetH + "px";
-                }
-            }
-
-            // 마우스 드래그로 텍스트창 크기 조절 시 LiteGraph 캔버스 노드 드래그 간섭 방지 (중간 클릭 Pan은 통과)
-            const stopDrag = (e) => {
-                if (e.button === 1) return;
-                e.stopPropagation();
-            };
-            previewArea.addEventListener("mousedown", stopDrag);
-            previewArea.addEventListener("pointerdown", stopDrag);
-            previewArea.addEventListener("touchstart", stopDrag);
-
-            // 사용자가 모서리를 직접 드래그해서 크기를 지정했을 때 높이 저장 (새로고침/재렌더링 시에도 유지)
-            const onPreviewUserResize = () => {
-                const currentH = parseInt(previewArea.style.height, 10);
-                if (currentH && currentH >= 60) {
-                    customPreviewHeight = currentH;
-                    syncToWidgets();
-                }
-            };
-            previewArea.addEventListener("mouseup", onPreviewUserResize);
-            previewArea.addEventListener("pointerup", onPreviewUserResize);
-
-            previewWrapper.appendChild(previewHeader);
-            previewWrapper.appendChild(previewArea);
-
-            // 컨테이너 조립
-            container.appendChild(toolbar);
-            container.appendChild(optionsBar);
-            container.appendChild(guideBox);
-            gridWrapper.appendChild(gridContainer);
-            container.appendChild(gridWrapper);
-            container.appendChild(modal);
-            container.appendChild(promptInputsBox);
-            container.appendChild(bottomBar);
-            container.appendChild(previewWrapper);
-
-            // 위젯 동기화 및 프롬프트 빌드
-            function syncToWidgets() {
-                const data = {
-                    cols,
-                    rows,
-                    aspect_ratio: currentRatio,
-                    lang: currentLang,
-                    areas,
-                    white_bg: whiteBg,
-                    grid_borders: gridBorders,
-                    char_sheet: charSheet,
-                    custom_preview_height: customPreviewHeight,
-                    custom_grid_height: customGridHeight
-                };
-                const jsonStr = JSON.stringify(data);
-
-                const gridDataW = node.widgets?.find(w => w.name === "grid_data");
-                if (gridDataW) gridDataW.value = jsonStr;
-
-                const colsW = node.widgets?.find(w => w.name === "grid_cols");
-                if (colsW) colsW.value = cols;
-
-                const rowsW = node.widgets?.find(w => w.name === "grid_rows");
-                if (rowsW) rowsW.value = rows;
-
-                const ratioW = node.widgets?.find(w => w.name === "aspect_ratio");
-                if (ratioW) ratioW.value = currentRatio;
-
-                const langW = node.widgets?.find(w => w.name === "ui_language");
-                if (langW) langW.value = currentLang;
-
-                const formatW = node.widgets?.find(w => w.name === "format");
-                if (formatW) formatW.value = currentFormat;
-
-                const prefixW = node.widgets?.find(w => w.name === "prefix_prompt");
-                if (prefixW) prefixW.value = prefixVal;
-
-                const suffixW = node.widgets?.find(w => w.name === "suffix_prompt");
-                if (suffixW) suffixW.value = suffixVal;
-
-                buildOutputPrompt();
-            }
-
-            function buildOutputPrompt() {
-                let finalPrompt = "";
-                const validAreas = areas.slice().sort((a, b) => a.id - b.id).filter(a => (a.prompt || a.ko_prompt || "").trim().length > 0);
-
-                if (validAreas.length > 0) {
-                    if (currentFormat.startsWith("Natural")) {
-                        const lines = [
-                            `A high-definition ${currentRatio} multi-panel composition strictly partitioned into ${validAreas.length} proportional sections.`,
-                            `[Spatial Layout & Exact Proportional Placement]:`
-                        ];
-                        validAreas.forEach(a => {
-                            const rawPrompt = a.prompt || a.ko_prompt || "";
-                            const engPrompt = translateToEnglish(rawPrompt);
-                            const spatialName = getNaturalSpatialDescription(a.c1, a.c2, a.r1, a.r2, cols, rows);
-                            lines.push(`- ${spatialName}: ${engPrompt}.`);
-                        });
-                        
-                        if (gridBorders) {
-                            lines.push(`[Multi-Panel Layout & Strict Proportional Scale]: Split-screen multi-panel collage layout strictly adhering to the exact percentage width and height boundaries specified above for each column and row without shifting, resizing, or distorting relative panel scales. Each panel is cleanly separated by crisp thin black divider lines, clean comic grid panels, pristine artwork without any text, labels, numbers, coordinates, or watermarks.`);
-                        } else {
-                            lines.push(`[Global Scene Coherence & Proportional Placement]: Seamlessly blended multi-region composition maintaining the exact spatial percentage boundaries and relative scale for each region, unified realistic lighting, cinematic perspective, and coherent environment bridging all regions, clean presentation without any text, labels, numbers, coordinates, or watermarks.`);
-                        }
-                        finalPrompt = lines.join("\n");
-                    } else if (currentFormat.startsWith("Structured")) {
-                        const lines = [`[Composition: ${currentRatio} Grid Layout (${cols}x${rows})]`];
-                        validAreas.forEach(a => {
-                            const rawPrompt = a.prompt || a.ko_prompt || "";
-                            const engPrompt = translateToEnglish(rawPrompt);
-                            const info = getSpatialDescription(a.c1, a.c2, a.r1, a.r2, cols, rows);
-                            lines.push(`[Area ${a.id} | ${info.direction.toUpperCase()} (${info.percent})]: ${engPrompt}`);
-                        });
-                        finalPrompt = lines.join("\n");
-                    } else if (currentFormat.startsWith("Coordinates")) {
-                        const lines = [`[Canvas Layout: ${currentRatio} | Grid ${cols}x${rows}]`];
-                        validAreas.forEach(a => {
-                            const rawPrompt = a.prompt || a.ko_prompt || "";
-                            const engPrompt = translateToEnglish(rawPrompt);
-                            const x1 = ((a.c1 / cols)).toFixed(2);
-                            const y1 = ((a.r1 / rows)).toFixed(2);
-                            const x2 = (((a.c2 + 1) / cols)).toFixed(2);
-                            const y2 = (((a.r2 + 1) / rows)).toFixed(2);
-                            lines.push(`<area_${a.id} bbox="[${x1}, ${y1}, ${x2}, ${y2}]"> ${engPrompt} </area_${a.id}>`);
-                        });
-                        finalPrompt = lines.join("\n");
-                    } else if (currentFormat.startsWith("Comma")) {
-                        finalPrompt = validAreas.map(a => translateToEnglish(a.prompt || a.ko_prompt || "")).join(", ");
-                    } else {
-                        finalPrompt = JSON.stringify({ aspect_ratio: currentRatio, cols, rows, areas: validAreas, white_bg: whiteBg, grid_borders: gridBorders }, null, 2);
-                    }
-                }
-
-                // Prefix & Suffix 결합
-                const engPrefix = translateToEnglish(prefixVal.trim());
-                const engSuffix = translateToEnglish(suffixVal.trim());
-
-                const extraTags = [];
-                if (whiteBg) {
-                    extraTags.push("clean solid pure white background, studio white backdrop");
-                }
-                if (engSuffix) {
-                    extraTags.push(engSuffix);
-                }
-                const combinedSuffix = extraTags.join(", ");
-
-                const resultParts = [];
-                if (engPrefix) resultParts.push(engPrefix);
-                if (finalPrompt) resultParts.push(finalPrompt);
-                if (combinedSuffix) resultParts.push(combinedSuffix);
-
-                const fullOutput = currentFormat.startsWith("Comma") ? resultParts.join(", ") : resultParts.join("\n\n");
-                previewArea.value = fullOutput;
-                adjustPreviewHeight();
-
-                const promptW = node.widgets?.find(w => w.name === "prompt_text");
-                if (promptW) promptW.value = fullOutput;
-            }
-
-            // 정확한 마우스 좌표 계산 함수
-            function getGridCoords(e) {
-                const targetCell = (e.target && e.target.closest && e.target.closest(".grid-cell")) 
-                    || (document.elementFromPoint(e.clientX, e.clientY)?.closest(".grid-cell"));
-                if (targetCell && targetCell.dataset && targetCell.dataset.col !== undefined && targetCell.dataset.row !== undefined) {
-                    return {
-                        c: parseInt(targetCell.dataset.col, 10),
-                        r: parseInt(targetCell.dataset.row, 10)
-                    };
-                }
-                const rect = gridContainer.getBoundingClientRect();
-                const x = Math.max(0, Math.min(rect.width - 1, e.clientX - rect.left));
-                const y = Math.max(0, Math.min(rect.height - 1, e.clientY - rect.top));
-                const c = Math.max(0, Math.min(cols - 1, Math.floor((x / rect.width) * cols)));
-                const r = Math.max(0, Math.min(rows - 1, Math.floor((y / rect.height) * rows)));
-                return { c, r };
-            }
-
-            // 드래그 상태
-            let isDragging = false;
-            let dragStart = null;
-            let dragEnd = null;
-
-            function updateDragHighlight() {
-                if (!isDragging || !dragStart || !dragEnd) return;
-                const c1 = Math.min(dragStart.c, dragEnd.c);
-                const c2 = Math.max(dragStart.c, dragEnd.c);
-                const r1 = Math.min(dragStart.r, dragEnd.r);
-                const r2 = Math.max(dragStart.r, dragEnd.r);
-
-                // 겹침 여부 확인
-                let hasOverlap = false;
-                for (const a of areas) {
-                    if (!(c2 < a.c1 || c1 > a.c2 || r2 < a.r1 || r1 > a.r2)) {
-                        hasOverlap = true;
-                        break;
-                    }
-                }
-
-                const cells = gridContainer.querySelectorAll(".grid-cell");
-                cells.forEach(cell => {
-                    const c = parseInt(cell.dataset.col, 10);
-                    const r = parseInt(cell.dataset.row, 10);
-                    const isSelected = (c >= c1 && c <= c2 && r >= r1 && r <= r2);
-                    if (isSelected) {
-                        cell.style.background = hasOverlap ? "rgba(239, 68, 68, 0.55)" : "rgba(99, 102, 241, 0.6)";
-                        cell.style.borderColor = hasOverlap ? "#ef4444" : "#818cf8";
-                    } else {
-                        cell.style.background = "#10121a";
-                        cell.style.borderColor = "#2d3345";
-                    }
-                });
-            }
-
-            function renderGrid() {
-                const [rw, rh] = currentRatio.split(":").map(Number);
-                const ratioVal = (rw && rh) ? (rw / rh) : (16 / 9);
-                const paddingSpace = 20;
-                const wrapperW = Math.max(60, (gridWrapper.clientWidth || 440) - paddingSpace);
-                const wrapperH = Math.max(60, (gridWrapper.clientHeight || 260) - paddingSpace);
-                const wrapperRatio = wrapperW / wrapperH;
-
-                if (ratioVal > wrapperRatio) {
-                    gridContainer.style.width = "100%";
-                    gridContainer.style.height = "auto";
-                } else {
-                    gridContainer.style.height = "100%";
-                    gridContainer.style.width = "auto";
-                }
-                gridContainer.style.aspectRatio = `${rw} / ${rh}`;
-                gridContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-                gridContainer.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
-                gridContainer.innerHTML = "";
-
-                // 빈 셀 생성 (정확한 CSS Grid 레이아웃 및 명시적 트랙 위치)
-                for (let r = 0; r < rows; r++) {
-                    for (let c = 0; c < cols; c++) {
-                        const cell = document.createElement("div");
-                        cell.className = "grid-cell";
-                        cell.dataset.col = c;
-                        cell.dataset.row = r;
-                        cell.style.cssText = `
-                            grid-column: ${c + 1};
-                            grid-row: ${r + 1};
-                            background: #10121a;
-                            border: 1px dashed #2d3345;
-                            border-radius: 3px;
-                            box-sizing: border-box;
-                            width: 100%;
-                            height: 100%;
-                            user-select: none;
-                            cursor: crosshair;
-                            transition: background 0.1s;
-                        `;
-                        gridContainer.appendChild(cell);
-                    }
-                }
-
-                // 확정된 구역(Area) 오버레이 렌더링 (지정 영역에 100% 확장)
-                areas.forEach((area) => {
-                    const color = AREA_COLORS[(area.id - 1) % AREA_COLORS.length];
-                    const overlay = document.createElement("div");
-                    overlay.className = "grid-area-overlay";
-                    overlay.dataset.areaId = area.id;
-                    overlay.style.cssText = `
-                        grid-column: ${area.c1 + 1} / ${area.c2 + 2};
-                        grid-row: ${area.r1 + 1} / ${area.r2 + 2};
-                        width: 100%;
-                        height: 100%;
-                        background: ${color.bg};
-                        border: 2px solid ${color.border};
-                        border-radius: 5px;
-                        display: flex;
-                        flex-direction: column;
-                        justify-content: space-between;
-                        padding: 4px 6px;
-                        box-sizing: border-box;
-                        cursor: pointer;
-                        z-index: 10;
-                        transition: filter 0.15s;
-                        backdrop-filter: blur(1px);
-                        overflow: hidden;
-                    `;
-                    overlay.onmouseenter = () => overlay.style.filter = "brightness(1.25)";
-                    overlay.onmouseleave = () => overlay.style.filter = "brightness(1.0)";
-
-                    const topBar = document.createElement("div");
-                    topBar.style.cssText = "display: flex; justify-content: space-between; align-items: center;";
-
-                    const badge = document.createElement("div");
-                    const circleNum = `①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮`[area.id - 1] || `(${area.id})`;
-                    badge.textContent = `${circleNum} Area ${area.id}`;
-                    badge.style.cssText = `
-                        font-size: 13px;
-                        font-weight: 900;
-                        color: #ffffff;
-                        text-shadow: 0 1px 4px rgba(0,0,0,0.9);
-                    `;
-
-                    const deleteBtn = document.createElement("span");
-                    deleteBtn.textContent = "×";
-                    deleteBtn.title = "Delete Area";
-                    deleteBtn.style.cssText = `
-                        font-size: 16px;
-                        font-weight: bold;
-                        color: #fca5a5;
-                        padding: 0 4px;
-                        border-radius: 3px;
-                        cursor: pointer;
-                        line-height: 1;
-                    `;
-                    deleteBtn.addEventListener("click", (e) => {
-                        e.stopPropagation();
-                        deleteArea(area.id);
-                    });
-
-                    topBar.appendChild(badge);
-                    topBar.appendChild(deleteBtn);
-
-                    const promptPreview = document.createElement("div");
-                    const dispText = area.ko_prompt || area.prompt || "(클릭하여 프롬프트 입력)";
-                    promptPreview.textContent = dispText;
-                    promptPreview.style.cssText = `
-                        font-size: 11px;
-                        color: ${dispText !== "(클릭하여 프롬프트 입력)" ? "#ffffff" : "#cbd5e1cc"};
-                        white-space: nowrap;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                        font-weight: ${dispText !== "(클릭하여 프롬프트 입력)" ? "600" : "normal"};
-                        text-shadow: 0 1px 3px rgba(0,0,0,0.9);
-                    `;
-
-                    overlay.appendChild(topBar);
-                    overlay.appendChild(promptPreview);
-
-                    overlay.addEventListener("click", (e) => {
-                        e.stopPropagation();
-                        openPromptModal(area);
-                    });
-
-                    overlay.addEventListener("contextmenu", (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        deleteArea(area.id);
-                    });
-
-                    gridContainer.appendChild(overlay);
-                });
-            }
-
-            // 마우스 드래그 이벤트 (부드럽고 완벽한 사각형 영역 지정)
-            gridContainer.addEventListener("mousedown", (e) => {
-                if (e.button === 0) { // 좌클릭
-                    if (e.target.closest && e.target.closest(".grid-area-overlay")) {
-                        return;
-                    }
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    isDragging = true;
-                    const pos = getGridCoords(e);
-                    dragStart = pos;
-                    dragEnd = pos;
-                    updateDragHighlight();
-                }
-            });
-
-            const onMouseMove = (e) => {
-                if (isDragging) {
-                    e.preventDefault();
-                    dragEnd = getGridCoords(e);
-                    updateDragHighlight();
-                }
-            };
-
-            const onMouseUp = (e) => {
-                if (isDragging) {
-                    isDragging = false;
-                    if (!dragStart || !dragEnd) {
-                        dragStart = null;
-                        dragEnd = null;
-                        renderGrid();
-                        return;
-                    }
-                    const c1 = Math.min(dragStart.c, dragEnd.c);
-                    const c2 = Math.max(dragStart.c, dragEnd.c);
-                    const r1 = Math.min(dragStart.r, dragEnd.r);
-                    const r2 = Math.max(dragStart.r, dragEnd.r);
-
-                    // 기존 영역과 겹치는지 체크
-                    let hasOverlap = false;
-                    for (const a of areas) {
-                        if (!(c2 < a.c1 || c1 > a.c2 || r2 < a.r1 || r1 > a.r2)) {
-                            hasOverlap = true;
-                            break;
-                        }
-                    }
-
-                    if (!hasOverlap) {
-                        const newId = areas.length > 0 ? Math.max(...areas.map(a => a.id)) + 1 : 1;
-                        const newArea = {
-                            id: newId,
-                            c1, c2, r1, r2,
-                            prompt: "",
-                            ko_prompt: ""
-                        };
-                        areas.push(newArea);
-                        syncToWidgets();
-                        renderGrid();
-                        // 영역 생성 후 즉시 프롬프트 입력창 열기
-                        setTimeout(() => openPromptModal(newArea), 40);
-                    } else {
-                        renderGrid();
-                    }
-
-                    dragStart = null;
-                    dragEnd = null;
-                }
-            };
-
-            window.addEventListener("mousemove", onMouseMove);
-            window.addEventListener("mouseup", onMouseUp);
-
-            const onDestroy = node.onDestroy;
-            node.onDestroy = function () {
-                if (typeof panCleanup === "function") panCleanup();
-                window.removeEventListener("mousemove", onMouseMove);
-                window.removeEventListener("mouseup", onMouseUp);
-                if (onDestroy) onDestroy.apply(this, arguments);
-            };
-
-            // 영역 삭제
-            function deleteArea(areaId) {
-                areas = areas.filter(a => a.id !== areaId);
-                areas.sort((a, b) => (a.r1 - b.r1) || (a.c1 - b.c1));
-                areas.forEach((a, idx) => a.id = idx + 1);
-
-                if (selectedAreaId === areaId) {
-                    modal.style.display = "none";
-                    selectedAreaId = null;
-                }
-                syncToWidgets();
-                renderGrid();
-            }
-
-            // 모달 열기
-            function openPromptModal(area) {
-                selectedAreaId = area.id;
-                const info = getSpatialDescription(area.c1, area.c2, area.r1, area.r2, cols, rows);
-                modalHeader.innerHTML = `<span>${I18N[currentLang].modalArea} ${area.id} (${info.full})</span>`;
-                
-                presetLabel.textContent = I18N[currentLang].presetLabel;
-                directInputLabel.textContent = I18N[currentLang].directInputLabel;
-                modalKoInput.placeholder = I18N[currentLang].directPlaceholder;
-                modalKoInput.value = area.ko_prompt || "";
-
-                enInputLabel.textContent = I18N[currentLang].modalEnLabel;
-                modalEnInput.placeholder = I18N[currentLang].modalEnPlaceholder;
-                modalEnInput.value = area.prompt || translateToEnglish(area.ko_prompt || "");
-
-                // 매칭되는 프리셋이 있으면 드롭다운 값 자동 선택
-                presetSelect.value = "";
-                if (area.ko_prompt) {
-                    for (const grp of PRESET_GROUPS) {
-                        for (const item of grp.items) {
-                            if (item.ko === area.ko_prompt || item.label === area.ko_prompt || item.label.startsWith(area.ko_prompt)) {
-                                presetSelect.value = JSON.stringify(item);
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if (presetSelect.value) {
-                    transStatusBadge.textContent = I18N[currentLang].apiBadgePreset;
-                    transStatusBadge.style.color = "#38bdf8";
-                } else if (modalKoInput.value.trim()) {
-                    transStatusBadge.textContent = I18N[currentLang].apiBadgeDone;
-                    transStatusBadge.style.color = "#10b981";
-                } else {
-                    transStatusBadge.textContent = I18N[currentLang].apiBadgeReady;
-                    transStatusBadge.style.color = "#94a3b8";
-                }
-
-                modalSaveBtn.textContent = I18N[currentLang].modalSave;
-                modalDeleteBtn.textContent = I18N[currentLang].modalDelete;
-                modalCancelBtn.textContent = I18N[currentLang].modalCancel;
-
-                modal.style.display = "flex";
-                setTimeout(() => modalKoInput.focus(), 30);
-            }
-
-            // 모달 단축키 (Ctrl+Enter 저장, Esc 취소)
-            const handleKeydown = (e) => {
-                if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-                    e.preventDefault();
-                    modalSaveBtn.click();
-                } else if (e.key === "Escape") {
-                    e.preventDefault();
-                    modalCancelBtn.click();
-                }
-            };
-            modalKoInput.addEventListener("keydown", handleKeydown);
-            modalEnInput.addEventListener("keydown", handleKeydown);
-
-            modalSaveBtn.addEventListener("click", () => {
-                if (selectedAreaId !== null) {
-                    const area = areas.find(a => a.id === selectedAreaId);
-                    if (area) {
-                        area.ko_prompt = modalKoInput.value.trim();
-                        // 영문 필드에 내용이 있으면 영문 필드 우선, 비어있으면 한글을 자동 번역
-                        area.prompt = modalEnInput.value.trim() || translateToEnglish(area.ko_prompt);
-                        syncToWidgets();
-                        renderGrid();
-                    }
-                }
-                modal.style.display = "none";
-                selectedAreaId = null;
-            });
-
-            modalDeleteBtn.addEventListener("click", () => {
-                if (selectedAreaId !== null) {
-                    deleteArea(selectedAreaId);
-                }
-            });
-
-            modalCancelBtn.addEventListener("click", () => {
-                modal.style.display = "none";
-                selectedAreaId = null;
-            });
-
-            // 툴바 리스너
-            ratioSelect.addEventListener("change", (e) => {
-                currentRatio = e.target.value;
-                syncToWidgets();
-                renderGrid();
-            });
-
             formatSelect.addEventListener("change", (e) => {
                 currentFormat = e.target.value;
                 syncToWidgets();
             });
 
-            applyBtn.addEventListener("click", () => {
-                const newCols = parseInt(colsInput.value) || 6;
-                const newRows = parseInt(rowsInput.value) || 3;
-                cols = newCols;
-                rows = newRows;
-                areas = areas.filter(a => a.c2 < cols && a.r2 < rows);
-                areas.forEach((a, idx) => a.id = idx + 1);
-                syncToWidgets();
+            const btnClear = document.createElement("button");
+            btnClear.className = "vg-btn";
+            btnClear.type = "button";
+            btnClear.textContent = "🗑️ 초기화";
+            btnClear.addEventListener("click", () => {
+                areas = [];
+                selectedAreaId = null;
                 renderGrid();
-            });
-
-            langSelect.addEventListener("change", (e) => {
-                currentLang = e.target.value;
-                updateTexts();
-                syncToWidgets();
-                renderGrid();
-            });
-
-            generateBtn.addEventListener("click", () => {
                 syncToWidgets();
             });
 
-            clearBtn.addEventListener("click", () => {
-                if (confirm(currentLang === "한국어" ? "모든 영역을 초기화하시겠습니까?" : "Clear all areas?")) {
-                    areas = [];
-                    modal.style.display = "none";
-                    selectedAreaId = null;
-                    syncToWidgets();
-                    renderGrid();
+            formatBar.appendChild(formatSelect);
+            formatBar.appendChild(btnClear);
+            container.appendChild(formatBar);
+
+            // =========================================================================
+            // Core Application Logic & Helpers
+            // =========================================================================
+            function getSelectedArea() {
+                return areas.find(a => a.id === selectedAreaId) || null;
+            }
+
+            function selectArea(id) {
+                selectedAreaId = id;
+                const area = getSelectedArea();
+                if (area) {
+                    activeAreaTitle.textContent = `📍 영역 [${area.id}] 편집 중 (${getNaturalSpatialName(area.c1, area.c2, area.r1, area.r2, cols, rows)})`;
+                    areaKoInput.value = area.ko_prompt || "";
+                    areaEnInput.value = area.prompt || "";
+                } else {
+                    activeAreaTitle.textContent = "📍 편집할 영역을 선택하세요";
+                    areaKoInput.value = "";
+                    areaEnInput.value = "";
                 }
+                renderGrid();
+            }
+
+            function applyPresetToActiveArea({ ko, en }) {
+                const area = getSelectedArea();
+                if (!area) return;
+                // 1:1 구도 교체 (Replace)
+                area.ko_prompt = ko || "";
+                area.prompt = en || translateToEnglish(ko);
+                areaKoInput.value = area.ko_prompt;
+                areaEnInput.value = area.prompt;
+                renderGrid();
+                syncToWidgets();
+            }
+
+            function deleteArea(id) {
+                areas = areas.filter(a => a.id !== id);
+                areas.forEach((a, idx) => a.id = idx + 1);
+                if (selectedAreaId === id) {
+                    selectedAreaId = areas.length > 0 ? areas[0].id : null;
+                }
+                selectArea(selectedAreaId);
+                renderGrid();
+                syncToWidgets();
+            }
+
+            function updateCanvasDimensions() {
+                const ratioParts = currentRatio.split(":");
+                const w = parseFloat(ratioParts[0]) || 16;
+                const h = parseFloat(ratioParts[1]) || 9;
+                const r = w / h;
+                let targetH = 220;
+                if (r < 1.0) targetH = 280; // 9:16 portrait
+                canvasWrapper.style.height = `${targetH}px`;
+                renderGrid();
+            }
+
+            function renderGrid() {
+                gridCellsContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+                gridCellsContainer.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+                gridCellsContainer.innerHTML = "";
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        const cell = document.createElement("div");
+                        cell.className = "vg-cell";
+                        gridCellsContainer.appendChild(cell);
+                    }
+                }
+
+                areasLayer.innerHTML = "";
+                areas.forEach((area, idx) => {
+                    const palette = COLOR_PALETTE[idx % COLOR_PALETTE.length];
+                    const isSelected = area.id === selectedAreaId;
+                    
+                    const leftPct = (area.c1 / cols) * 100;
+                    const topPct = (area.r1 / rows) * 100;
+                    const widthPct = ((area.c2 - area.c1 + 1) / cols) * 100;
+                    const heightPct = ((area.r2 - area.r1 + 1) / rows) * 100;
+
+                    const box = document.createElement("div");
+                    box.className = `vg-area-box ${isSelected ? "selected" : ""}`;
+                    box.style.left = `${leftPct}%`;
+                    box.style.top = `${topPct}%`;
+                    box.style.width = `${widthPct}%`;
+                    box.style.height = `${heightPct}%`;
+                    box.style.borderColor = palette.border;
+                    box.style.backgroundColor = palette.bg;
+                    box.style.color = palette.border;
+                    box.style.setProperty("--area-glow", palette.glow);
+
+                    // Header badge
+                    const badge = document.createElement("div");
+                    badge.className = "vg-area-badge";
+                    badge.textContent = `[${area.id}]`;
+                    box.appendChild(badge);
+
+                    // Mockup SVG
+                    if (mockupEnabled) {
+                        const svgWrap = document.createElement("div");
+                        svgWrap.innerHTML = getMockupSvg(`${area.ko_prompt || ""} ${area.prompt || ""}`);
+                        box.appendChild(svgWrap);
+                    }
+
+                    // Prompt label
+                    const label = document.createElement("div");
+                    label.className = "vg-area-prompt";
+                    label.textContent = area.ko_prompt || area.prompt || "✏️ 작성";
+                    box.appendChild(label);
+
+                    // Events
+                    box.addEventListener("mousedown", (e) => {
+                        if (e.button === 0) {
+                            e.stopPropagation();
+                            selectArea(area.id);
+                        } else if (e.button === 2) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            deleteArea(area.id);
+                        }
+                    });
+
+                    box.addEventListener("contextmenu", (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        deleteArea(area.id);
+                    });
+
+                    areasLayer.appendChild(box);
+                });
+            }
+
+            // Mouse Drag Area Creation
+            canvasWrapper.addEventListener("mousedown", (e) => {
+                if (e.button !== 0) return;
+                const rect = canvasWrapper.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const cellW = rect.width / cols;
+                const cellH = rect.height / rows;
+
+                const c = Math.min(cols - 1, Math.max(0, Math.floor(x / cellW)));
+                const r = Math.min(rows - 1, Math.max(0, Math.floor(y / cellH)));
+
+                isDragging = true;
+                dragStart = { c, r };
+                dragCurrent = { c, r };
+                updateSelectionBox(rect, cellW, cellH);
             });
 
-            // 워크플로우 로드 시 복원
+            window.addEventListener("mousemove", (e) => {
+                if (!isDragging || !dragStart) return;
+                const rect = canvasWrapper.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const cellW = rect.width / cols;
+                const cellH = rect.height / rows;
+
+                const c = Math.min(cols - 1, Math.max(0, Math.floor(x / cellW)));
+                const r = Math.min(rows - 1, Math.max(0, Math.floor(y / cellH)));
+                dragCurrent = { c, r };
+                updateSelectionBox(rect, cellW, cellH);
+            });
+
+            window.addEventListener("mouseup", () => {
+                if (!isDragging || !dragStart || !dragCurrent) return;
+                isDragging = false;
+                selectionBox.style.display = "none";
+
+                const c1 = Math.min(dragStart.c, dragCurrent.c);
+                const c2 = Math.max(dragStart.c, dragCurrent.c);
+                const r1 = Math.min(dragStart.r, dragCurrent.r);
+                const r2 = Math.max(dragStart.r, dragCurrent.r);
+
+                const newArea = {
+                    id: areas.length + 1,
+                    c1, c2, r1, r2,
+                    ko_prompt: "",
+                    prompt: ""
+                };
+                areas.push(newArea);
+                selectArea(newArea.id);
+                syncToWidgets();
+                dragStart = null;
+                dragCurrent = null;
+            });
+
+            function updateSelectionBox(rect, cellW, cellH) {
+                const c1 = Math.min(dragStart.c, dragCurrent.c);
+                const c2 = Math.max(dragStart.c, dragCurrent.c);
+                const r1 = Math.min(dragStart.r, dragCurrent.r);
+                const r2 = Math.max(dragStart.r, dragCurrent.r);
+
+                selectionBox.style.display = "block";
+                selectionBox.style.left = `${(c1 / cols) * 100}%`;
+                selectionBox.style.top = `${(r1 / rows) * 100}%`;
+                selectionBox.style.width = `${((c2 - c1 + 1) / cols) * 100}%`;
+                selectionBox.style.height = `${((r2 - r1 + 1) / rows) * 100}%`;
+            }
+
+            // =========================================================================
+            // Sync with ComfyUI Backend Widgets
+            // =========================================================================
+            function syncToWidgets() {
+                const gridDataObj = {
+                    cols,
+                    rows,
+                    aspect_ratio: currentRatio,
+                    aspectRatio: currentRatio,
+                    white_bg: whiteBg,
+                    whiteBg,
+                    grid_borders: gridBorders,
+                    gridBorders,
+                    active_art_style: activeArtStyle,
+                    character_profile: characterProfile,
+                    characterProfile,
+                    areas: areas.map(a => ({
+                        id: a.id,
+                        c1: a.c1, c2: a.c2, r1: a.r1, r2: a.r2,
+                        ko_prompt: a.ko_prompt,
+                        koPrompt: a.ko_prompt,
+                        prompt: a.prompt,
+                        spatial: getNaturalSpatialName(a.c1, a.c2, a.r1, a.r2, cols, rows)
+                    }))
+                };
+
+                const gridDataStr = JSON.stringify(gridDataObj);
+
+                const wGrid = node.widgets?.find(w => w.name === "grid_data");
+                if (wGrid) wGrid.value = gridDataStr;
+
+                const wFormat = node.widgets?.find(w => w.name === "format");
+                if (wFormat) wFormat.value = currentFormat;
+
+                const wRatio = node.widgets?.find(w => w.name === "aspect_ratio");
+                if (wRatio) wRatio.value = currentRatio;
+
+                const wCols = node.widgets?.find(w => w.name === "grid_cols");
+                if (wCols) wCols.value = cols;
+
+                const wRows = node.widgets?.find(w => w.name === "grid_rows");
+                if (wRows) wRows.value = rows;
+
+                const wPrefix = node.widgets?.find(w => w.name === "prefix_prompt");
+                if (wPrefix) wPrefix.value = prefixVal;
+
+                const wSuffix = node.widgets?.find(w => w.name === "suffix_prompt");
+                if (wSuffix) wSuffix.value = suffixVal;
+
+                const wPrompt = node.widgets?.find(w => w.name === "prompt_text");
+                if (wPrompt) wPrompt.value = areaEnInput.value;
+            }
+
+            // Workflow Restore / onConfigure
             const onConfigure = node.onConfigure;
             node.onConfigure = function (info) {
                 if (onConfigure) onConfigure.apply(this, arguments);
@@ -1984,45 +1401,31 @@ app.registerExtension({
                         const parsed = typeof gridDataW.value === "string" ? JSON.parse(gridDataW.value) : gridDataW.value;
                         if (parsed.cols) cols = parsed.cols;
                         if (parsed.rows) rows = parsed.rows;
-                        if (parsed.aspect_ratio) currentRatio = parsed.aspect_ratio;
+                        if (parsed.aspect_ratio || parsed.aspectRatio) currentRatio = parsed.aspect_ratio || parsed.aspectRatio;
+                        if (parsed.white_bg !== undefined || parsed.whiteBg !== undefined) whiteBg = !!(parsed.white_bg ?? parsed.whiteBg);
+                        if (parsed.grid_borders !== undefined || parsed.gridBorders !== undefined) gridBorders = !!(parsed.grid_borders ?? parsed.gridBorders);
+                        if (parsed.character_profile || parsed.characterProfile) characterProfile = parsed.character_profile || parsed.characterProfile;
                         if (parsed.areas) areas = parsed.areas;
-                        if (parsed.lang) currentLang = parsed.lang;
-                        if (parsed.white_bg !== undefined) whiteBg = !!parsed.white_bg;
-                        if (parsed.grid_borders !== undefined) gridBorders = !!parsed.grid_borders;
-                        if (parsed.char_sheet !== undefined) charSheet = !!parsed.char_sheet;
-                        if (parsed.custom_preview_height !== undefined) customPreviewHeight = parsed.custom_preview_height;
-                        if (parsed.custom_grid_height !== undefined) {
-                            customGridHeight = parsed.custom_grid_height;
-                            if (customGridHeight && customGridHeight >= 140) {
-                                gridWrapper.style.height = customGridHeight + "px";
-                            }
-                        }
+                        
                         colsInput.value = cols;
                         rowsInput.value = rows;
                         ratioSelect.value = currentRatio;
-                        langSelect.value = currentLang;
+                        whiteBgCheck.checked = whiteBg;
+                        gridBorderCheck.checked = gridBorders;
+                        charProfileInput.value = characterProfile;
                     } catch (e) {}
                 }
                 const prefixW = this.widgets?.find(w => w.name === "prefix_prompt");
-                if (prefixW && prefixW.value) {
-                    prefixVal = prefixW.value;
-                    prefixInput.value = prefixVal;
-                }
-                const suffixW = this.widgets?.find(w => w.name === "suffix_prompt");
-                if (suffixW && suffixW.value) {
-                    suffixVal = suffixW.value;
-                    suffixInput.value = suffixVal;
-                }
-                const formatW = this.widgets?.find(w => w.name === "format");
-                if (formatW && formatW.value) {
-                    currentFormat = formatW.value;
-                    formatSelect.value = currentFormat;
-                }
+                if (prefixW && prefixW.value) { prefixVal = prefixW.value; prefixInput.value = prefixVal; }
 
-                updateTexts();
+                const suffixW = this.widgets?.find(w => w.name === "suffix_prompt");
+                if (suffixW && suffixW.value) { suffixVal = suffixW.value; suffixInput.value = suffixVal; }
+
+                const formatW = this.widgets?.find(w => w.name === "format");
+                if (formatW && formatW.value) { currentFormat = formatW.value; formatSelect.value = currentFormat; }
+
+                updateCanvasDimensions();
                 renderGrid();
-                buildOutputPrompt();
-                adjustPreviewHeight();
                 hideAllBackendWidgets(this);
             };
 
@@ -2032,10 +1435,10 @@ app.registerExtension({
                 if (onDrawForeground) onDrawForeground.apply(this, arguments);
             };
 
-            // DOM Widget 부착
+            // Add DOM Widget
             node.addDOMWidget("visual_grid_ui", "custom", container, {
                 getValue() {
-                    return JSON.stringify({ cols, rows, aspect_ratio: currentRatio, areas, lang: currentLang, prefix: prefixVal, suffix: suffixVal, format: currentFormat, white_bg: whiteBg, grid_borders: gridBorders, char_sheet: charSheet, custom_preview_height: customPreviewHeight, custom_grid_height: customGridHeight });
+                    return JSON.stringify({ cols, rows, aspect_ratio: currentRatio, white_bg: whiteBg, grid_borders: gridBorders, character_profile: characterProfile, areas, prefix: prefixVal, suffix: suffixVal, format: currentFormat });
                 },
                 setValue(v) {
                     if (v) {
@@ -2044,39 +1447,31 @@ app.registerExtension({
                             if (parsed.cols) cols = parsed.cols;
                             if (parsed.rows) rows = parsed.rows;
                             if (parsed.aspect_ratio) currentRatio = parsed.aspect_ratio;
-                            if (parsed.areas) areas = parsed.areas;
-                            if (parsed.lang) currentLang = parsed.lang;
                             if (parsed.white_bg !== undefined) whiteBg = !!parsed.white_bg;
                             if (parsed.grid_borders !== undefined) gridBorders = !!parsed.grid_borders;
-                            if (parsed.char_sheet !== undefined) charSheet = !!parsed.char_sheet;
-                            if (parsed.custom_preview_height !== undefined) customPreviewHeight = parsed.custom_preview_height;
-                            if (parsed.custom_grid_height !== undefined) {
-                                customGridHeight = parsed.custom_grid_height;
-                                if (customGridHeight && customGridHeight >= 140) {
-                                    gridWrapper.style.height = customGridHeight + "px";
-                                }
-                            }
+                            if (parsed.character_profile !== undefined) characterProfile = parsed.character_profile;
+                            if (parsed.areas) areas = parsed.areas;
                             if (parsed.prefix !== undefined) { prefixVal = parsed.prefix; prefixInput.value = prefixVal; }
                             if (parsed.suffix !== undefined) { suffixVal = parsed.suffix; suffixInput.value = suffixVal; }
                             if (parsed.format !== undefined) { currentFormat = parsed.format; formatSelect.value = currentFormat; }
                             colsInput.value = cols;
                             rowsInput.value = rows;
                             ratioSelect.value = currentRatio;
-                            langSelect.value = currentLang;
-                            updateTexts();
+                            whiteBgCheck.checked = whiteBg;
+                            gridBorderCheck.checked = gridBorders;
+                            charProfileInput.value = characterProfile;
+                            updateCanvasDimensions();
                             renderGrid();
-                            buildOutputPrompt();
-                            adjustPreviewHeight();
                         } catch (e) {}
                     }
                 }
             });
 
-            // 초기 실행
-            updateTexts();
+            // Initial Sizing & Setup
+            updateCanvasDimensions();
             renderGrid();
-            buildOutputPrompt();
-            node.setSize([480, 750]);
+            syncToWidgets();
+            node.setSize([490, 780]);
         };
     }
 });

@@ -1,11 +1,13 @@
 from .visual_grid_prompt import VisualGridPromptNode
 
 NODE_CLASS_MAPPINGS = {
-    "VisualGridPrompt": VisualGridPromptNode
+    "VisualGridPrompt": VisualGridPromptNode,
+    "VisualGridPromptNode": VisualGridPromptNode
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "VisualGridPrompt": "📐 Visual Grid Regional Prompt (비주얼 그리드 프롬프트)"
+    "VisualGridPrompt": "📐 Visual Grid Regional Prompt (Pro)",
+    "VisualGridPromptNode": "📐 Visual Grid Regional Prompt (Pro)"
 }
 
 WEB_DIRECTORY = "./js"

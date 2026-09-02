@@ -30,7 +30,7 @@ PROMPT_TRANSLATIONS = [
     (re.compile(r'하반신\s*(후면|뒷모습)', re.IGNORECASE), "lower body, legs, back view"),
     (re.compile(r'하반신', re.IGNORECASE), "lower body, legs"),
 
-    # 2. 헤어 & 눈 & 캐릭터 외모 (단일 음절 신체 부위보다 먼저 매칭하여 '은발'이 '은+feet'로 오치환되는 것 방지)
+    # 2. 헤어 & 눈 & 캐릭터 외모 (단일 음절 신체 부위보다 먼저 매칭)
     (re.compile(r'은발', re.IGNORECASE), "silver hair"),
     (re.compile(r'백발', re.IGNORECASE), "white hair"),
     (re.compile(r'금발', re.IGNORECASE), "blonde hair"),
@@ -127,14 +127,14 @@ PROMPT_TRANSLATIONS = [
     (re.compile(r'하이힐', re.IGNORECASE), "high heels"),
     (re.compile(r'부츠', re.IGNORECASE), "boots"),
     (re.compile(r'스니커즈|운동화', re.IGNORECASE), "sneakers"),
-    (re.compile(r'안경', re.IGNORECASE), "glasses"),
+    (re.compile(r'안경', re.IGNORECASE), "glasses, stylish spectacles"),
     (re.compile(r'선글라스', re.IGNORECASE), "sunglasses"),
     (re.compile(r'모자', re.IGNORECASE), "hat"),
     (re.compile(r'헤드폰', re.IGNORECASE), "headphones"),
     (re.compile(r'초커', re.IGNORECASE), "choker"),
     (re.compile(r'목걸이', re.IGNORECASE), "necklace"),
 
-    # 5. 표정 & 시선 & 제스처 & 자세 (얼굴 단일 단어 치환보다 먼저 매칭하여 복합 표현이 분리되지 않도록 처리)
+    # 5. 표정 & 시선 & 제스처 & 자세
     (re.compile(r'양손으로\s*볼(을)?\s*(양\s*옆으로\s*)?(잡아\s*당기[가-힣]*|꼬집[가-힣]*|늘리[가-힣]*)(\s*있는|\s*있음|\s*는|\s*며)?', re.IGNORECASE), "pulling cheeks sideways with both hands, cheeks stretched"),
     (re.compile(r'볼(을)?\s*(양\s*옆으로\s*)?(잡아\s*당기[가-힣]*|꼬집[가-힣]*|늘리[가-힣]*)(\s*있는|\s*있음|\s*는|\s*며)?', re.IGNORECASE), "pulling cheeks, cheeks stretched"),
     (re.compile(r'볼을\s*부풀린|볼\s*빵빵|뿌우', re.IGNORECASE), "puffed cheeks, pouty face"),
@@ -158,119 +158,93 @@ PROMPT_TRANSLATIONS = [
     (re.compile(r'눈을\s*감은|감은\s*눈', re.IGNORECASE), "closed eyes"),
     (re.compile(r'눈을\s*반쯤\s*뜬', re.IGNORECASE), "half-closed eyes"),
     (re.compile(r'카메라를\s*바라보는|바라보는|응시|시선', re.IGNORECASE), "looking at viewer, eye contact"),
-    (re.compile(r'시선\s*회피|먼곳을\s*바라보는', re.IGNORECASE), "looking away, looking to the side"),
-    (re.compile(r'서있는|서있음', re.IGNORECASE), "standing pose"),
-    (re.compile(r'앉아있는|앉음', re.IGNORECASE), "sitting pose"),
-    (re.compile(r'무릎\s*꿇은', re.IGNORECASE), "kneeling pose"),
-    (re.compile(r'누워있는|누움', re.IGNORECASE), "lying down pose"),
-    (re.compile(r'엎드린', re.IGNORECASE), "lying on stomach"),
-    (re.compile(r'기대어\s*있는|기댐', re.IGNORECASE), "leaning against"),
-    (re.compile(r'쪼그려\s*앉은|웅크린', re.IGNORECASE), "squatting, crouching pose"),
-    (re.compile(r'달리는|뜀', re.IGNORECASE), "running"),
-    (re.compile(r'걷는|걸어감', re.IGNORECASE), "walking"),
-    (re.compile(r'점프|도약', re.IGNORECASE), "jumping"),
-    (re.compile(r'춤추는|댄스', re.IGNORECASE), "dancing"),
-    (re.compile(r'손을\s*흔드는', re.IGNORECASE), "waving hand"),
-    (re.compile(r'팔짱\s*낀', re.IGNORECASE), "arms crossed"),
-    (re.compile(r'주머니에\s*손', re.IGNORECASE), "hands in pockets"),
-    (re.compile(r'턱을\s*괸', re.IGNORECASE), "resting chin on hand"),
-    (re.compile(r'브이(\s*포즈)?|V\s*포즈', re.IGNORECASE), "peace sign, v gesture"),
-    (re.compile(r'포즈|자세', re.IGNORECASE), "pose"),
 
-    # 6. 인체 부위 & 디테일 (헤어/표정 이후 매칭)
-    (re.compile(r'얼굴', re.IGNORECASE), "face, detailed face"),
-    (re.compile(r'목선|쇄골', re.IGNORECASE), "collarbone, graceful neck"),
-    (re.compile(r'가슴|바스트', re.IGNORECASE), "chest, bust"),
-    (re.compile(r'허리', re.IGNORECASE), "slender waist"),
-    (re.compile(r'골반|엉덩이|힙', re.IGNORECASE), "hips, buttocks"),
-    (re.compile(r'허벅지', re.IGNORECASE), "thighs"),
-    (re.compile(r'다리|각선미', re.IGNORECASE), "legs, beautiful slender legs"),
-    (re.compile(r'발목|맨발|발', re.IGNORECASE), "feet, ankles"),
-    (re.compile(r'손|손가락', re.IGNORECASE), "delicate hands, detailed fingers"),
-    (re.compile(r'어깨', re.IGNORECASE), "shoulders"),
+    (re.compile(r'서\s*있는|서있는|직립', re.IGNORECASE), "standing pose"),
+    (re.compile(r'앉아\s*있는|앉아있는|앉은|착석', re.IGNORECASE), "sitting pose, seated gracefully"),
+    (re.compile(r'무릎을\s*세우고\s*앉[가-힣]*|무릎\s*안고', re.IGNORECASE), "sitting with knees bent and hugging knees with hands"),
+    (re.compile(r'태아자세|웅크린\s*자세', re.IGNORECASE), "lying in fetal position, curled up body"),
+    (re.compile(r'누워\s*있는|누워있는|누운', re.IGNORECASE), "lying down pose, relaxed on floor"),
+    (re.compile(r'걷는|걸어가는|워킹', re.IGNORECASE), "walking pose, dynamic stride"),
+    (re.compile(r'달리는|뛰는|러닝', re.IGNORECASE), "running pose, dynamic movement"),
+    (re.compile(r'점프|도약', re.IGNORECASE), "jumping in mid-air"),
+    (re.compile(r'다리를\s*꼬고\s*앉[가-힣]*', re.IGNORECASE), "sitting with legs crossed"),
+
+    # 6. 신체 부위 및 클로즈업 상세
+    (re.compile(r'발등\s*\(맨발\)|발등', re.IGNORECASE), "top of feet and toes, feet arch, bare feet"),
+    (re.compile(r'발바닥', re.IGNORECASE), "sole of bare foot, foot sole texture"),
+    (re.compile(r'손등', re.IGNORECASE), "back of hand, elegant hand gesture, clean manicure"),
+    (re.compile(r'손바닥', re.IGNORECASE), "open palm, graceful hand gesture, finger detail"),
+    (re.compile(r'엉덩이|골반', re.IGNORECASE), "hips and buttocks, pelvis area"),
+    (re.compile(r'가슴', re.IGNORECASE), "chest and neckline"),
+    (re.compile(r'쇄골', re.IGNORECASE), "collarbone line"),
+    (re.compile(r'손|손가락', re.IGNORECASE), "detailed hands, perfect fingers"),
+    (re.compile(r'발|발가락', re.IGNORECASE), "feet, toes"),
+    (re.compile(r'다리|각선미', re.IGNORECASE), "slender legs, leg lines"),
 
     # 7. 배경 & 조명 & 환경
     (re.compile(r'백색\s*배경|흰색\s*배경|화이트\s*배경', re.IGNORECASE), "clean solid pure white background, studio white backdrop"),
-    (re.compile(r'검정\s*(색\s*)?실선\s*(격자)?|분할선|격자선', re.IGNORECASE), "split-screen multi-panel layout, separated by thin black divider lines"),
     (re.compile(r'사이버펑크(\s*도시)?', re.IGNORECASE), "cyberpunk neon city, glowing holographic lights"),
-    (re.compile(r'미래\s*도시|SF\s*도시', re.IGNORECASE), "futuristic sci-fi city, high-tech skyscrapers"),
-    (re.compile(r'도시|빌딩숲|거리', re.IGNORECASE), "modern cityscape, streets, skyscrapers"),
-    (re.compile(r'골목길', re.IGNORECASE), "narrow alleyway, cozy street"),
-    (re.compile(r'카페', re.IGNORECASE), "cafe, cozy coffee shop"),
-    (re.compile(r'실내|방|침실', re.IGNORECASE), "indoor room, cozy bedroom interior"),
-    (re.compile(r'도서관', re.IGNORECASE), "library, bookshelves"),
-    (re.compile(r'교실|학교', re.IGNORECASE), "classroom, school interior"),
-    (re.compile(r'야외|자연', re.IGNORECASE), "outdoors, nature"),
-    (re.compile(r'숲|나무|밀림', re.IGNORECASE), "lush forest, trees, dappled sunlight"),
+    (re.compile(r'자연|숲|밀림', re.IGNORECASE), "lush forest, trees, dappled sunlight"),
     (re.compile(r'해변|바다|해안가', re.IGNORECASE), "ocean, sandy beach, sea waves"),
     (re.compile(r'하늘|푸른\s*하늘', re.IGNORECASE), "blue sky, fluffy white clouds"),
-    (re.compile(r'밤하늘|은하수|우주', re.IGNORECASE), "night sky, starry galaxy, nebula outer space"),
+    (re.compile(r'밤하늘|은하수|우주', re.IGNORECASE), "night sky, starry galaxy, nebula space"),
     (re.compile(r'노을|일몰|석양', re.IGNORECASE), "sunset, golden hour, warm atmospheric glow"),
     (re.compile(r'야경|밤', re.IGNORECASE), "night scene, dark atmospheric lighting"),
     (re.compile(r'비오는|비', re.IGNORECASE), "rainy day, wet floor reflections"),
-    (re.compile(r'눈오는|눈꽃|눈|설원', re.IGNORECASE), "snowing, winter snowfall, snowfield, frost"),
+    (re.compile(r'눈오는|눈꽃|눈|설원', re.IGNORECASE), "snowing, winter snowfall, snowfield"),
     (re.compile(r'벚꽃|사쿠라', re.IGNORECASE), "cherry blossoms, falling sakura petals"),
-    (re.compile(r'단풍', re.IGNORECASE), "autumn leaves, fall foliage"),
-    (re.compile(r'배경', re.IGNORECASE), "background"),
+    (re.compile(r'실내|방|침실', re.IGNORECASE), "indoor room, cozy interior"),
 
-    # 8. 화풍 & 조명 & 퀄리티
-    (re.compile(r'실사|사진|포토리얼', re.IGNORECASE), "photorealistic, 8k photography, hyperrealistic"),
-    (re.compile(r'애니|일러스트|만화', re.IGNORECASE), "anime style, detailed illustration"),
+    # 8. 퀄리티 & 마감
+    (re.compile(r'고화질|고품질|최고품질|마스터피스', re.IGNORECASE), "masterpiece, best quality, ultra detailed"),
     (re.compile(r'시네마틱', re.IGNORECASE), "cinematic lighting, film still"),
-    (re.compile(r'수채화', re.IGNORECASE), "watercolor painting"),
-    (re.compile(r'유화', re.IGNORECASE), "oil painting"),
-    (re.compile(r'역광|림라이트', re.IGNORECASE), "backlighting, rim light"),
-    (re.compile(r'네온|네온사인', re.IGNORECASE), "neon glow, vibrant colors"),
-    (re.compile(r'빛내림|틴들현상', re.IGNORECASE), "volumetric god rays, sunbeams"),
-    (re.compile(r'고화질|고품질|최고품질', re.IGNORECASE), "masterpiece, best quality, ultra detailed")
 ]
 
-def translate_prompt_to_english(text):
-    """한글 프롬프트를 AI 표준 영문 키워드로 자동 번역 및 치환"""
-    if not text or not isinstance(text, str):
+
+def translate_prompt_to_english(text: str) -> str:
+    """
+    한글 프롬프트를 영어 프롬프트로 규칙 기반 자동 변환
+    """
+    if not text or not text.strip():
         return ""
+
     res = text.strip()
-    if not res:
-        return ""
-    
-    # 한글 포함 여부 확인
+
+    # 한글이 포함되어 있지 않으면 원본 반환
     if not re.search(r'[가-힣]', res):
         return res
-        
+
     for pattern, eng in PROMPT_TRANSLATIONS:
         res = pattern.sub(eng, res)
-        
-    # 조사 및 잉여 어미 정리
+
+    # 잔여 한국어 조사 및 불필요 어미 정리
     res = re.sub(r'(\s*이|가|을|를|의|에|에서|으로|로|과|와|하고|하며|있는|있음|한|된|인)\b', ' ', res)
     res = re.sub(r'\s{2,}', ' ', res).strip()
     res = re.sub(r'\s*,\s*', ', ', res)
     res = re.sub(r'(,\s*){2,}', ', ', res)
     res = re.sub(r'^,\s*|,\s*$', '', res)
+
     return res
 
 
-def get_natural_spatial_name(col_start, col_end, row_start, row_end, total_cols, total_rows):
+def get_natural_spatial_name(c1: int, c2: int, r1: int, r2: int, total_cols: int, total_rows: int) -> str:
     """
-    Krea, Flux, Midjourney, SD3, GPT-4o 등 최신 AI가
-    사용자가 지정한 그리드 비율(가로폭 %, 세로폭 %, 정확한 위치)을 엄격하게 준수하여
-    의도한 패널 크기와 분할 비율대로 이미지를 렌더링하도록 상세 공간 비율 정보를 포함한 서술어를 반환합니다.
+    최신 AI(Krea, Midjourney, Flux, SD3, GPT, Gemini)가 아티팩트 없이 이해하도록
+    인터랙티브 웹 버전과 100% 동일한 정밀 퍼센트 기반 자연어 공간 서술어 반환
     """
-    c1, c2 = col_start, col_end
-    r1, r2 = row_start, row_end
-    
     col_span = (c2 - c1 + 1) / total_cols
     row_span = (r2 - r1 + 1) / total_rows
     col_center = (c1 + c2 + 1) / (2.0 * total_cols)
     row_center = (r1 + r2 + 1) / (2.0 * total_rows)
 
-    w_pct = int(round(col_span * 100))
-    h_pct = int(round(row_span * 100))
-    x1_pct = int(round((c1 / total_cols) * 100))
-    x2_pct = int(round(((c2 + 1) / total_cols) * 100))
-    y1_pct = int(round((r1 / total_rows) * 100))
-    y2_pct = int(round(((r2 + 1) / total_rows) * 100))
+    w_pct = round(col_span * 100)
+    h_pct = round(row_span * 100)
+    x1_pct = round((c1 / total_cols) * 100)
+    x2_pct = round(((c2 + 1) / total_cols) * 100)
+    y1_pct = round((r1 / total_rows) * 100)
+    y2_pct = round(((r2 + 1) / total_rows) * 100)
 
-    # 1. 전체 영역 (Full canvas)
+    # 1. 전체 영역 (Full frame)
     if col_span >= 0.85 and row_span >= 0.85:
         return "Across the entire frame (full 100% canvas)"
 
@@ -295,19 +269,8 @@ def get_natural_spatial_name(col_start, col_end, row_start, row_end, total_cols,
             return f"Middle {row_type} (full 100% width, occupying exactly {h_pct}% height from {y1_pct}% to {y2_pct}%)"
 
     # 4. 분할 사분면 / 그리드 패널 (Quadrants & multi-cells)
-    if col_center < 0.35:
-        h_pos = "left"
-    elif col_center > 0.65:
-        h_pos = "right"
-    else:
-        h_pos = "center"
-
-    if row_center < 0.35:
-        v_pos = "top"
-    elif row_center > 0.65:
-        v_pos = "bottom"
-    else:
-        v_pos = "middle"
+    h_pos = "left" if col_center < 0.35 else ("right" if col_center > 0.65 else "center")
+    v_pos = "top" if row_center < 0.35 else ("bottom" if row_center > 0.65 else "middle")
 
     if h_pos == "center" and v_pos == "middle":
         panel_name = "Center frame"
@@ -321,22 +284,16 @@ def get_natural_spatial_name(col_start, col_end, row_start, row_end, total_cols,
     return f"{panel_name} (occupying exactly {w_pct}% width from {x1_pct}% to {x2_pct}%, {h_pct}% height from {y1_pct}% to {y2_pct}%)"
 
 
-def get_spatial_description(col_start, col_end, row_start, row_end, total_cols, total_rows):
-    """
-    구조화 태그 및 바운딩 박스용 상세 좌표/퍼센트 정보 생성 함수
-    """
-    c1, c2 = col_start, col_end
-    r1, r2 = row_start, row_end
-    
-    col_center = (c1 + c2 + 1) / (2.0 * total_cols)
-    row_center = (r1 + r2 + 1) / (2.0 * total_rows)
+def get_spatial_description(c1: int, c2: int, r1: int, r2: int, total_cols: int, total_rows: int) -> dict:
     col_span = (c2 - c1 + 1) / total_cols
     row_span = (r2 - r1 + 1) / total_rows
-    
-    pct_left = int(round((c1 / total_cols) * 100))
-    pct_right = int(round(((c2 + 1) / total_cols) * 100))
-    pct_top = int(round((r1 / total_rows) * 100))
-    pct_bottom = int(round(((r2 + 1) / total_rows) * 100))
+    col_center = (c1 + c2 + 1) / (2.0 * total_cols)
+    row_center = (r1 + r2 + 1) / (2.0 * total_rows)
+
+    pct_left = round((c1 / total_cols) * 100)
+    pct_right = round(((c2 + 1) / total_cols) * 100)
+    pct_top = round((r1 / total_rows) * 100)
+    pct_bottom = round(((r2 + 1) / total_rows) * 100)
 
     if col_span >= 0.85 and row_span >= 0.85:
         dir_name = "Full Background"
@@ -348,19 +305,8 @@ def get_spatial_description(col_start, col_end, row_start, row_end, total_cols, 
         else:
             dir_name = "Middle Panorama Band"
     else:
-        if col_center < 0.35:
-            h_dir = "Left"
-        elif col_center > 0.65:
-            h_dir = "Right"
-        else:
-            h_dir = "Center"
-
-        if row_center < 0.35:
-            v_dir = "Top"
-        elif row_center > 0.65:
-            v_dir = "Bottom"
-        else:
-            v_dir = "Middle"
+        h_dir = "Left" if col_center < 0.35 else ("Right" if col_center > 0.65 else "Center")
+        v_dir = "Top" if row_center < 0.35 else ("Bottom" if row_center > 0.65 else "Middle")
 
         if h_dir == "Center" and v_dir == "Middle":
             dir_name = "Center Frame"
@@ -378,7 +324,12 @@ def get_spatial_description(col_start, col_end, row_start, row_end, total_cols, 
         "direction": dir_name,
         "grid": grid_info,
         "percent": pct_info,
-        "full": f"{dir_name} | {grid_info} | {pct_info}"
+        "bbox": [
+            round(c1 / total_cols, 2),
+            round(r1 / total_rows, 2),
+            round((c2 + 1) / total_cols, 2),
+            round((r2 + 1) / total_rows, 2)
+        ]
     }
 
 
@@ -393,10 +344,11 @@ class VisualGridPromptNode:
                 "prompt_text": ("STRING", {"multiline": True, "dynamicPrompts": False, "default": ""}),
                 "format": ([
                     "Natural Spatial (Krea/MiniMax/Gemini/GPT)",
-                    "Structured Tags ([Area 1 - Left] ...)",
-                    "Coordinates & BoundingBox",
+                    "ComfyUI / SD Regional Prompt (BREAK Syntax)",
+                    "Structured Tags ([Area 1 | LEFT])",
+                    "Coordinates Bounding Box (<area_1 bbox=...>)",
                     "Comma-Separated List",
-                    "Raw JSON Data"
+                    "Raw JSON"
                 ], {"default": "Natural Spatial (Krea/MiniMax/Gemini/GPT)"}),
                 "aspect_ratio": ([
                     "16:9", "9:16", "1:1", "4:3", "3:4", "3:2", "2:3", "21:9"
@@ -422,6 +374,7 @@ class VisualGridPromptNode:
         has_parsed_areas = False
         white_bg = False
         grid_borders = False
+        char_profile = ""
         
         # grid_data 파싱 및 포맷별 영문 공간 프롬프트 구성
         if grid_data and grid_data != "{}":
@@ -430,19 +383,26 @@ class VisualGridPromptNode:
                 areas = data.get("areas", [])
                 total_cols = data.get("cols", grid_cols)
                 total_rows = data.get("rows", grid_rows)
-                white_bg = bool(data.get("white_bg", False))
-                grid_borders = bool(data.get("grid_borders", False))
+                white_bg = bool(data.get("white_bg", data.get("whiteBg", False)))
+                grid_borders = bool(data.get("grid_borders", data.get("gridBorders", False)))
+                raw_profile = data.get("character_profile", data.get("characterProfile", ""))
+                char_profile = translate_prompt_to_english(raw_profile).strip()
                 
-                valid_areas = [a for a in areas if a.get("prompt", "").strip() or a.get("ko_prompt", "").strip()]
+                valid_areas = [a for a in areas if a.get("prompt", "").strip() or a.get("ko_prompt", "").strip() or a.get("koPrompt", "").strip()]
                 if valid_areas:
                     has_parsed_areas = True
-                    formatted_parts = []
+                    sorted_areas = sorted(valid_areas, key=lambda x: x.get("id", 0))
                     
                     if format.startswith("Natural"):
-                        formatted_parts.append(f"A high-definition {aspect_ratio} multi-panel composition strictly partitioned into {len(valid_areas)} proportional sections.")
+                        formatted_parts = []
+                        formatted_parts.append(f"A high-definition {aspect_ratio} multi-panel composition strictly partitioned into {len(sorted_areas)} proportional sections.")
+                        
+                        if char_profile:
+                            formatted_parts.append(f"[Subject / Character Profile & Visual Consistency]: {char_profile}, identical character features and costume maintained across all panels.")
+
                         formatted_parts.append("[Spatial Layout & Exact Proportional Placement]:")
-                        for area in sorted(valid_areas, key=lambda x: x.get("id", 0)):
-                            raw_desc = area.get("prompt", "").strip() or area.get("ko_prompt", "").strip()
+                        for area in sorted_areas:
+                            raw_desc = area.get("prompt", "").strip() or area.get("ko_prompt", "").strip() or area.get("koPrompt", "").strip()
                             desc = translate_prompt_to_english(raw_desc)
                             spatial_name = get_natural_spatial_name(
                                 area.get("c1", 0), area.get("c2", 0),
@@ -456,12 +416,24 @@ class VisualGridPromptNode:
                         else:
                             formatted_parts.append("[Global Scene Coherence & Proportional Placement]: Seamlessly blended multi-region composition maintaining the exact spatial percentage boundaries and relative scale for each region, unified realistic lighting, cinematic perspective, and coherent environment bridging all regions, clean presentation without any text, labels, numbers, coordinates, or watermarks.")
                         final_prompt = "\n".join(formatted_parts)
+
+                    elif "BREAK" in format or format.startswith("ComfyUI"):
+                        parts = []
+                        if char_profile:
+                            parts.append(f"({char_profile}:1.15)")
+                        for area in sorted_areas:
+                            raw_desc = area.get("prompt", "").strip() or area.get("ko_prompt", "").strip() or area.get("koPrompt", "").strip()
+                            desc = translate_prompt_to_english(raw_desc)
+                            parts.append(f"({desc}:1.1)")
+                        final_prompt = " BREAK\n".join(parts)
                         
                     elif format.startswith("Structured"):
-                        formatted_parts.append(f"[Composition: {aspect_ratio} Grid Layout ({total_cols}x{total_rows})]")
-                        for area in sorted(valid_areas, key=lambda x: x.get("id", 0)):
+                        formatted_parts = [f"[Composition: {aspect_ratio} Grid Layout ({total_cols}x{total_rows})]"]
+                        if char_profile:
+                            formatted_parts.append(f"[Character Profile]: {char_profile}")
+                        for area in sorted_areas:
                             idx = area.get("id", 1)
-                            raw_desc = area.get("prompt", "").strip() or area.get("ko_prompt", "").strip()
+                            raw_desc = area.get("prompt", "").strip() or area.get("ko_prompt", "").strip() or area.get("koPrompt", "").strip()
                             desc = translate_prompt_to_english(raw_desc)
                             info = get_spatial_description(
                                 area.get("c1", 0), area.get("c2", 0),
@@ -472,20 +444,28 @@ class VisualGridPromptNode:
                         final_prompt = "\n".join(formatted_parts)
 
                     elif format.startswith("Coordinates"):
-                        formatted_parts.append(f"[Canvas Layout: {aspect_ratio} | Grid {total_cols}x{total_rows}]")
-                        for area in sorted(valid_areas, key=lambda x: x.get("id", 0)):
+                        formatted_parts = [f"[Canvas Layout: {aspect_ratio} | Grid {total_cols}x{total_rows}]"]
+                        if char_profile:
+                            formatted_parts.append(f"<character_profile>{char_profile}</character_profile>")
+                        for area in sorted_areas:
                             idx = area.get("id", 1)
-                            raw_desc = area.get("prompt", "").strip() or area.get("ko_prompt", "").strip()
+                            raw_desc = area.get("prompt", "").strip() or area.get("ko_prompt", "").strip() or area.get("koPrompt", "").strip()
                             desc = translate_prompt_to_english(raw_desc)
-                            c1, c2 = area.get("c1", 0), area.get("c2", 0)
-                            r1, r2 = area.get("r1", 0), area.get("r2", 0)
-                            x1, y1 = round(c1 / total_cols, 2), round(r1 / total_rows, 2)
-                            x2, y2 = round((c2 + 1) / total_cols, 2), round((r2 + 1) / total_rows, 2)
-                            formatted_parts.append(f"<area_{idx} bbox=\"[{x1}, {y1}, {x2}, {y2}]\"> {desc} </area_{idx}>")
+                            info = get_spatial_description(
+                                area.get("c1", 0), area.get("c2", 0),
+                                area.get("r1", 0), area.get("r2", 0),
+                                total_cols, total_rows
+                            )
+                            formatted_parts.append(f"<area_{idx} bbox=\"{info['bbox']}\"> {desc} </area_{idx}>")
                         final_prompt = "\n".join(formatted_parts)
                         
                     elif format.startswith("Comma"):
-                        prompts = [translate_prompt_to_english(a.get("prompt", "").strip() or a.get("ko_prompt", "").strip()) for a in sorted(valid_areas, key=lambda x: x.get("id", 0))]
+                        prompts = []
+                        if char_profile:
+                            prompts.append(char_profile)
+                        for a in sorted_areas:
+                            raw_desc = a.get("prompt", "").strip() or a.get("ko_prompt", "").strip() or a.get("koPrompt", "").strip()
+                            prompts.append(translate_prompt_to_english(raw_desc))
                         final_prompt = ", ".join(prompts)
                         
                     elif format.startswith("Raw JSON"):
@@ -496,8 +476,8 @@ class VisualGridPromptNode:
         # 영역이 없지만 사용자가 prompt_text에 직접 작성한 경우 fallback (한글 자동 번역)
         if not has_parsed_areas:
             final_prompt = translate_prompt_to_english(prompt_text.strip())
-            if final_prompt:
-                return (final_prompt, aspect_ratio, grid_data if isinstance(grid_data, str) else json.dumps(grid_data))
+            if not final_prompt and char_profile:
+                final_prompt = char_profile
 
         # 백색 배경 & 접두사/접미사 처리
         eng_prefix = translate_prompt_to_english(prefix_prompt.strip())
@@ -526,3 +506,11 @@ class VisualGridPromptNode:
         raw_json_str = grid_data if isinstance(grid_data, str) else json.dumps(grid_data, ensure_ascii=False)
         return (full_output, aspect_ratio, raw_json_str)
 
+
+NODE_CLASS_MAPPINGS = {
+    "VisualGridPromptNode": VisualGridPromptNode
+}
+
+NODE_DISPLAY_NAME_MAPPINGS = {
+    "VisualGridPromptNode": "📐 Visual Grid Regional Prompt (Web Pro)"
+}

@@ -1,4 +1,4 @@
-# 📐 ComfyUI Visual Grid Regional Prompt (비주얼 그리드 프롬프트)
+# 📐 ComfyUI Visual Grid Regional Prompt (비주얼 그리드 프롬프트 Pro)
 
 <div align="center">
 
@@ -7,8 +7,8 @@
 [![Web Tool](https://img.shields.io/badge/Web_Version-Visual--Grid--Prompt--Web-brightgreen?logo=html5)](https://github.com/solokjd-eng/Visual-Grid-Prompt-Web)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 
-**ComfyUI 전용 시각적 멀티 패널 공간 구도 프롬프트 생성 커스텀 노드**  
-(Krea 2, MiniMax, Flux, SD3, Midjourney, Imagen 3, ChatGPT, Gemini 최적화)
+**ComfyUI 전용 시각적 멀티 패널 공간 구도 프롬프트 생성 커스텀 노드 (Pro 버전)**  
+(Krea 2, MiniMax, Flux, SD3, ComfyUI BREAK, Midjourney, Imagen 3, ChatGPT, Gemini 최적화)
 
 [한국어 설명](#-주요-기능) | [Web Standalone 버전 보기](https://github.com/solokjd-eng/Visual-Grid-Prompt-Web)
 
@@ -22,63 +22,72 @@
 
 ---
 
-## 📸 스크린샷 및 사용 가이드 (Visual Guide)
+## 📸 핵심 기능 및 사용 가이드 (Visual Guide)
 
-### 1. 마우스 클릭 & 드래그로 원하는 구역(Area) 생성
-* 빈 격자 칸에서 **마우스 좌클릭 후 대각선으로 드래그하고 손을 놓으면**, 지정한 크기의 사각형 영역(Area)이 즉시 생성됩니다!
+### 1. 🖱️ 마우스 클릭 & 드래그 영역 분할
+* 빈 격자 칸에서 **마우스 좌클릭 후 대각선으로 드래그하고 손을 놓으면**, 지정한 크기의 사각형 영역(Area)이 즉시 생성됩니다.
+* 각 영역마다 번호와 고유 네온 컬러가 부여되어 복잡한 다분할 구도도 한눈에 직관적으로 파악할 수 있습니다.
 
 ![마우스 클릭 & 드래그 영역 생성 가이드](assets/drag_area_guide.png)
 
 ---
 
-### 2. 원클릭 샷/구도 프리셋으로 다양한 앵글 간편 지정
-* **프리셋을 선택하면 얼굴, 상반신, 전신, 45도 각도, 하이앵글/로우앵글 등 다양한 구도를 원클릭으로 쉽게 지정**할 수 있습니다 (선택 즉시 해당 구역에 자동 적용).
+### 2. 📂 윈도우 탐색기형 샷/구도 트리 셀렉터 (10대 캐릭터 시트 분류)
+* 평소에는 대분류 폴더만 깔끔하게 보이다가 클릭 시 윈도우 탐색기처럼 하위 소분류가 부드럽게 펼쳐집니다.
+* **캐릭터 시트 특화 10대 핵심 분류**:
+  1. **👤 얼굴 (헤어부터 쇄골까지)**: 정면, 측면, 45도 측면, 위에서 본(하이앵글), 아래에서 본(로우앵글), 후면(뒷머리)
+  2. **👁️ 얼굴 초근접 (Extreme Macro Close-up)**: 정면, 측면, 45도 측면
+  3. **👚 상반신 가슴까지 (Bust Shot)**: 정면, 측면, 45도 측면, 위에서 본, 아래에서 본
+  4. **👗 상반신 허리까지 (Waist Shot)**: 정면, 측면, 45도 측면, 위에서 본, 아래에서 본
+  5. **✨ 가슴 클로즈업 (Chest & Neckline)**: 정면, 측면, 45도 측면, 위에서 본, 아래에서 본
+  6. **🧍 전신 (Full Body Turnaround)**: 정면, 측면, 45도 측면, 후면(뒷모습 전신), 자연스러운 워킹 포즈
+  7. **🦵 하반신 (엉덩이부터 다리/각선미)**: 정면, 측면, 45도 측면, 후면, 매혹적인 포즈
+  8. **🍑 엉덩이부 (Hips & Buttocks)**: 골반 정면, 엉덩이 측면, 엉덩이 후면(뒷태), 아래에서 본
+  9. **🖐️ 손 클로즈업 (Hands & Fingers)**: 손등, 손바닥
+  10. **🦶 발 클로즈업 (Feet & Toes)**: 발등(맨발), 발바닥, 발 정면, 발 45도 측면, 발 측면
+* **실시간 검색 지원**: 상단 검색창에 `쇄골`, `발등`, `워킹`, `누운` 등을 입력하면 즉시 필터링됩니다.
 
 ![원클릭 샷 및 구도 프리셋 선택](assets/preset_dropdown.png)
 
 ---
 
-### 3. 직접 한글 입력 & 실시간 자동 영문 번역
-* **직접 한글로 원하는 프롬프트를 자유롭게 입력한 후 [적용 (Ctrl+Enter)]을 누르면**, 구글 실시간 번역 API 및 AI 최적화 사전으로 자동 영문 번역되어 최종 프롬프트에 실시간 반영됩니다.
-
-![직접 한글 입력 및 실시간 자동 번역](assets/direct_korean_input.png)
+### 3. ⚡ 1:1 구도 교체 (Replace) 시스템
+* 프리셋이나 구도를 변경할 때 이전 프롬프트 뒤에 쉼표로 계속 누적되지 않고, **선택한 새 구도로 캔버스 실루엣과 텍스트가 깨끗하게 1:1 즉시 교체**됩니다.
 
 ---
 
-### 4. 가로/세로 자유로운 멀티 패널 레이아웃 구성
-* **세로(9:16), 가로(16:9), 정방형(1:1)** 등 원하는 비율과 칸 수에 맞춰 다채로운 분할 구도를 자유자재로 구성할 수 있습니다.
-* 캐릭터 전신 샷 + 다각도 얼굴 클로즈업 + 상반신 포즈 등 **캐릭터 디자인 시트(Model Sheet)** 구성에 최적화되어 있습니다.
-
-![다양한 가로/세로 레이아웃 구성 예시](assets/custom_layouts_preview.png)
+### 4. ⭐ 나만의 프리셋 (커스텀) 전용 드롭다운 & 관리 서랍
+* **독립 2단 셀렉트**: 기본 프리셋과 섞이지 않도록 바로 아래에 나만의 커스텀 프리셋 전용 셀렉트를 제공합니다.
+* **[⚙️ 관리] 서랍**:
+  * 클릭 시 아래로 부드럽게 열리는 아코디언 드로어.
+  * **마우스 드래그 앤 드롭(Drag & Drop)**으로 프리셋 순서 자유 변경.
+  * `[💾 현재 구도를 새 프리셋으로 등록]`, `✏️ 수정`, `× 삭제` 완벽 지원.
 
 ---
 
-## ✨ 주요 기능 (Key Features)
+### 5. 🧍 정밀 벡터 SVG 실루엣 뷰어 & 다종 비율 지원 (16:9 / 9:16 / 1:1)
+* 전신, 얼굴 초근접, 상반신, 손, 발, 엉덩이, 무릎 안고 앉은 자세, 태아자세 누운 전신 등에 맞춰 **캔버스 내부에 정밀 벡터 SVG 실루엣이 100% 동적 렌더링**됩니다.
+* 가로형(16:9), 세로형(9:16), 정방형(1:1) 등 어떤 종횡비에서도 완벽하게 자동 스케일링됩니다.
 
-1. **시각적 그리드 캔버스 & 모서리 리사이즈 (Interactive Resizable Grid Canvas)**
-   * `16:9`, `9:16`, `1:1`, `4:3`, `3:4`, `3:2`, `2:3`, `21:9` 등 다양한 화면비 지원.
-   * 그리드 캔버스 우측 하단 모서리를 마우스로 드래그하여 **원하는 크기로 확대/축소** 가능 (새로고침 시 크기 기억).
-   * **마우스 조작 최적화**: 노드 위에서 마우스 중간 버튼 클릭 드래그(Canvas Pan) 및 휠 줌(Zoom) 완벽 지원.
+---
 
-2. **직관적인 영역(Area) 지정 & 번호 관리**
-   * **좌클릭 드래그**: 원하는 크기의 직사각형 구역을 자유롭게 생성 (자동 번호 부여 및 고유 네온 색상 하이라이트).
-   * **구역 클릭**: 프롬프트 설정 팝업창 열기.
-   * **우클릭** 또는 **우상단 [×] 버튼**: 구역 삭제 및 번호 자동 재정렬.
+### 6. 🎨 5대 화풍 스타일 & 백색 배경 영구 유지
+* 극실사, 반실사, 2D 애니, 설정화, 3D CG 등 화풍 버튼을 자유롭게 바꿔도, **사용자가 설정해 둔 `백색 배경 (White Backdrop)` 토글 상태가 풀리지 않고 완벽하게 고정**됩니다.
 
-3. **원클릭 샷/구도 프리셋 & 실시간 자동 영문 번역**
-   * **원클릭 프리셋**: 얼굴, 상반신, 전신, 45도 각도, 클로즈업 등 체계적인 샷/구도 프리셋 드롭다운 지원 (선택 시 즉시 적용).
-   * **직접 한글 입력**: 한글로 입력 시 실시간 무료 번역 API 및 AI 최적화 사전 기반으로 자연스러운 영어 프롬프트로 자동 변환 (작성 후 `적용` 클릭).
+---
 
-4. **원클릭 스타일 옵션 토글 바**
-   * **⚪ 백색 배경 [ON/OFF]**: 스튜디오 순백색 배경(Clean Studio White Backdrop) 효과 적용.
-   * **🔳 검정 실선 격자 [ON/OFF]**: 각 구역을 얇은 검정 실선(Black Divider Lines)으로 명확히 구분하는 만화/콜라주 패널 레이아웃 적용.
-   * **👤 캐릭터 시트용 추천 효과 [ON/OFF]**: 인물 일관성(Model Sheet Consistency), 균일한 스튜디오 조명(Soft Even Studio Lighting), 전 패널 선명도(Sharp Focus)를 접두사/접미사에 원클릭 자동 반영.
+### 7. 👤 인물 공통 외모 묘사 (Character Profile Anchor)
+* 상단 마스터 인물 프로필 입력창을 통해 전 패널에 걸쳐 동일 인물의 얼굴, 헤어, 의상 일관성을 유지하도록 앵커 프롬프트를 자동 생성합니다.
 
-5. **텍스트 렌더링 아티팩트 방지 (Natural Spatial Output)**
-   * 이미지 내에 숫자나 글자가 새겨지는 문제를 방지하기 위해 좌표/숫자 대신 자연스러운 영어 위치 표현(`On the left side (full height)`, `In the top-center panel` 등)과 글자 방지 네거티브 키워드를 자동 조합.
+---
 
-6. **프롬프트 미리보기 창 자동 조절 & 높이 기억**
-   * 텍스트 길이에 따라 자동으로 높이가 유연하게 늘어나며, 사용자가 수동 조절한 높이도 영구 기억.
+### 8. 🧩 다중 AI 포맷 & ComfyUI BREAK 문법 지원
+1. **Natural Spatial**: Krea 2, MiniMax, Gemini, GPT-4o, Flux, Midjourney 최적화 (텍스트/숫자 아티팩트 방지).
+2. **ComfyUI / SD Regional Prompt (BREAK Syntax)**: `(prompt:1.1) BREAK` 문법 자동 분할.
+3. **Structured Tags**: `[Area 1 | LEFT (50% W, 100% H)]` 구조화 태그.
+4. **Coordinates Bounding Box**: `<area_1 bbox="[0.0, 0.0, 0.5, 1.0]">` 바운딩 박스.
+5. **Comma-Separated List**: 콤마 구분 목록.
+6. **Raw JSON**: 노드 및 파이프라인 연동용 원본 JSON.
 
 ---
 
@@ -90,14 +99,17 @@
 
 ## 🚀 설치 방법 (Installation)
 
-### 방법 1: Git Clone
+### 방법 1: Windows 1-클릭 간편 연결 (`install_junction.bat`)
+저장소 루트에 포함된 [`install_junction.bat`](install_junction.bat)을 더블 클릭하면 ComfyUI의 `custom_nodes` 디렉토리에 자동으로 바로가기(Junction)가 생성되어 개발 및 업데이트가 즉시 반영됩니다.
+
+### 방법 2: Git Clone
 ComfyUI의 `custom_nodes` 디렉토리에서 아래 명령어를 실행합니다:
 ```bash
 cd ComfyUI/custom_nodes
 git clone https://github.com/solokjd-eng/ComfyUI-Visual-Regional-Prompt.git
 ```
 
-### 방법 2: ComfyUI Manager
+### 방법 3: ComfyUI Manager
 1. ComfyUI Manager에서 **`Visual Grid Regional Prompt`** 검색 후 설치합니다.
 2. ComfyUI를 재시작하고 웹 브라우저에서 **`Ctrl + Shift + R`**(강력 새로고침)을 실행합니다.
 
@@ -109,4 +121,4 @@ ComfyUI 없이 브라우저에서 단독으로 실행되는 웹 버전을 원하
 ---
 
 ## 📄 라이선스 (License)
-MIT License
+This project is open-sourced under the **MIT License**.
