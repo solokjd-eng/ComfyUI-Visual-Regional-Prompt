@@ -656,14 +656,14 @@ app.registerExtension({
                 .vg-area-badge { font-weight: 700; font-size: 11px; line-height: 1; padding: 2px 4px; border-radius: 2px; background: rgba(0,0,0,0.6); }
                 .vg-area-prompt { font-size: 10px; font-weight: 500; text-shadow: 0 1px 2px rgba(0,0,0,0.8); line-height: 1.2; word-break: break-word; overflow: hidden; }
                 .mockup-svg { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.28; pointer-events: none; }
-                .vg-tree-popover { position: absolute; top: 100%; left: 0; right: 0; max-height: 260px; background: #18181b; border: 1px solid #3f3f46; border-radius: 6px; z-index: 100; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.8); display: flex; flex-direction: column; gap: 4px; padding: 6px; }
-                .vg-tree-popover.hidden { display: none; }
-                .tree-folder { font-size: 11px; font-weight: 600; color: #a1a1aa; padding: 4px 6px; cursor: pointer; border-radius: 4px; display: flex; align-items: center; gap: 4px; }
-                .tree-folder:hover { background: #27272a; color: #fff; }
-                .tree-children { display: flex; flex-direction: column; gap: 2px; padding-left: 14px; }
+                .vg-tree-drawer { background: #141418; border: 1px solid #4f46e5; border-radius: 6px; max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 8px; box-sizing: border-box; }
+                .vg-tree-drawer.collapsed { display: none; }
+                .tree-folder { font-size: 11.5px; font-weight: 600; color: #f4f4f5; background: #27272a; padding: 6px 8px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+                .tree-folder:hover { background: #3f3f46; color: #fff; }
+                .tree-children { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 4px; padding: 6px; background: rgba(0,0,0,0.3); border-radius: 4px; }
                 .tree-children.collapsed { display: none; }
-                .tree-item { font-size: 11px; color: #e4e4e7; padding: 3px 6px; cursor: pointer; border-radius: 3px; }
-                .tree-item:hover { background: #4f46e5; color: #fff; }
+                .tree-item { font-size: 11px; color: #e4e4e7; background: #18181b; border: 1px solid #3f3f46; padding: 5px 6px; cursor: pointer; border-radius: 4px; text-align: center; line-height: 1.2; word-break: keep-all; }
+                .tree-item:hover { background: #4f46e5; border-color: #6366f1; color: #fff; font-weight: 600; }
                 .vg-drawer { background: #18181b; border: 1px solid #27272a; border-radius: 6px; padding: 6px; display: flex; flex-direction: column; gap: 6px; }
                 .vg-drawer.collapsed { display: none; }
                 .custom-chip { display: flex; align-items: center; justify-content: space-between; background: #27272a; border: 1px solid #3f3f46; border-radius: 4px; padding: 3px 6px; font-size: 11px; cursor: grab; }
@@ -844,39 +844,44 @@ app.registerExtension({
             const editorCard = document.createElement("div");
             editorCard.style.cssText = "background:#18181b; border:1px solid #27272a; border-radius:6px; padding:8px; display:flex; flex-direction:column; gap:6px;";
             
-            // Header: Active area badge + tree dropdown trigger
+            // Header: Active area badge
             const editorHeader = document.createElement("div");
-            editorHeader.style.cssText = "display:flex; justify-content:space-between; align-items:center; position:relative;";
+            editorHeader.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding-bottom:2px;";
             
             const activeAreaTitle = document.createElement("span");
-            activeAreaTitle.style.cssText = "font-size:11px; font-weight:700; color:#4f46e5;";
+            activeAreaTitle.style.cssText = "font-size:11.5px; font-weight:700; color:#818cf8; word-break:break-all;";
             activeAreaTitle.textContent = "📍 편집할 영역을 선택하세요";
+            editorHeader.appendChild(activeAreaTitle);
+            editorCard.appendChild(editorHeader);
 
-            // Tree Dropdown Wrapper
-            const treeWrap = document.createElement("div");
-            treeWrap.style.position = "relative";
+            // Full-Width 10-Category Tree Explorer Button
             const treeBtn = document.createElement("button");
             treeBtn.className = "vg-btn";
             treeBtn.type = "button";
-            treeBtn.textContent = "📂 10대 구도 탐색기 ▼";
+            treeBtn.style.cssText = "width:100%; display:flex; justify-content:space-between; align-items:center; padding:6px 10px; font-weight:600; background:#27272a; border:1px solid #4f46e5; border-radius:4px; color:#fff; cursor:pointer;";
+            treeBtn.innerHTML = `<span>📂 10대 캐릭터 시트 구도 탐색기</span><span>▼</span>`;
             
-            const treePopover = document.createElement("div");
-            treePopover.className = "vg-tree-popover hidden";
+            const treeDrawer = document.createElement("div");
+            treeDrawer.className = "vg-tree-drawer collapsed";
 
             const treeSearch = document.createElement("input");
             treeSearch.className = "vg-input";
-            treeSearch.placeholder = "🔍 구도 검색 (쇄골, 발등, 워킹, 누운)...";
-            treePopover.appendChild(treeSearch);
+            treeSearch.style.width = "100%";
+            treeSearch.placeholder = "🔍 구도 검색 (쇄골, 발등, 워킹, 누운, 정면)...";
+            treeDrawer.appendChild(treeSearch);
 
             const treeList = document.createElement("div");
-            treePopover.appendChild(treeList);
+            treeList.style.cssText = "display:flex; flex-direction:column; gap:6px;";
+            treeDrawer.appendChild(treeList);
 
             // Render Explorer Tree
             PRESET_GROUPS.forEach(grp => {
                 const fWrap = document.createElement("div");
+                fWrap.style.cssText = "display:flex; flex-direction:column; gap:4px;";
+
                 const fHead = document.createElement("div");
                 fHead.className = "tree-folder";
-                fHead.innerHTML = `<span>▶</span> <span>${grp.icon}</span> <span>${grp.group}</span>`;
+                fHead.innerHTML = `<span>${grp.icon} ${grp.group}</span> <span style="font-size:10px; color:#a1a1aa;">(${grp.items.length}) ▶</span>`;
                 
                 const fChildren = document.createElement("div");
                 fChildren.className = "tree-children collapsed";
@@ -888,15 +893,18 @@ app.registerExtension({
                     itEl.dataset.ko = it.ko;
                     itEl.dataset.en = it.en;
                     itEl.textContent = `📄 ${it.label}`;
+                    itEl.title = `${it.ko}\n(${it.en})`;
                     itEl.addEventListener("click", () => {
                         applyPresetToActiveArea({ ko: it.ko, en: it.en });
-                        treePopover.classList.add("hidden");
+                        treeDrawer.classList.add("collapsed");
                     });
                     fChildren.appendChild(itEl);
                 });
 
                 fHead.addEventListener("click", () => {
-                    fChildren.classList.toggle("collapsed");
+                    const isOpen = !fChildren.classList.contains("collapsed");
+                    fChildren.classList.toggle("collapsed", isOpen);
+                    fHead.querySelector("span:last-child").textContent = `(${grp.items.length}) ${isOpen ? "▶" : "▼"}`;
                 });
 
                 fWrap.appendChild(fHead);
@@ -919,20 +927,11 @@ app.registerExtension({
 
             treeBtn.addEventListener("click", (e) => {
                 e.stopPropagation();
-                treePopover.classList.toggle("hidden");
+                treeDrawer.classList.toggle("collapsed");
             });
 
-            document.addEventListener("click", (e) => {
-                if (!treeWrap.contains(e.target)) {
-                    treePopover.classList.add("hidden");
-                }
-            });
-
-            treeWrap.appendChild(treeBtn);
-            treeWrap.appendChild(treePopover);
-            editorHeader.appendChild(activeAreaTitle);
-            editorHeader.appendChild(treeWrap);
-            editorCard.appendChild(editorHeader);
+            editorCard.appendChild(treeBtn);
+            editorCard.appendChild(treeDrawer);
 
             // 6. Custom Presets 2nd Dropdown & Drawer Toggle
             const customPresetsBar = document.createElement("div");
