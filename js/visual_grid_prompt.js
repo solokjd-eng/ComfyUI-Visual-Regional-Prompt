@@ -651,10 +651,13 @@ app.registerExtension({
                 .vg-grid-wrapper { position: relative; width: 100%; background: #18181b; border: 1px solid #27272a; border-radius: 6px; overflow: hidden; }
                 .vg-grid-cells { position: absolute; inset: 0; display: grid; pointer-events: none; }
                 .vg-cell { border-right: 1px dashed rgba(255,255,255,0.06); border-bottom: 1px dashed rgba(255,255,255,0.06); }
-                .vg-area-box { position: absolute; border: 2px solid; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-between; padding: 4px; box-sizing: border-box; cursor: pointer; overflow: hidden; }
+                .vg-area-box { position: absolute; border: 2px solid; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-between; padding: 3px; box-sizing: border-box; cursor: pointer; overflow: hidden; }
                 .vg-area-box.selected { box-shadow: 0 0 16px var(--area-glow), inset 0 0 8px var(--area-glow); }
-                .vg-area-badge { font-weight: 700; font-size: 11px; line-height: 1; padding: 2px 4px; border-radius: 2px; background: rgba(0,0,0,0.6); }
-                .vg-area-prompt { font-size: 10px; font-weight: 500; text-shadow: 0 1px 2px rgba(0,0,0,0.8); line-height: 1.2; word-break: break-word; overflow: hidden; }
+                .vg-area-header { display: flex; justify-content: space-between; align-items: center; width: 100%; z-index: 2; pointer-events: auto; }
+                .vg-area-badge { font-weight: 700; font-size: 11px; line-height: 1; padding: 2px 4px; border-radius: 2px; background: rgba(0,0,0,0.65); color: #fff; }
+                .vg-area-close { font-size: 13px; font-weight: 700; color: #d4d4d8; background: rgba(0,0,0,0.65); border: none; border-radius: 2px; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; line-height: 1; padding: 0; }
+                .vg-area-close:hover { background: #ef4444; color: #fff; }
+                .vg-area-prompt { font-size: 10px; font-weight: 500; text-shadow: 0 1px 2px rgba(0,0,0,0.8); line-height: 1.2; word-break: break-word; overflow: hidden; z-index: 2; }
                 .mockup-svg { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.28; pointer-events: none; }
                 .vg-tree-drawer { background: #141418; border: 1px solid #4f46e5; border-radius: 6px; max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 8px; box-sizing: border-box; }
                 .vg-tree-drawer.collapsed { display: none; }
@@ -835,7 +838,7 @@ app.registerExtension({
             // Guide text
             const guideEl = document.createElement("div");
             guideEl.style.cssText = "font-size:10px; color:#a1a1aa; text-align:center;";
-            guideEl.textContent = "🖱️ 드래그: 영역 생성 | ✏️ 클릭: 구도 편집 (1:1 교체) | ❌ 우클릭: 삭제";
+            guideEl.textContent = "🖱️ 드래그: 영역 생성 | ✏️ 클릭: 구도 편집 | ❌ [×]버튼 또는 우클릭: 삭제";
             container.appendChild(guideEl);
 
             // =========================================================================
@@ -1228,11 +1231,32 @@ app.registerExtension({
                     box.style.color = palette.border;
                     box.style.setProperty("--area-glow", palette.glow);
 
-                    // Header badge
+                    // Header badge & close button
+                    const header = document.createElement("div");
+                    header.className = "vg-area-header";
+
                     const badge = document.createElement("div");
                     badge.className = "vg-area-badge";
                     badge.textContent = `[${area.id}]`;
-                    box.appendChild(badge);
+
+                    const closeBtn = document.createElement("button");
+                    closeBtn.className = "vg-area-close";
+                    closeBtn.type = "button";
+                    closeBtn.innerHTML = "×";
+                    closeBtn.title = "영역 삭제 (클릭 또는 우클릭)";
+                    closeBtn.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        deleteArea(area.id);
+                    });
+                    closeBtn.addEventListener("mousedown", (e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                    });
+
+                    header.appendChild(badge);
+                    header.appendChild(closeBtn);
+                    box.appendChild(header);
 
                     // Mockup SVG
                     if (mockupEnabled) {
@@ -1255,7 +1279,13 @@ app.registerExtension({
                         } else if (e.button === 2) {
                             e.preventDefault();
                             e.stopPropagation();
-                            deleteArea(area.id);
+                        }
+                    });
+
+                    box.addEventListener("mouseup", (e) => {
+                        if (e.button === 2) {
+                            e.preventDefault();
+                            e.stopPropagation();
                         }
                     });
 
@@ -1268,6 +1298,12 @@ app.registerExtension({
                     areasLayer.appendChild(box);
                 });
             }
+
+            // Suppress browser context menu on canvas
+            canvasWrapper.addEventListener("contextmenu", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
 
             // Mouse Drag Area Creation
             canvasWrapper.addEventListener("mousedown", (e) => {
