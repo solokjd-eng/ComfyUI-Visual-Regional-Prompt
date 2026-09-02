@@ -1,0 +1,4462 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visual Grid Regional Prompt Studio - AI 공간 레이아웃 프롬프트 빌더</title>
+  <meta name="description" content="Krea, Midjourney, Flux, SD3, GPT-4o, MiniMax를 위한 비주얼 그리드 공간 분할 프롬프트 웹 스튜디오">
+  <style>
+/* ==========================================================================
+   Visual Grid Regional Prompt - Web Studio Design System
+   Aesthetic: Obsidian Glassmorphism & Cyber AI Studio
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg-main: #07090e;
+  --bg-surface: #0e131f;
+  --bg-surface-elevated: #141c2e;
+  --bg-glass: rgba(15, 23, 42, 0.85);
+  --bg-glass-card: rgba(18, 26, 44, 0.72);
+  --bg-input: rgba(10, 15, 28, 0.85);
+  
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-light: rgba(255, 255, 255, 0.15);
+  --border-focus: #00f0ff;
+
+  --accent-cyan: #00f0ff;
+  --accent-cyan-glow: rgba(0, 240, 255, 0.35);
+  --accent-purple: #8a2be2;
+  --accent-purple-glow: rgba(138, 43, 226, 0.35);
+  --accent-pink: #ff007f;
+  --accent-yellow: #ffe600;
+  --accent-emerald: #00ff88;
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-accent: #38bdf8;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --font-sans: 'Outfit', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --shadow-card: 0 10px 25px -8px rgba(0, 0, 0, 0.6), 0 0 1px 1px rgba(255, 255, 255, 0.05);
+  --shadow-glow: 0 0 20px var(--accent-cyan-glow);
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-main);
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(0, 240, 255, 0.07) 0%, transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(138, 43, 226, 0.08) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(255, 0, 127, 0.04) 0%, transparent 50%);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Desktop view: self-contained without window overflow */
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-cyan);
+}
+
+/* ==========================================================================
+   Header & Navbar (Compact 52px)
+   ========================================================================== */
+
+.app-header {
+  height: 52px;
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  flex-shrink: 0;
+  z-index: 100;
+}
+
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-logo {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  box-shadow: 0 0 12px var(--accent-cyan-glow);
+}
+
+.brand-info h1 {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  background: linear-gradient(90deg, #ffffff, #c7d2fe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  background: rgba(0, 240, 255, 0.12);
+  padding: 2px 7px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  margin-left: 6px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ==========================================================================
+   Main Layout Structure (Adaptive 100vh Fill)
+   ========================================================================== */
+
+.app-container {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 14px;
+  padding: 12px 16px;
+  width: 100%;
+  height: calc(100vh - 52px);
+  flex: 1;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Screen is resized small: allow natural scrolling */
+@media (max-width: 1080px), (max-height: 680px) {
+  body {
+    overflow: auto; /* Enable page scrollbar only when window is small */
+  }
+  .app-container {
+    height: auto;
+    min-height: calc(100vh - 52px);
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
+  .panel-canvas, .panel-editor {
+    overflow-y: visible !important;
+  }
+}
+
+/* ==========================================================================
+   Panels (Self-Scrolling Columns)
+   ========================================================================== */
+
+.panel-canvas {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px;
+}
+
+.panel-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px;
+}
+
+.card {
+  background: var(--bg-glass-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-card);
+  transition: border-color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.card.flex-auto {
+  flex: none;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: auto;
+}
+
+.card:hover {
+  border-color: var(--border-light);
+}
+
+.card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Templates Bar */
+.templates-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.btn-template {
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-template:hover {
+  background: rgba(0, 240, 255, 0.12);
+  border-color: var(--accent-cyan);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 240, 255, 0.15);
+}
+
+/* ==========================================================================
+   Character Profile Card (공통 인물 묘사 & 히스토리)
+   ========================================================================== */
+
+.character-profile-card {
+  border-left: 3px solid var(--accent-purple);
+  background: linear-gradient(180deg, rgba(30, 20, 48, 0.45) 0%, rgba(18, 26, 44, 0.75) 100%);
+  gap: 8px;
+}
+
+.profile-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-title-left {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-title-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.profile-title-actions .btn-xs, .btn-xs {
+  padding: 4px 10px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  border-radius: 4px !important;
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  line-height: 1.2 !important;
+  min-width: max-content !important;
+}
+
+.profile-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.profile-textarea {
+  width: 100%;
+  min-height: 54px;
+  font-size: 12px;
+  padding: 8px 10px;
+  border: 1px solid rgba(161, 0, 255, 0.35);
+  background: rgba(10, 14, 25, 0.85);
+  border-radius: var(--radius-sm);
+  resize: vertical;
+  box-sizing: border-box;
+  transition: all var(--transition-fast);
+}
+
+.profile-textarea:focus {
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 12px var(--accent-purple-glow);
+  background: rgba(14, 18, 32, 1);
+}
+
+.profile-history-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  padding-top: 2px;
+}
+
+.history-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.history-chips-container {
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  padding: 2px 0;
+  scrollbar-width: none;
+}
+
+.history-chips-container::-webkit-scrollbar {
+  display: none;
+}
+
+.history-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 10px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.history-chip:hover {
+  background: rgba(0, 240, 255, 0.15);
+  border-color: var(--accent-cyan);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.history-chip-del {
+  font-size: 11px;
+  opacity: 0.5;
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+.history-chip-del:hover {
+  color: #ff0055;
+  opacity: 1;
+}
+
+/* Canvas Toolbar */
+.canvas-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  margin-bottom: 10px;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toolbar-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* Aspect Ratio Pill Selector */
+.ratio-selector {
+  display: flex;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  gap: 2px;
+}
+
+.ratio-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.ratio-btn:hover {
+  color: var(--text-primary);
+}
+
+.ratio-btn.active {
+  background: var(--accent-cyan);
+  color: #000;
+  font-weight: 700;
+  box-shadow: 0 0 8px var(--accent-cyan-glow);
+}
+
+/* Grid Dimension Stepper */
+.stepper {
+  display: flex;
+  align-items: center;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.stepper button {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background var(--transition-fast);
+}
+
+.stepper button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.stepper span {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 22px;
+  text-align: center;
+}
+
+/* ==========================================================================
+   Interactive Grid Canvas Container (Auto-Fitting Viewport)
+   ========================================================================== */
+
+.canvas-viewport {
+  background: #080b13;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 260px;
+  position: relative;
+  overflow: visible;
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8);
+}
+
+.canvas-wrapper {
+  position: relative;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.75), 0 0 1px 1px rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  overflow: hidden;
+  user-select: none;
+  cursor: crosshair;
+  transition: width 0.15s ease, height 0.15s ease;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.grid-board {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  background: #0d1322;
+  border-top: 1.5px dashed rgba(255, 255, 255, 0.35);
+  border-left: 1.5px dashed rgba(255, 255, 255, 0.35);
+}
+
+.grid-cell {
+  border-right: 1.5px dashed rgba(255, 255, 255, 0.35);
+  border-bottom: 1.5px dashed rgba(255, 255, 255, 0.35);
+  box-sizing: border-box;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.grid-cell:hover {
+  background: rgba(0, 240, 255, 0.12);
+}
+
+/* Selection Box during drag */
+.selection-box {
+  position: absolute;
+  border: 2px dashed var(--accent-cyan);
+  background: rgba(0, 240, 255, 0.22);
+  pointer-events: none;
+  z-index: 20;
+  border-radius: 4px;
+  box-shadow: 0 0 15px var(--accent-cyan-glow);
+  display: none;
+}
+
+/* Rendered Area Boxes */
+.area-box {
+  position: absolute;
+  border: 2px solid;
+  border-radius: 6px;
+  box-sizing: border-box;
+  z-index: 10;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.15s ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 6px;
+}
+
+.area-box:hover {
+  transform: scale(1.008);
+  z-index: 15;
+}
+
+.area-box.selected {
+  z-index: 22 !important;
+  border-width: 3px !important;
+  outline: 2px solid #ffffff !important;
+  outline-offset: -1px;
+  animation: pulseSelectedArea 1.8s infinite ease-in-out;
+}
+
+@keyframes pulseSelectedArea {
+  0%, 100% {
+    box-shadow: 0 0 25px var(--area-glow, rgba(0, 240, 255, 0.8)), inset 0 0 18px var(--area-glow, rgba(0, 240, 255, 0.4));
+    filter: brightness(1.15);
+  }
+  50% {
+    box-shadow: 0 0 45px var(--area-glow, rgba(0, 240, 255, 1)), inset 0 0 28px var(--area-glow, rgba(0, 240, 255, 0.6));
+    filter: brightness(1.3);
+  }
+}
+
+.area-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.area-badge {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  border: 1.5px solid currentColor;
+  box-shadow: 0 0 6px currentColor;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  line-height: 1.2;
+  transition: all var(--transition-fast);
+}
+
+.area-box.selected .area-badge {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 0 12px #ffffff, 0 2px 8px rgba(0, 0, 0, 0.8) !important;
+  font-weight: 900 !important;
+}
+
+.area-box.selected .area-badge span {
+  color: #000000 !important;
+  font-weight: 900 !important;
+}
+
+.area-close-btn {
+  position: relative;
+  z-index: 30;
+  background: rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(255, 82, 82, 0.35);
+  color: #ff5252;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.85;
+  transition: all var(--transition-fast);
+  pointer-events: auto;
+}
+
+.area-close-btn:hover {
+  opacity: 1;
+  background: #ff5252;
+  color: #fff;
+  transform: scale(1.15);
+  box-shadow: 0 0 10px rgba(255, 82, 82, 0.6);
+}
+
+/* Area Prompt Bottom Overlay (투명 배경 + 또렷한 텍스트 섀도우) */
+.area-body {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  text-align: center;
+  padding: 2px 4px 6px 4px;
+  z-index: 5;
+  pointer-events: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.area-prompt-main {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.35;
+  word-break: keep-all;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 2px 4px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 0 8px rgba(0, 0, 0, 0.95), 0 0 2px #000;
+  max-width: 98%;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  text-overflow: ellipsis;
+}
+
+.area-prompt-empty {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  background: transparent;
+  border: none;
+  text-shadow: 0 1px 4px #000;
+  padding: 2px 6px;
+}
+
+/* Mockup Vector Silhouette Overlay (캔버스 내 꽉 찬 실루엣 그래픽) */
+.area-mockup-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
+  overflow: hidden;
+  padding: 6px;
+  box-sizing: border-box;
+  transition: all var(--transition-normal);
+}
+
+.mockup-svg {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  opacity: 0.72;
+  filter: drop-shadow(0 0 18px currentColor);
+  transition: all var(--transition-normal);
+}
+
+.area-box:hover .mockup-svg,
+.area-box.selected .mockup-svg {
+  opacity: 0.98;
+  transform: scale(1.02);
+  filter: drop-shadow(0 0 26px currentColor);
+}
+
+/* Canvas Bottom Info Bar */
+.canvas-bottom-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 14px;
+  width: 100%;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.canvas-hint, .canvas-shortcuts {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.canvas-hint kbd, .canvas-shortcuts kbd {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   Art Style Presets Grid & Options Bar
+   ========================================================================== */
+
+.art-styles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.btn-art-style {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--transition-fast);
+  text-align: left;
+}
+
+.btn-art-style:hover {
+  background: rgba(0, 240, 255, 0.1);
+  border-color: var(--accent-cyan);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.btn-art-style.active {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.22), rgba(161, 0, 255, 0.25));
+  border-color: var(--accent-cyan);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.35);
+  border-width: 1.5px;
+}
+
+.style-toggles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.toggle-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.toggle-card:hover {
+  background: var(--bg-surface-elevated);
+  border-color: var(--border-light);
+}
+
+.toggle-card.active {
+  background: rgba(0, 240, 255, 0.08);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.12);
+}
+
+.toggle-card input[type="checkbox"] {
+  display: none;
+}
+
+.toggle-switch {
+  width: 30px;
+  height: 17px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 17px;
+  position: relative;
+  transition: background var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 13px;
+  height: 13px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform var(--transition-fast);
+}
+
+.toggle-card.active .toggle-switch {
+  background: var(--accent-cyan);
+}
+
+.toggle-card.active .toggle-switch::after {
+  transform: translateX(13px);
+  background: #000;
+}
+
+.toggle-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.toggle-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.toggle-desc {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Right Panel: Area Prompt Editor & Output Prompts
+   ========================================================================== */
+
+.area-editor-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.area-tabs-container {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+#area-editor-card {
+  border: 1.5px solid var(--active-area-color, var(--accent-cyan));
+  box-shadow: 0 0 25px var(--active-area-glow, rgba(0, 240, 255, 0.25)), 0 10px 30px rgba(0, 0, 0, 0.65);
+  background: linear-gradient(180deg, var(--active-area-bg, rgba(20, 29, 48, 0.7)) 0%, rgba(18, 26, 44, 0.85) 100%);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+
+.area-tab {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.area-tab:hover {
+  color: var(--text-primary);
+  border-color: var(--border-light);
+}
+
+.area-tab.active {
+  background: var(--active-area-color, var(--accent-purple)) !important;
+  color: #000 !important;
+  font-weight: 800 !important;
+  border-color: var(--active-area-color, var(--accent-purple)) !important;
+  box-shadow: 0 0 12px var(--active-area-glow, var(--accent-purple-glow)) !important;
+  transform: translateY(-1px);
+}
+
+#preset-select {
+  border: 1.5px solid var(--active-area-color, var(--border-subtle));
+  box-shadow: 0 0 8px var(--active-area-glow, transparent);
+  transition: all var(--transition-fast);
+}
+
+#input-ko-prompt {
+  border: 2px solid var(--active-area-color, var(--accent-cyan));
+  box-shadow: 0 0 14px var(--active-area-glow, rgba(0, 240, 255, 0.3));
+  background: rgba(8, 12, 22, 0.95);
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+
+#input-ko-prompt:focus {
+  box-shadow: 0 0 20px var(--active-area-glow, rgba(0, 240, 255, 0.5));
+  background: rgba(12, 18, 32, 1);
+}
+
+#btn-translate {
+  background: linear-gradient(135deg, var(--active-area-color, var(--accent-cyan)), #ffffff);
+  color: #000;
+  font-weight: 800;
+  box-shadow: 0 4px 18px var(--active-area-glow, rgba(0, 240, 255, 0.4));
+  transition: all var(--transition-fast);
+}
+
+#btn-translate:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.15);
+  box-shadow: 0 6px 24px var(--active-area-glow, rgba(0, 240, 255, 0.6));
+}
+
+/* Form Controls */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.form-label-tag {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  padding: 8px 10px;
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 10px var(--accent-cyan-glow);
+  background: var(--bg-surface-elevated);
+}
+
+.form-textarea {
+  min-height: 54px;
+  resize: vertical;
+  line-height: 1.4;
+}
+
+.form-textarea.code-font {
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+/* Preset Chips */
+.preset-chips-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.chip-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 7px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.chip-btn:hover {
+  background: rgba(0, 240, 255, 0.15);
+  border-color: var(--accent-cyan);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   Custom Presets Section & Collapsible Accordion
+   ========================================================================== */
+
+.custom-presets-section {
+  margin-top: 8px;
+  background: rgba(161, 0, 255, 0.08);
+  border: 1px solid rgba(161, 0, 255, 0.35);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+.custom-presets-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 10px;
+  cursor: pointer;
+  user-select: none;
+  background: rgba(20, 16, 36, 0.65);
+  transition: all var(--transition-fast);
+}
+
+.custom-presets-header:hover {
+  background: rgba(161, 0, 255, 0.18);
+}
+
+.custom-presets-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--accent-magenta);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.accordion-arrow {
+  font-size: 10px;
+  display: inline-block;
+  transition: transform var(--transition-normal);
+  color: var(--accent-cyan);
+}
+
+.custom-presets-section.collapsed .accordion-arrow {
+  transform: rotate(-90deg);
+}
+
+.custom-presets-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.custom-presets-body {
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 8px 10px;
+  border-top: 1px dashed rgba(161, 0, 255, 0.25);
+  transition: max-height var(--transition-normal), opacity var(--transition-normal), padding var(--transition-normal);
+  scrollbar-width: thin;
+}
+
+.custom-presets-section.collapsed .custom-presets-body {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-top-color: transparent;
+  pointer-events: none;
+}
+
+.custom-chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 28px;
+  padding: 2px;
+}
+
+.custom-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: linear-gradient(135deg, rgba(161, 0, 255, 0.22), rgba(0, 240, 255, 0.15));
+  border: 1px solid rgba(161, 0, 255, 0.45);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 14px;
+  cursor: grab;
+  user-select: none;
+  transition: all var(--transition-fast);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.custom-chip:hover {
+  background: linear-gradient(135deg, rgba(161, 0, 255, 0.38), rgba(0, 240, 255, 0.3));
+  border-color: var(--accent-magenta);
+  box-shadow: 0 0 10px var(--accent-magenta-glow);
+  transform: translateY(-1px);
+}
+
+.custom-chip:active {
+  cursor: grabbing;
+}
+
+.custom-chip.dragging {
+  opacity: 0.35;
+  transform: scale(0.95);
+  border-style: dashed;
+}
+
+.custom-chip.drag-over {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 12px var(--accent-cyan-glow);
+  transform: scale(1.06);
+}
+
+.custom-chip-drag-handle {
+  opacity: 0.45;
+  font-size: 10px;
+  margin-right: -2px;
+}
+
+.custom-chip-label {
+  cursor: pointer;
+}
+
+.custom-chip-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 3px;
+}
+
+.custom-chip-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 10px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  transition: all var(--transition-fast);
+  border-radius: 3px;
+}
+
+.custom-chip-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.custom-chip-btn.delete:hover {
+  color: #ff5252;
+  background: rgba(255, 82, 82, 0.25);
+}
+
+/* ==========================================================================
+   Modal Dialog Styles
+   ========================================================================== */
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(4, 7, 16, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.modal-card {
+  background: linear-gradient(180deg, rgba(20, 26, 44, 0.98) 0%, rgba(12, 16, 28, 0.98) 100%);
+  border: 1.5px solid var(--accent-purple);
+  box-shadow: 0 0 30px var(--accent-purple-glow), 0 20px 50px rgba(0, 0, 0, 0.85);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 460px;
+  padding: 20px;
+  box-sizing: border-box;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.94) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.modal-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modal-close-btn:hover {
+  color: #ff5252;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+/* ==========================================================================
+   Output Generator Section
+   ========================================================================== */
+
+.output-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.format-select {
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  color: var(--accent-cyan);
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  cursor: pointer;
+  max-width: 240px;
+}
+
+.output-box {
+  background: #080b12;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.output-textarea {
+  width: 100%;
+  min-height: 85px;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.5;
+  color: #e2e8f0;
+  resize: vertical;
+}
+
+.output-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+/* ==========================================================================
+   Buttons & Micro-Interactions
+   ========================================================================== */
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-cyan), #00a8ff);
+  color: #000;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 7px 14px;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 3px 12px var(--accent-cyan-glow);
+  transition: all var(--transition-fast);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 16px var(--accent-cyan-glow);
+  filter: brightness(1.1);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 11px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all var(--transition-fast);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: var(--border-light);
+  transform: translateY(-1px);
+}
+
+.btn-danger {
+  background: rgba(255, 71, 87, 0.15);
+  color: #ff4757;
+  border: 1px solid rgba(255, 71, 87, 0.3);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-danger:hover {
+  background: #ff4757;
+  color: #fff;
+}
+
+/* ==========================================================================
+   Toast Notification
+   ========================================================================== */
+
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  background: rgba(14, 20, 35, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--accent-cyan);
+  color: var(--text-primary);
+  padding: 10px 15px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 500;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6), 0 0 12px var(--accent-cyan-glow);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: auto;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+</style>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%200%20100%20100%22><text y=%22.9em%22 font-size=%2290%22>📐</text></svg>">
+</head>
+<body>
+
+  <!-- Header & Navbar -->
+  <header class="app-header">
+    <div class="brand-section">
+      <div class="brand-logo">📐</div>
+      <div class="brand-info">
+        <h1>Visual Grid Prompt Studio <span class="brand-badge">Web Pro</span></h1>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-secondary" id="btn-import-json" title="JSON 프리셋 파일 불러오기">
+        📥 불러오기
+      </button>
+      <input type="file" id="file-import" accept=".json" style="display: none;">
+      
+      <button class="btn-secondary" id="btn-export-json" title="현재 설정을 JSON 파일로 저장">
+        💾 내보내기
+      </button>
+
+      <button class="btn-danger" id="btn-clear-all" title="캔버스 전체 초기화">
+        🗑️ 초기화
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="app-container">
+    
+    <!-- Left Column: Interactive Canvas & Layout Config -->
+    <section class="panel-canvas">
+      
+      <!-- Templates Quick Bar -->
+      <div class="card">
+        <div class="card-title-row">
+          <span class="card-title">⚡ 원클릭 추천 레이아웃 템플릿</span>
+        </div>
+        <div class="templates-scroll" id="templates-container">
+          <!-- Dynamic Templates injected via JS -->
+        </div>
+      </div>
+
+      <!-- Character Profile Card (인물/피사체 공통 묘사 & 히스토리) -->
+      <div class="card character-profile-card">
+        <div class="card-title-row profile-title-row">
+          <div class="profile-title-left">
+            <span class="card-title">👤 공통 인물 / 피사체 묘사 (Character Profile)</span>
+            <span class="form-label-tag">공란 시 자동 생략 | 입력 시 모든 패널에 외형·의상 일관 유지</span>
+          </div>
+          <div class="profile-title-actions">
+            <button id="btn-save-profile" class="btn btn-secondary btn-xs" title="현재 인물 묘사를 즐겨찾기에 저장">⭐ 저장</button>
+            <button id="btn-clear-profile" class="btn btn-secondary btn-xs" title="입력 내용 초기화">🗑️ 비우기</button>
+          </div>
+        </div>
+
+        <div class="profile-input-wrapper">
+          <div class="form-group" style="margin-bottom: 6px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
+              <label class="form-label" for="input-character-ko" style="margin:0;">
+                <span>한글 인물 묘사 입력 (모서리 드래그로 크기 확장 가능)</span>
+              </label>
+              <button id="btn-apply-profile" class="btn btn-primary btn-sm" style="padding: 4px 12px;">✨ 번역 & 적용 (Ctrl+Enter)</button>
+            </div>
+            <textarea id="input-character-ko" class="form-textarea profile-textarea" rows="2" placeholder="한글로 인물 외형·의상·헤어 등을 자유롭게 입력하세요 (예: 20대 한국 여성, 검은 뿔테 안경, 긴 흑발 포니테일, 핑크 요가복)"></textarea>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 6px;">
+            <label class="form-label" for="profile-en-input" style="margin-bottom: 4px;">
+              <span>AI 영문 번역 결과 (모서리 드래그로 크기 확장 가능 / 직접 수정 가능)</span>
+            </label>
+            <textarea id="profile-en-input" class="form-textarea code-font profile-textarea" rows="2" placeholder="AI 번역 영문 프롬프트 (미입력 시 공란 상태 - 직접 수정 가능)"></textarea>
+          </div>
+        </div>
+
+        <!-- History & Saved Presets Chips -->
+        <div class="profile-history-row" id="profile-history-row">
+          <span class="history-label">⚡ 빠른 선택 / 기록:</span>
+          <div class="history-chips-container" id="profile-history-chips">
+            <!-- Dynamic History Chips injected via JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Canvas Box & Controls -->
+      <div class="card flex-auto">
+        <!-- Canvas Toolbar -->
+        <div class="canvas-toolbar">
+          <!-- Ratio Selector -->
+          <div class="toolbar-group">
+            <span class="toolbar-label">비율 (Ratio):</span>
+            <div class="ratio-selector" id="ratio-selector">
+              <button class="ratio-btn active" data-ratio="16:9">16:9</button>
+              <button class="ratio-btn" data-ratio="9:16">9:16</button>
+              <button class="ratio-btn" data-ratio="1:1">1:1</button>
+              <button class="ratio-btn" data-ratio="4:3">4:3</button>
+              <button class="ratio-btn" data-ratio="3:4">3:4</button>
+              <button class="ratio-btn" data-ratio="3:2">3:2</button>
+              <button class="ratio-btn" data-ratio="21:9">21:9</button>
+            </div>
+          </div>
+
+          <!-- Grid Dimensions -->
+          <div class="toolbar-group">
+            <span class="toolbar-label">가로 칸:</span>
+            <div class="stepper">
+              <button id="cols-dec">-</button>
+              <span id="cols-count">6</span>
+              <button id="cols-inc">+</button>
+            </div>
+
+            <span class="toolbar-label" style="margin-left:6px;">세로 칸:</span>
+            <div class="stepper">
+              <button id="rows-dec">-</button>
+              <span id="rows-count">3</span>
+              <button id="rows-inc">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Canvas Viewport -->
+        <div class="canvas-viewport" id="canvas-viewport">
+          <div class="canvas-wrapper" id="canvas-wrapper">
+            <!-- Background Grid Cells -->
+            <div class="grid-board" id="grid-board"></div>
+
+            <!-- Dragging Active Selection Box -->
+            <div class="selection-box" id="selection-box"></div>
+
+            <!-- Placed Area Boxes Container -->
+            <div id="areas-container"></div>
+          </div>
+        </div>
+
+        <!-- Canvas Bottom Guide -->
+        <div class="canvas-bottom-bar">
+          <div class="canvas-hint">
+            <span>💡 격자 위에서 <kbd>마우스 좌클릭 드래그</kbd>하여 원하는 크기의 영역을 생성하세요.</span>
+          </div>
+          <div class="canvas-shortcuts">
+            <span>단축키: <kbd>Ctrl + Enter</kbd> 번역 적용 | <kbd>Del</kbd> 영역 삭제</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Art Style Presets & Options Card -->
+      <div class="card">
+        <div class="card-title-row">
+          <span class="card-title">🎨 화풍 & 아트 스타일 프리셋 (Art Style Presets)</span>
+          <span class="form-label-tag">클릭 시 최적의 접두사/접미사 자동 완성</span>
+        </div>
+
+        <!-- Dynamic Art Style Buttons Container -->
+        <div class="art-styles-grid" id="art-styles-container">
+          <!-- Injected via JS -->
+        </div>
+
+        <div class="card-title-row" style="margin-top: 14px; margin-bottom: 8px;">
+          <span class="card-title" style="font-size: 11px;">⚙️ 부가 렌더링 옵션</span>
+        </div>
+
+        <div class="style-toggles">
+          <label class="toggle-card" id="toggle-white-bg-label">
+            <input type="checkbox" id="toggle-white-bg">
+            <div class="toggle-switch"></div>
+            <div class="toggle-text">
+              <span class="toggle-title">⚪ 백색 배경 (White Backdrop)</span>
+              <span class="toggle-desc">스튜디오 순백 배경 적용</span>
+            </div>
+          </label>
+
+          <label class="toggle-card active" id="toggle-grid-borders-label">
+            <input type="checkbox" id="toggle-grid-borders" checked>
+            <div class="toggle-switch"></div>
+            <div class="toggle-text">
+              <span class="toggle-title">🔳 검정 실선 분할 (Grid Lines)</span>
+              <span class="toggle-desc">만화/콜라주 패널 구분선</span>
+            </div>
+          </label>
+
+          <label class="toggle-card active" id="toggle-mockup-label">
+            <input type="checkbox" id="toggle-mockup" checked>
+            <div class="toggle-switch"></div>
+            <div class="toggle-text">
+              <span class="toggle-title">✨ 실루엣 목업 표시</span>
+              <span class="toggle-desc">캔버스 내 포즈 아이콘</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Right Column: Area Editor, Global Prompts & Outputs -->
+    <section class="panel-editor">
+      
+      <!-- Area Prompt Editor Card -->
+      <div class="card" id="area-editor-card">
+        <div class="card-title-row">
+          <span class="card-title" id="active-area-title">영역 [1] 프롬프트 설정</span>
+          <span id="active-area-spatial" style="font-size:11px; color:var(--accent-cyan); font-weight:600;"></span>
+        </div>
+
+        <!-- Area Tabs -->
+        <div class="area-tabs-container" id="area-tabs">
+          <!-- Injected via JS -->
+        </div>
+
+        <div class="area-editor-section" style="margin-top: 14px;">
+          <!-- Preset Dropdown -->
+          <div class="form-group">
+            <label class="form-label" for="preset-select">
+              <span>샷 / 구도 프리셋</span>
+              <span class="form-label-tag">선택 시 자동 입력</span>
+            </label>
+            <select class="form-select" id="preset-select"></select>
+          </div>
+
+          <!-- Quick Tag Chips (기본 프리셋) -->
+          <div class="preset-chips-wrap" id="chips-container">
+            <!-- Injected via JS -->
+          </div>
+
+          <!-- Custom Presets Section (커스텀 프리셋: 드롭다운 펼치기/접기 + 드래그 순서 변경) -->
+          <div class="custom-presets-section collapsible open" id="custom-presets-section">
+            <div class="custom-presets-header" id="custom-presets-toggle" title="클릭하여 커스텀 프리셋 목록 펼치기/접기">
+              <div class="custom-presets-title">
+                <span class="accordion-arrow" id="custom-presets-arrow">▼</span>
+                <span>⭐ 나만의 커스텀 프리셋 (<span id="custom-presets-count">0</span>)</span>
+              </div>
+              <div class="custom-presets-actions" onclick="event.stopPropagation();">
+                <button type="button" id="btn-save-as-preset" class="btn btn-secondary btn-xs" title="현재 입력창의 내용을 새 프리셋으로 등록">💾 현재 입력 등록</button>
+                <button type="button" id="btn-add-custom-preset" class="btn btn-primary btn-xs" title="새 커스텀 프리셋 직접 추가">➕ 새 프리셋 추가</button>
+              </div>
+            </div>
+            <div class="custom-presets-body" id="custom-presets-body">
+              <div class="custom-chips-container" id="custom-chips-container">
+                <!-- Dynamic Custom Chips injected via JS, draggable -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Korean Direct Input -->
+          <div class="form-group">
+            <label class="form-label" for="input-ko-prompt">
+              <span>직접 한글 입력 (Korean Prompt)</span>
+              <span class="form-label-tag">Ctrl + Enter 로 즉시 영문 변환</span>
+            </label>
+            <textarea class="form-textarea" id="input-ko-prompt" placeholder="예: 전신 45도 반측면, 은발에 푸른 눈, 밝은 미소..."></textarea>
+          </div>
+
+          <!-- English Output/Input -->
+          <div class="form-group">
+            <label class="form-label" for="input-en-prompt">
+              <span>최종 영문 프롬프트 (English Translated)</span>
+              <span class="form-label-tag">AI 표준 키워드</span>
+            </label>
+            <textarea class="form-textarea code-font" id="input-en-prompt" placeholder="full body shot, three-quarter view, silver hair, glowing blue eyes..."></textarea>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+            <button class="btn-danger" id="btn-delete-area" type="button">
+              🗑️ 현재 영역 삭제
+            </button>
+            <button class="btn-primary" id="btn-translate" type="button">
+              ✨ 한글 번역 & 적용 (Ctrl+Enter)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Global Prefix & Suffix Prompts -->
+      <div class="card">
+        <div class="card-title-row">
+          <span class="card-title">🌐 공통 글로벌 프롬프트 (Prefix / Suffix)</span>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label class="form-label" for="input-prefix">
+            <span>공통 접두사 (Prefix - 화풍/화질/인물 기본값)</span>
+          </label>
+          <input type="text" class="form-input" id="input-prefix" value="masterpiece, best quality, ultra detailed, 1girl, silver hair, blue eyes">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="input-suffix">
+            <span>공통 접미사 (Suffix - 분위기/조명/디테일)</span>
+          </label>
+          <input type="text" class="form-input" id="input-suffix" value="sharp focus, photorealistic 8k, uniform lighting">
+        </div>
+      </div>
+
+      <!-- Live Generated AI Prompt Output -->
+      <div class="card">
+        <div class="output-header-row">
+          <span class="card-title">🚀 최종 생성 프롬프트</span>
+          
+          <select class="format-select" id="format-select">
+            <option value="natural" selected>자연어 공간 표현 (Krea/Flux/Midjourney/GPT-4o)</option>
+            <option value="comfyui_break">ComfyUI / SD Regional (BREAK 문법)</option>
+            <option value="structured">구조화 태그 ([Area 1 - Left] ...)</option>
+            <option value="coordinates">바운딩 박스 (&lt;area bbox="[...]"&gt;)</option>
+            <option value="comma">단순 쉼표 나열 (Comma-Separated)</option>
+            <option value="json">원시 데이터 (Raw JSON Preset)</option>
+          </select>
+        </div>
+
+        <!-- Positive Output Box -->
+        <div class="output-box">
+          <textarea class="output-textarea" id="output-prompt" readonly placeholder="영역을 지정하면 여기에 최종 프롬프트가 실시간으로 조합됩니다..."></textarea>
+          <div class="output-actions">
+            <button class="btn-primary" id="btn-copy-prompt">
+              📋 프롬프트 복사
+            </button>
+          </div>
+        </div>
+
+        <!-- Negative Output Box -->
+        <div class="card-title-row" style="margin-top: 14px; margin-bottom: 8px;">
+          <span class="card-title" style="font-size: 12px;">🚫 추천 네거티브 프롬프트 (글자/숫자 아티팩트 방지)</span>
+        </div>
+        <div class="output-box" style="margin-bottom:0;">
+          <textarea class="output-textarea" id="output-negative" style="min-height:55px;" readonly></textarea>
+          <div class="output-actions">
+            <button class="btn-secondary" id="btn-copy-negative">
+              📋 네거티브 복사
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Custom Preset Modal (프리셋 추가 / 수정 모달) -->
+  <div id="modal-custom-preset" class="modal-backdrop" style="display:none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-preset-title" class="modal-title">⭐ 커스텀 프리셋 등록 / 수정</h3>
+        <button type="button" id="btn-close-preset-modal" class="modal-close-btn" title="닫기">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="preset-edit-id" value="">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label class="form-label" for="preset-input-label">프리셋 버튼 이름 (Label):</label>
+          <input type="text" id="preset-input-label" class="form-input" placeholder="예: 핑크 바디슈트, 무릎 안기, 태아 자세">
+        </div>
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label class="form-label" for="preset-input-ko">한글 프롬프트 (Korean Prompt):</label>
+          <textarea id="preset-input-ko" class="form-textarea" rows="2" placeholder="예: 무릎을 세우고 앉아서 양손으로 무릎을 감싸고 있는 자세의 전신"></textarea>
+        </div>
+        <div class="form-group" style="margin-bottom: 6px;">
+          <label class="form-label" for="preset-input-en">영문 프롬프트 (English Prompt - 공란 시 자동 번역):</label>
+          <textarea id="preset-input-en" class="form-textarea code-font" rows="2" placeholder="예: Full body sitting with knees bent and covering knees with hands"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btn-cancel-preset" class="btn btn-secondary btn-sm">취소</button>
+        <button type="button" id="btn-save-preset-confirm" class="btn btn-primary btn-sm">✨ 저장 및 등록</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script>
+
+(function() {
+// ==========================================
+// 1. Presets & Templates
+// ==========================================
+/**
+ * 원본 ComfyUI 노드 100% 동일 샷/구도 프리셋 및 레이아웃 템플릿, 화풍 스타일 프리셋
+ */
+
+// 🎨 화풍 & 아트 스타일 프리셋 (실사, 반실사, 2D애니, 설정화, 3D)
+const ART_STYLES = [
+  {
+    id: "photorealistic",
+    name: "📷 극실사 사진 (Photorealistic RAW)",
+    icon: "📷",
+    prefix: "RAW candid photo, authentic portrait photography, shot on 50mm f/1.8 lens, natural human skin texture with subtle pores, soft daylight studio lighting, unretouched real person photography",
+    suffix: "clean neutral background, true-to-life skin tones, natural shadows, sharp focus, 35mm film grain, high dynamic range",
+    whiteBg: false,
+    gridBorders: true
+  },
+  {
+    id: "semi_realistic",
+    name: "✨ 반실사 (Semi-Realistic / 2.5D)",
+    icon: "✨",
+    prefix: "semi-realistic 2.5D digital painting, refined facial features, smooth shading, aesthetic webtoon cover illustration style, intricate hair detailing, soft ambient lighting",
+    suffix: "clean studio backdrop, luminous skin highlights, vibrant harmonious palette, crisp artwork, high resolution digital art",
+    whiteBg: false,
+    gridBorders: true
+  },
+  {
+    id: "anime",
+    name: "🎨 2D 애니 / 웹툰 (Anime & Manga)",
+    icon: "🎨",
+    prefix: "masterpiece anime illustration, crisp line art, vibrant cel shading, modern webtoon aesthetic, dynamic studio key visual, expressive features",
+    suffix: "clean comic panel divider lines, rich saturated colors, sharp linework, high quality 2D art",
+    whiteBg: false,
+    gridBorders: true
+  },
+  {
+    id: "concept_sheet",
+    name: "📐 캐릭터 설정화 (Concept Art Sheet)",
+    icon: "📐",
+    prefix: "concept art character model sheet, character design turnaround reference, multiple views and poses of the same character, production design documentation",
+    suffix: "clean pure white background, studio white backdrop, uniform neutral lighting, clean production artwork, sharp focus on all panels",
+    whiteBg: true,
+    gridBorders: true
+  },
+  {
+    id: "cg_3d",
+    name: "🎮 3D CG 캐릭터 (3D CGI / Unreal 5)",
+    icon: "🎮",
+    prefix: "3D character model render, Octane Render, Unreal Engine 5, Subsurface Scattering (SSS) realistic skin shader, ray tracing reflections, cinematic 3D lighting",
+    suffix: "clean studio void backdrop, physically based rendering (PBR) materials, ambient occlusion, 8k textures, volumetric lighting",
+    whiteBg: false,
+    gridBorders: true
+  }
+];
+
+// 엑셀 표 기반 체계적 샷/구도 프리셋 그룹 (한국어 + 영어)
+const PRESET_GROUPS = [
+  {
+    group: "얼굴 - 일반 (Face)",
+    items: [
+      { label: "얼굴 일반: 정면 (Front View)", ko: "얼굴 정면", en: "face, front view, detailed facial features" },
+      { label: "얼굴 일반: 측면 (Side View)", ko: "얼굴 측면", en: "face, side profile view" },
+      { label: "얼굴 일반: 45도 측면 (3/4 View)", ko: "얼굴 45도 측면", en: "face, three-quarter view, 45-degree angle" },
+      { label: "얼굴 일반: 후면 (Back View)", ko: "얼굴 후면", en: "back of head, from behind" },
+      { label: "얼굴 일반: 위에서 내려다 보기 (High Angle)", ko: "얼굴 하이앵글 (위에서)", en: "face, high angle, from above" },
+      { label: "얼굴 일반: 아래에서 올려다 보기 (Low Angle)", ko: "얼굴 로우앵글 (아래에서)", en: "face, low angle, from below" }
+    ]
+  },
+  {
+    group: "얼굴 - 초근접 (Extreme Close-Up)",
+    items: [
+      { label: "얼굴 초근접: 정면 (Front View)", ko: "얼굴 초근접 정면", en: "extreme close-up face, front view, macro detail" },
+      { label: "얼굴 초근접: 측면 (Side View)", ko: "얼굴 초근접 측면", en: "extreme close-up face, side profile view" },
+      { label: "얼굴 초근접: 45도 측면 (3/4 View)", ko: "얼굴 초근접 45도 측면", en: "extreme close-up face, three-quarter view, 45-degree angle" },
+      { label: "얼굴 초근접: 후면 (Back View)", ko: "얼굴 초근접 후면", en: "extreme close-up back of head" },
+      { label: "얼굴 초근접: 위에서 내려다 보기 (High Angle)", ko: "얼굴 초근접 하이앵글", en: "extreme close-up face, high angle, from above" },
+      { label: "얼굴 초근접: 아래에서 올려다 보기 (Low Angle)", ko: "얼굴 초근접 로우앵글", en: "extreme close-up face, low angle, from below" }
+    ]
+  },
+  {
+    group: "상반신 - 가슴까지 (Bust Shot)",
+    items: [
+      { label: "상반신 (가슴): 정면 (Front View)", ko: "상반신 가슴 정면", en: "bust shot, upper body, front view" },
+      { label: "상반신 (가슴): 측면 (Side View)", ko: "상반신 가슴 측면", en: "bust shot, upper body, side profile view" },
+      { label: "상반신 (가슴): 45도 측면 (3/4 View)", ko: "상반신 가슴 45도 측면", en: "bust shot, upper body, three-quarter view, 45-degree angle" },
+      { label: "상반신 (가슴): 후면 (Back View)", ko: "상반신 가슴 후면", en: "bust shot, upper body, back view, from behind" },
+      { label: "상반신 (가슴): 위에서 내려다 보기 (High Angle)", ko: "상반신 가슴 하이앵글", en: "bust shot, upper body, high angle, from above" },
+      { label: "상반신 (가슴): 아래에서 올려다 보기 (Low Angle)", ko: "상반신 가슴 로우앵글", en: "bust shot, upper body, low angle, from below" }
+    ]
+  },
+  {
+    group: "상반신 - 허리까지 (Waist Shot)",
+    items: [
+      { label: "상반신 (허리): 정면 (Front View)", ko: "상반신 허리 정면", en: "waist shot, waist up, front view" },
+      { label: "상반신 (허리): 측면 (Side View)", ko: "상반신 허리 측면", en: "waist shot, waist up, side profile view" },
+      { label: "상반신 (허리): 45도 측면 (3/4 View)", ko: "상반신 허리 45도 측면", en: "waist shot, waist up, three-quarter view, 45-degree angle" },
+      { label: "상반신 (허리): 후면 (Back View)", ko: "상반신 허리 후면", en: "waist shot, waist up, back view, from behind" },
+      { label: "상반신 (허리): 위에서 내려다 보기 (High Angle)", ko: "상반신 허리 하이앵글", en: "waist shot, waist up, high angle, from above" },
+      { label: "상반신 (허리): 아래에서 올려다 보기 (Low Angle)", ko: "상반신 허리 로우앵글", en: "waist shot, waist up, low angle, from below" }
+    ]
+  },
+  {
+    group: "전신 - 일반 (Full Body)",
+    items: [
+      { label: "전신: 정면 (Front View)", ko: "전신 정면", en: "full body, front view" },
+      { label: "전신: 측면 (Side View)", ko: "전신 측면", en: "full body, side profile view" },
+      { label: "전신: 45도 측면 (3/4 View)", ko: "전신 45도 측면", en: "full body, three-quarter view, 45-degree angle" },
+      { label: "전신: 후면 (Back View)", ko: "전신 후면", en: "full body, back view, from behind" },
+      { label: "전신: 위에서 내려다 보기 (High Angle)", ko: "전신 하이앵글", en: "full body, high angle, bird-eye view, from above" },
+      { label: "전신: 아래에서 올려다 보기 (Low Angle)", ko: "전신 로우앵글", en: "full body, low angle, worm-eye view, from below" }
+    ]
+  },
+  {
+    group: "하반신 - 일반 (Lower Body)",
+    items: [
+      { label: "하반신: 정면 (Front View)", ko: "하반신 정면", en: "lower body, legs, front view" },
+      { label: "하반신: 측면 (Side View)", ko: "하반신 측면", en: "lower body, legs, side profile view" },
+      { label: "하반신: 45도 측면 (3/4 View)", ko: "하반신 45도 측면", en: "lower body, legs, three-quarter view, 45-degree angle" },
+      { label: "하반신: 후면 (Back View)", ko: "하반신 후면", en: "lower body, legs, back view, from behind" },
+      { label: "하반신: 위에서 내려다 보기 (High Angle)", ko: "하반신 하이앵글", en: "lower body, legs, high angle, from above" },
+      { label: "하반신: 아래에서 올려다 보기 (Low Angle)", ko: "하반신 로우앵글", en: "lower body, legs, low angle, from below" }
+    ]
+  },
+  {
+    group: "소품 & 배경 (Props & Background)",
+    items: [
+      { label: "소품 / 오브젝트 (Props)", ko: "소품 오브젝트", en: "detailed prop, focused object" },
+      { label: "사이버펑크 도시 (Cyberpunk City)", ko: "사이버펑크 도시", en: "cyberpunk neon city, glowing holographic lights" },
+      { label: "자연 / 숲 (Lush Forest)", ko: "자연 숲 배경", en: "lush forest, trees, dappled sunlight" },
+      { label: "해변 / 바다 (Ocean Beach)", ko: "해변 바다 배경", en: "ocean, sandy beach, sea waves" },
+      { label: "아늑한 실내 (Cozy Room)", ko: "아늑한 실내 방", en: "indoor room, cozy interior" }
+    ]
+  }
+];
+
+const LAYOUT_TEMPLATES = [
+  {
+    id: "char_sheet_3",
+    name: "👑 캐릭터 시트 (3분할 앙상블)",
+    aspectRatio: "16:9",
+    cols: 6,
+    rows: 3,
+    whiteBg: true,
+    gridBorders: true,
+    characterSheetStyle: true,
+    prefixPrompt: "masterpiece, best quality, ultra detailed, 1girl, silver hair, glowing blue eyes, elegant design",
+    suffixPrompt: "sharp focus, photorealistic 8k, uniform lighting",
+    areas: [
+      {
+        id: 1,
+        c1: 0, c2: 2, r1: 0, r2: 2,
+        koPrompt: "전신 45도 측면, 완벽한 포즈와 의상 디테일",
+        prompt: "full body, three-quarter view, 45-degree angle, complete outfit details"
+      },
+      {
+        id: 2,
+        c1: 3, c2: 5, r1: 0, r2: 0,
+        koPrompt: "얼굴 초근접 정면, 아름다운 미소",
+        prompt: "extreme close-up face, front view, macro detail, gentle warm smile"
+      },
+      {
+        id: 3,
+        c1: 3, c2: 5, r1: 1, r2: 2,
+        koPrompt: "상반신 가슴 45도 측면, 의상 상체 디테일",
+        prompt: "bust shot, upper body, three-quarter view, 45-degree angle"
+      }
+    ]
+  },
+  {
+    id: "char_sheet_4",
+    name: "📐 4컷 멀티 앵글 시트 (4-Panel Grid)",
+    aspectRatio: "1:1",
+    cols: 4,
+    rows: 4,
+    whiteBg: true,
+    gridBorders: true,
+    characterSheetStyle: true,
+    prefixPrompt: "masterpiece, best quality, concept art character sheet, 1boy, handsome anime style",
+    suffixPrompt: "clean lines, uniform studio lighting, high resolution",
+    areas: [
+      {
+        id: 1,
+        c1: 0, c2: 1, r1: 0, r2: 1,
+        koPrompt: "얼굴 정면",
+        prompt: "face, front view, detailed facial features"
+      },
+      {
+        id: 2,
+        c1: 2, c2: 3, r1: 0, r2: 1,
+        koPrompt: "얼굴 측면",
+        prompt: "face, side profile view"
+      },
+      {
+        id: 3,
+        c1: 0, c2: 1, r1: 2, r2: 3,
+        koPrompt: "상반신 허리 정면",
+        prompt: "waist shot, waist up, front view"
+      },
+      {
+        id: 4,
+        c1: 2, c2: 3, r1: 2, r2: 3,
+        koPrompt: "전신 후면",
+        prompt: "full body, back view, from behind"
+      }
+    ]
+  },
+  {
+    id: "comic_strip",
+    name: "💬 만화 컷 분할 (Comic Story Layout)",
+    aspectRatio: "16:9",
+    cols: 6,
+    rows: 2,
+    whiteBg: false,
+    gridBorders: true,
+    characterSheetStyle: false,
+    prefixPrompt: "manga style, dynamic anime illustration, vivid cinematic colors",
+    suffixPrompt: "high contrast, dramatic lighting",
+    areas: [
+      {
+        id: 1,
+        c1: 0, c2: 1, r1: 0, r2: 1,
+        koPrompt: "얼굴 초근접 정면",
+        prompt: "extreme close-up face, front view, macro detail"
+      },
+      {
+        id: 2,
+        c1: 2, c2: 3, r1: 0, r2: 1,
+        koPrompt: "소품 오브젝트 (검을 쥔 손)",
+        prompt: "detailed prop, focused object, hands gripping sword"
+      },
+      {
+        id: 3,
+        c1: 4, c2: 5, r1: 0, r2: 1,
+        koPrompt: "전신 정면",
+        prompt: "full body, front view"
+      }
+    ]
+  },
+  {
+    id: "duo_faceoff",
+    name: "⚔️ 2인 대치 샷 (Side-by-Side Duel)",
+    aspectRatio: "16:9",
+    cols: 6,
+    rows: 3,
+    whiteBg: false,
+    gridBorders: false,
+    characterSheetStyle: false,
+    prefixPrompt: "masterpiece, highly detailed, dramatic rivalry, epic fantasy scene",
+    suffixPrompt: "cinematic lighting, particle effects, 8k wallpaper",
+    areas: [
+      {
+        id: 1,
+        c1: 0, c2: 2, r1: 0, r2: 2,
+        koPrompt: "상반신 가슴 45도 측면, 푸른 불꽃의 마법사",
+        prompt: "bust shot, upper body, three-quarter view, glowing blue mage"
+      },
+      {
+        id: 2,
+        c1: 3, c2: 5, r1: 0, r2: 2,
+        koPrompt: "상반신 가슴 45도 측면, 붉은 화염의 검사",
+        prompt: "bust shot, upper body, three-quarter view, fierce flame warrior"
+      }
+    ]
+  },
+  {
+    id: "vertical_story",
+    name: "📱 9:16 숏폼 세로 3단 스토리 (Vertical Story)",
+    aspectRatio: "9:16",
+    cols: 3,
+    rows: 6,
+    whiteBg: false,
+    gridBorders: true,
+    characterSheetStyle: false,
+    prefixPrompt: "aesthetic webtoon art, vertical composition, vibrant colors",
+    suffixPrompt: "clean lines, beautiful background",
+    areas: [
+      {
+        id: 1,
+        c1: 0, c2: 2, r1: 0, r2: 1,
+        koPrompt: "자연 숲 배경, 푸른 하늘",
+        prompt: "lush forest, trees, dappled sunlight, blue sky"
+      },
+      {
+        id: 2,
+        c1: 0, c2: 2, r1: 2, r2: 3,
+        koPrompt: "얼굴 초근접 45도 측면",
+        prompt: "extreme close-up face, three-quarter view, 45-degree angle"
+      },
+      {
+        id: 3,
+        c1: 0, c2: 2, r1: 4, r2: 5,
+        koPrompt: "소품 오브젝트 (맞잡은 두 손)",
+        prompt: "detailed prop, focused object, two hands holding gently"
+      }
+    ]
+  }
+];
+
+const COLOR_PALETTE = [
+  { border: "#00f0ff", bg: "rgba(0, 240, 255, 0.22)", glow: "rgba(0, 240, 255, 0.6)", text: "#00f0ff" },
+  { border: "#ff007f", bg: "rgba(255, 0, 127, 0.22)", glow: "rgba(255, 0, 127, 0.6)", text: "#ff007f" },
+  { border: "#ffe600", bg: "rgba(255, 230, 0, 0.22)", glow: "rgba(255, 230, 0, 0.6)", text: "#ffe600" },
+  { border: "#a100ff", bg: "rgba(161, 0, 255, 0.22)", glow: "rgba(161, 0, 255, 0.6)", text: "#a100ff" },
+  { border: "#00ff66", bg: "rgba(0, 255, 102, 0.22)", glow: "rgba(0, 255, 102, 0.6)", text: "#00ff66" },
+  { border: "#ff5e00", bg: "rgba(255, 94, 0, 0.22)", glow: "rgba(255, 94, 0, 0.6)", text: "#ff5e00" },
+  { border: "#00e5ff", bg: "rgba(0, 229, 255, 0.22)", glow: "rgba(0, 229, 255, 0.6)", text: "#00e5ff" },
+  { border: "#ff0055", bg: "rgba(255, 0, 85, 0.22)", glow: "rgba(255, 0, 85, 0.6)", text: "#ff0055" },
+  { border: "#b8ff00", bg: "rgba(184, 255, 0, 0.22)", glow: "rgba(184, 255, 0, 0.6)", text: "#b8ff00" },
+  { border: "#e056fd", bg: "rgba(224, 86, 253, 0.22)", glow: "rgba(224, 86, 253, 0.6)", text: "#e056fd" }
+];
+
+
+// ==========================================
+// 2. Korean -> English Translator Engine
+// ==========================================
+/**
+ * 한글 -> 영문 AI 프롬프트 사전 및 번역 모듈
+ */
+
+const PROMPT_TRANSLATIONS = [
+  // 1. 복합 샷 & 부위 & 각도 (가장 긴 복합 패턴 우선 매칭)
+  [/(얼굴\s*)?클로즈업\s*(45도(\s*측면|\s*각도)?|반측면|쿼터뷰)/gi, "close-up shot, detailed face, three-quarter view, 45-degree angle"],
+  [/(얼굴\s*)?클로즈업\s*측면/gi, "close-up shot, detailed face, side profile view"],
+  [/(얼굴\s*)?클로즈업\s*정면/gi, "close-up shot, detailed face, front view"],
+  [/얼굴\s*클로즈업/gi, "close-up shot, detailed face"],
+  [/얼굴\s*정면|정면\s*얼굴/gi, "detailed face, front view"],
+  [/얼굴\s*측면|측면\s*얼굴/gi, "detailed face, side profile view"],
+  [/익스트림\s*클로즈업|초근접/gi, "extreme close-up shot, macro detail"],
+  [/클로즈업/gi, "close-up shot"],
+
+  [/전신\s*(45도(\s*측면|\s*각도)?|반측면|쿼터뷰)/gi, "full body, three-quarter view, 45-degree angle"],
+  [/전신\s*정면/gi, "full body, front view"],
+  [/전신\s*측면/gi, "full body, side profile view"],
+  [/전신\s*(후면|뒷모습)/gi, "full body, back view"],
+  [/전신/gi, "full body"],
+
+  [/상반신\s*(45도(\s*측면|\s*각도)?|반측면|쿼터뷰)/gi, "upper body, three-quarter view, 45-degree angle"],
+  [/상반신\s*정면/gi, "upper body, front view"],
+  [/상반신\s*측면/gi, "upper body, side profile view"],
+  [/상반신\s*(후면|뒷모습)/gi, "upper body, back view"],
+  [/상반신/gi, "upper body, waist up"],
+
+  [/하반신\s*(45도(\s*측면|\s*각도)?|반측면|쿼터뷰)/gi, "lower body, legs, three-quarter view, 45-degree angle"],
+  [/하반신\s*정면/gi, "lower body, legs, front view"],
+  [/하반신\s*측면/gi, "lower body, legs, side profile view"],
+  [/하반신\s*(후면|뒷모습)/gi, "lower body, legs, back view"],
+  [/하반신/gi, "lower body, legs"],
+
+  // 2. 헤어 & 눈 & 캐릭터 외모
+  [/은발/gi, "silver hair"],
+  [/백발/gi, "white hair"],
+  [/금발/gi, "blonde hair"],
+  [/흑발|검은\s*머리/gi, "black hair"],
+  [/갈색\s*머리|갈발/gi, "brown hair"],
+  [/붉은\s*머리|적발/gi, "red hair"],
+  [/파란\s*머리|청발/gi, "blue hair"],
+  [/분홍\s*머리|핑크\s*(헤어|머리)/gi, "pink hair"],
+  [/보라색\s*머리/gi, "purple hair"],
+  [/녹색\s*머리|초록\s*머리/gi, "green hair"],
+  [/단발/gi, "short bob hair"],
+  [/장발|긴\s*머리/gi, "long flowing hair"],
+  [/숏컷/gi, "pixie cut, short hair"],
+  [/포니테일/gi, "ponytail hair"],
+  [/트윈테일|양갈래/gi, "twintails hair"],
+  [/땋은\s*머리/gi, "braided hair"],
+  [/웨이브\s*머리|곱슬머리/gi, "wavy curly hair"],
+  [/생머리/gi, "straight hair"],
+  [/푸른\s*눈|파란\s*눈/gi, "blue eyes"],
+  [/붉은\s*눈|빨간\s*눈/gi, "red eyes"],
+  [/녹색\s*눈|초록\s*눈/gi, "green eyes"],
+  [/보라색\s*눈/gi, "purple eyes"],
+  [/금안|노란\s*눈/gi, "golden eyes"],
+  [/오드아이/gi, "heterochromia, odd eyes"],
+
+  [/(\d+)\s*세/gi, "$1-year-old"],
+  [/한국인|한국\s*(사람|여성|소녀|소년대)?/gi, "korean"],
+  [/여고생|고등학교\s*여학생/gi, "high school girl, student"],
+  [/남고생|고등학교\s*남학생/gi, "high school boy, student"],
+  [/여대생|대학생\s*여성/gi, "college girl, university student"],
+  [/어여쁜\s*소녀|예쁜\s*소녀|소녀|미소녀/gi, "1girl, beautiful girl"],
+  [/여자|여성|미녀/gi, "1woman, beautiful woman"],
+  [/소년|미소년/gi, "1boy, handsome boy"],
+  [/남자|남성|미남/gi, "1man, handsome man"],
+  [/어린이|아이/gi, "child, cute kid"],
+  [/여우귀/gi, "fox ears, fennec ears"],
+  [/고양이귀/gi, "cat ears"],
+  [/토끼귀/gi, "rabbit ears"],
+  [/엘프귀/gi, "elf ears"],
+  [/날개|천사\s*날개/gi, "angel wings, feathered wings"],
+  [/악마\s*날개/gi, "demon wings, bat wings"],
+  [/꼬리/gi, "fluffy tail"],
+
+  // 3. 앵글 & 시점 & 구도
+  [/45도(\s*측면|\s*각도|\s*뷰)?|반측면|쿼터뷰/gi, "three-quarter view, 45-degree angle"],
+  [/90도(\s*측면|\s*각도|\s*프로필)?/gi, "side profile view, 90-degree angle"],
+  [/정면(\s*샷|\s*뷰)?/gi, "front view"],
+  [/측면(\s*샷|\s*뷰)?/gi, "side profile view"],
+  [/뒷모습|후면(\s*샷|\s*뷰)?/gi, "back view, from behind"],
+  [/뒤돌아보는/gi, "looking back over shoulder"],
+  [/오버더\s*숄더/gi, "over-the-shoulder shot"],
+  [/바스트샷|가슴위/gi, "bust shot"],
+  [/웨이스트샷|허리위/gi, "waist shot"],
+  [/카우보이샷|무릎위/gi, "cowboy shot"],
+  [/니샷/gi, "knee shot"],
+  [/와이드샷|원경|파노라마/gi, "wide angle shot, panoramic view"],
+  [/하이앵글|위에서|탑뷰|버드아이뷰/gi, "high angle, top-down bird-eye view, from above"],
+  [/로우앵글|아래에서|웜아이뷰/gi, "low angle, worm-eye view, from below"],
+  [/더치앵글|기울어진/gi, "dutch angle, tilted perspective"],
+  [/아이레벨|눈높이/gi, "eye level view"],
+
+  // 4. 의상 & 아이템
+  [/웨딩드레스/gi, "wedding dress, white bridal gown"],
+  [/이브닝드레스/gi, "evening dress, luxury gown"],
+  [/원피스|드레스/gi, "dress, elegant outfit"],
+  [/세일러복/gi, "sailor suit uniform"],
+  [/교복/gi, "school uniform"],
+  [/한복/gi, "hanbok, traditional korean dress"],
+  [/기모노/gi, "kimono, traditional japanese outfit"],
+  [/유카타/gi, "yukata"],
+  [/치파오/gi, "cheongsam, qipao dress"],
+  [/정장|수트/gi, "business suit, formal wear"],
+  [/셔츠|와이셔츠/gi, "collared shirt"],
+  [/블라우스/gi, "blouse"],
+  [/후드티|후드/gi, "hoodie"],
+  [/맨투맨/gi, "sweatshirt"],
+  [/청바지/gi, "denim jeans"],
+  [/미니스커트/gi, "miniskirt"],
+  [/롱스커트/gi, "long skirt"],
+  [/스커트|치마/gi, "skirt"],
+  [/반바지|핫팬츠/gi, "shorts, hotpants"],
+  [/수영복|비키니/gi, "swimsuit, bikini"],
+  [/래시가드/gi, "rashguard"],
+  [/메이드복/gi, "maid outfit, maid dress"],
+  [/간호사복/gi, "nurse outfit"],
+  [/갑옷|아머/gi, "armor, battle gear"],
+  [/SF슈트|사이버슈트/gi, "sci-fi bodysuit, cyber armor"],
+  [/코트|트렌치코트/gi, "trench coat"],
+  [/패딩/gi, "puffer jacket"],
+  [/가디건/gi, "cardigan"],
+  [/니트|스웨터/gi, "knit sweater"],
+  [/가죽\s*자켓/gi, "leather jacket"],
+  [/안경/gi, "glasses, stylish spectacles"],
+  [/선글라스/gi, "sunglasses"],
+  [/마스크/gi, "face mask"],
+  [/모자|캡/gi, "cap, stylish hat"],
+  [/베레모/gi, "beret"],
+  [/목걸이/gi, "necklace, fine jewelry"],
+  [/귀걸이/gi, "earrings"],
+  [/헤드폰|이어폰/gi, "headphones around neck"],
+  [/검|칼/gi, "holding sword, katana"],
+  [/총|권총/gi, "holding gun, pistol"],
+  [/지팡이/gi, "magic staff"],
+  [/스마트폰|핸드폰/gi, "holding smartphone"],
+  [/책/gi, "holding book"],
+  [/커피잔|음료/gi, "holding coffee cup"],
+
+  // 5. 포즈 & 행동 & 표정
+  [/웃는\s*얼굴|미소|웃음/gi, "smiling warmly, gentle smile"],
+  [/활짝\s*웃는|환한\s*미소/gi, "bright radiant smile, open mouth laughing"],
+  [/무표정|시크한/gi, "expressionless, cool stoic face"],
+  [/윙크/gi, "winking, playful expression"],
+  [/부끄러운|홍조|볼붉힘/gi, "blushing, shy embarrassed expression"],
+  [/화난|분노|노려보는/gi, "angry glare, fierce expression"],
+  [/슬픈|눈물/gi, "crying, tearful emotional face"],
+  [/놀란/gi, "surprised, shocked wide eyes"],
+  [/카리스마|진지한/gi, "intense serious charismatic gaze"],
+  [/카메라를\s*바라보는|정면\s*응시/gi, "looking at viewer"],
+  [/서있는|직립/gi, "standing pose"],
+  [/앉아있는|앉은/gi, "sitting gracefully"],
+  [/누워있는|누운/gi, "lying down pose"],
+  [/걷는|걸어가는/gi, "walking dynamically"],
+  [/달리는|뛰는/gi, "running dynamically"],
+  [/점프|도약/gi, "jumping in mid-air"],
+  [/손을\s*흔드는/gi, "waving hand cheerfully"],
+  [/턱을\s*괴는/gi, "hand on chin, thoughtful pose"],
+  [/손을\s*뻗는/gi, "reaching out toward camera"],
+  [/다리를\s*꼬고\s*앉은/gi, "sitting with legs crossed"],
+  [/주머니에\s*손을\s*넣은/gi, "hands in pockets"],
+  [/전투\s*자세|액션\s*포즈/gi, "dynamic battle action pose"],
+
+  // 6. 신체 부위
+  [/손|손가락/gi, "detailed hands, perfect fingers"],
+  [/다리|각선미/gi, "slender legs"],
+  [/발/gi, "feet"],
+  [/어깨/gi, "shoulders"],
+
+  // 7. 배경 & 조명 & 환경
+  [/백색\s*배경|흰색\s*배경|화이트\s*배경/gi, "clean solid pure white background, studio white backdrop"],
+  [/검정\s*(색\s*)?실선\s*(격자)?|분할선|격자선/gi, "split-screen multi-panel layout, separated by thin black divider lines"],
+  [/사이버펑크(\s*도시)?/gi, "cyberpunk neon city, glowing holographic lights"],
+  [/미래\s*도시|SF\s*도시/gi, "futuristic sci-fi city, high-tech skyscrapers"],
+  [/도시|빌딩숲|거리/gi, "modern cityscape, streets, skyscrapers"],
+  [/골목길/gi, "narrow alleyway, cozy street"],
+  [/카페/gi, "cafe, cozy coffee shop"],
+  [/실내|방|침실/gi, "indoor room, cozy bedroom interior"],
+  [/도서관/gi, "library, bookshelves"],
+  [/교실|학교/gi, "classroom, school interior"],
+  [/야외|자연/gi, "outdoors, nature"],
+  [/숲|나무|밀림/gi, "lush forest, trees, dappled sunlight"],
+  [/해변|바다|해안가/gi, "ocean, sandy beach, sea waves"],
+  [/하늘|푸른\s*하늘/gi, "blue sky, fluffy white clouds"],
+  [/밤하늘|은하수|우주/gi, "night sky, starry galaxy, nebula outer space"],
+  [/노을|일몰|석양/gi, "sunset, golden hour, warm atmospheric glow"],
+  [/야경|밤/gi, "night scene, dark atmospheric lighting"],
+  [/비오는|비/gi, "rainy day, wet floor reflections"],
+  [/눈오는|눈꽃|눈|설원/gi, "snowing, winter snowfall, snowfield, frost"],
+  [/벚꽃|사쿠라/gi, "cherry blossoms, falling sakura petals"],
+  [/단풍/gi, "autumn leaves, fall foliage"],
+  [/배경/gi, "background"],
+
+  // 8. 화풍 & 조명 & 퀄리티
+  [/실사|사진|포토리얼/gi, "photorealistic, 8k photography, hyperrealistic"],
+  [/애니|일러스트|만화/gi, "anime style, detailed illustration"],
+  [/시네마틱/gi, "cinematic lighting, film still"],
+  [/수채화/gi, "watercolor painting"],
+  [/유화/gi, "oil painting"],
+  [/역광|림라이트/gi, "backlighting, rim light"],
+  [/네온|네온사인/gi, "neon glow, vibrant colors"],
+  [/빛내림|틴들현상/gi, "volumetric god rays, sunbeams"],
+  [/고화질|고품질|최고품질/gi, "masterpiece, best quality, ultra detailed"]
+];
+
+/**
+ * 사전 기반 빠른 오프라인 번역
+ */
+function translateViaDictionary(text) {
+  if (!text || typeof text !== 'string') return '';
+  let res = text.trim();
+  if (!res) return '';
+
+  // 한글 포함 여부 확인
+  if (!/[가-힣]/.test(res)) {
+    return res;
+  }
+
+  for (const [pattern, eng] of PROMPT_TRANSLATIONS) {
+    res = res.replace(pattern, eng);
+  }
+
+  // 조사 및 불필요 어미 정리
+  res = res.replace(/(\s*이|가|을|를|의|에|에서|으로|로|과|와|하고|하며|있는|있음|한|된|인)\b/g, ' ');
+  res = res.replace(/\s{2,}/g, ' ').trim();
+  res = res.replace(/\s*,\s*/g, ', ');
+  res = res.replace(/(,\s*){2,}/g, ', ');
+  res = res.replace(/^,\s*|,\s*$/g, '');
+  return res;
+}
+
+/**
+ * Google Translate API를 활용한 실시간 번역 (실패 시 사전 번역 fallback)
+ */
+async function translatePrompt(text) {
+  if (!text || typeof text !== 'string') return '';
+  const trimmed = text.trim();
+  if (!trimmed) return '';
+
+  // 영문만 있는 경우 그대로 반환
+  if (!/[가-힣]/.test(trimmed)) {
+    return trimmed;
+  }
+
+  // 1차: 사전으로 알려진 AI 표준 프롬프트 치환
+  let dictTranslated = translateViaDictionary(trimmed);
+
+  // 치환 후에도 한글이 남아있으면 Google Translate API 호출
+  if (/[가-힣]/.test(dictTranslated)) {
+    try {
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ko&tl=en&dt=t&q=${encodeURIComponent(dictTranslated)}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const json = await res.json();
+        if (json && json[0]) {
+          const apiTranslated = json[0].map(item => item[0]).join('');
+          return apiTranslated.trim();
+        }
+      }
+    } catch (e) {
+      console.warn('Google Translate API error, using dict fallback:', e);
+    }
+  }
+
+  return dictTranslated;
+}
+
+
+// ==========================================
+// 3. Spatial Coordinate & Prompt Generator
+// ==========================================
+/**
+ * 공간 위치 명명 및 다중 AI 포맷 생성 모듈
+ */
+
+/**
+ * 최신 AI(Krea, Midjourney, Flux, SD3, GPT)가 숫자/기호 아티팩트를 출력하지 않도록 순수 자연어 공간 위치 서술어 반환
+ */
+function getNaturalSpatialName(c1, c2, r1, r2, totalCols, totalRows) {
+  const colSpan = (c2 - c1 + 1) / totalCols;
+  const rowSpan = (r2 - r1 + 1) / totalRows;
+  const colCenter = (c1 + c2 + 1) / (2.0 * totalCols);
+  const rowCenter = (r1 + r2 + 1) / (2.0 * totalRows);
+
+  const wPct = Math.round(colSpan * 100);
+  const hPct = Math.round(rowSpan * 100);
+  const x1Pct = Math.round((c1 / totalCols) * 100);
+  const x2Pct = Math.round(((c2 + 1) / totalCols) * 100);
+  const y1Pct = Math.round((r1 / totalRows) * 100);
+  const y2Pct = Math.round(((r2 + 1) / totalRows) * 100);
+
+  // 1. 전체 영역 (Full frame)
+  if (colSpan >= 0.85 && rowSpan >= 0.85) {
+    return "Across the entire frame (full 100% canvas)";
+  }
+
+  // 2. 전고 세로 띠 (Full-height vertical columns)
+  if (rowSpan >= 0.85) {
+    const colType = wPct >= 40 ? "wide vertical section" : (wPct <= 25 ? "narrow vertical strip" : "vertical panel");
+    if (colCenter < 0.35) {
+      return `Left ${colType} (occupying exactly ${wPct}% width from 0% to ${x2Pct}%, full 100% height)`;
+    } else if (colCenter > 0.65) {
+      return `Right ${colType} (occupying exactly ${wPct}% width from ${x1Pct}% to 100%, full 100% height)`;
+    } else {
+      return `Center ${colType} (occupying exactly ${wPct}% width from ${x1Pct}% to ${x2Pct}%, full 100% height)`;
+    }
+  }
+
+  // 3. 전폭 가로 띠 (Full-width horizontal bands)
+  if (colSpan >= 0.85) {
+    const rowType = hPct >= 40 ? "wide horizontal band" : (hPct <= 25 ? "narrow horizontal strip" : "horizontal panel");
+    if (rowCenter < 0.35) {
+      return `Top ${rowType} (full 100% width, occupying exactly ${hPct}% height from 0% to ${y2Pct}%)`;
+    } else if (rowCenter > 0.65) {
+      return `Bottom ${rowType} (full 100% width, occupying exactly ${hPct}% height from ${y1Pct}% to 100%)`;
+    } else {
+      return `Middle ${rowType} (full 100% width, occupying exactly ${hPct}% height from ${y1Pct}% to ${y2Pct}%)`;
+    }
+  }
+
+  // 4. 분할 사분면 / 그리드 패널 (Quadrants & multi-cells)
+  let hPos = "center";
+  if (colCenter < 0.35) hPos = "left";
+  else if (colCenter > 0.65) hPos = "right";
+
+  let vPos = "middle";
+  if (rowCenter < 0.35) vPos = "top";
+  else if (rowCenter > 0.65) vPos = "bottom";
+
+  let panelName = "Center frame";
+  if (hPos === "center" && vPos === "middle") panelName = "Center frame";
+  else if (vPos === "middle") panelName = `${hPos.charAt(0).toUpperCase() + hPos.slice(1)} middle panel`;
+  else if (hPos === "center") panelName = `${vPos.charAt(0).toUpperCase() + vPos.slice(1)} center panel`;
+  else panelName = `${vPos.charAt(0).toUpperCase() + vPos.slice(1)}-${hPos} panel`;
+
+  return `${panelName} (occupying exactly ${wPct}% width from ${x1Pct}% to ${x2Pct}%, ${hPct}% height from ${y1Pct}% to ${y2Pct}%)`;
+}
+
+/**
+ * 구조화 태그 및 바운딩 박스용 상세 좌표/퍼센트 정보 생성 함수
+ */
+function getSpatialDescription(c1, c2, r1, r2, totalCols, totalRows) {
+  const colSpan = (c2 - c1 + 1) / totalCols;
+  const rowSpan = (r2 - r1 + 1) / totalRows;
+  const colCenter = (c1 + c2 + 1) / (2.0 * totalCols);
+  const rowCenter = (r1 + r2 + 1) / (2.0 * totalRows);
+
+  const pctLeft = Math.round((c1 / totalCols) * 100);
+  const pctRight = Math.round(((c2 + 1) / totalCols) * 100);
+  const pctTop = Math.round((r1 / totalRows) * 100);
+  const pctBottom = Math.round(((r2 + 1) / totalRows) * 100);
+
+  let dirName = "Center";
+  if (colSpan >= 0.85 && rowSpan >= 0.85) {
+    dirName = "Full Background";
+  } else if (colSpan >= 0.85) {
+    if (rowCenter < 0.35) dirName = "Top Full-Width Section";
+    else if (rowCenter > 0.65) dirName = "Bottom Foreground Strip";
+    else dirName = "Middle Panorama Band";
+  } else {
+    let hDir = "Center";
+    if (colCenter < 0.35) hDir = "Left";
+    else if (colCenter > 0.65) hDir = "Right";
+
+    let vDir = "Middle";
+    if (rowCenter < 0.35) vDir = "Top";
+    else if (rowCenter > 0.65) vDir = "Bottom";
+
+    if (hDir === "Center" && vDir === "Middle") dirName = "Center Frame";
+    else if (vDir === "Middle") dirName = `${hDir} Side`;
+    else if (hDir === "Center") dirName = `${vDir} Center`;
+    else dirName = `${vDir}-${hDir}`;
+  }
+
+  const gridInfo = `Cols ${c1 + 1}-${c2 + 1}/${totalCols}, Rows ${r1 + 1}-${r2 + 1}/${totalRows}`;
+  const pctInfo = `${pctLeft}%-${pctRight}% W, ${pctTop}%-${pctBottom}% H`;
+
+  return {
+    direction: dirName,
+    grid: gridInfo,
+    percent: pctInfo,
+    pctLeft,
+    pctRight,
+    pctTop,
+    pctBottom,
+    bbox: [
+      Number((c1 / totalCols).toFixed(2)),
+      Number((r1 / totalRows).toFixed(2)),
+      Number(((c2 + 1) / totalCols).toFixed(2)),
+      Number(((r2 + 1) / totalRows).toFixed(2))
+    ]
+  };
+}
+
+/**
+ * 다양한 AI 엔진 및 포맷별 최종 프롬프트 조합기
+ */
+function buildFinalPrompt({
+  areas,
+  cols,
+  rows,
+  aspectRatio,
+  format,
+  whiteBg,
+  gridBorders,
+  characterSheetStyle,
+  prefixPrompt,
+  suffixPrompt,
+  characterProfile
+}) {
+  const validAreas = areas.filter(a => (a.prompt || a.koPrompt || '').trim().length > 0);
+  const sortedAreas = [...validAreas].sort((a, b) => a.id - b.id);
+  const charProfileTrimmed = (characterProfile || "").trim();
+
+  let bodyPrompt = "";
+
+  if (sortedAreas.length === 0) {
+    // 영역이 없을 때 prefix + characterProfile + suffix
+    const parts = [prefixPrompt, charProfileTrimmed, suffixPrompt].filter(Boolean);
+    return parts.join(", ");
+  }
+
+  switch (format) {
+    case "natural": {
+      // Natural Spatial (Krea 2, MiniMax, Midjourney, SD3, GPT-4o, Gemini)
+      const lines = [];
+      lines.push(`A high-definition ${aspectRatio} multi-panel composition strictly partitioned into ${sortedAreas.length} proportional sections.`);
+      
+      // 인물/피사체 공통 묘사가 있을 때 최상단 앵커링 주입
+      if (charProfileTrimmed) {
+        lines.push(`[Subject / Character Profile & Visual Consistency]: ${charProfileTrimmed}, identical character features and costume maintained across all panels.`);
+      }
+
+      lines.push(`[Spatial Layout & Exact Proportional Placement]:`);
+
+      for (const area of sortedAreas) {
+        const desc = area.prompt.trim();
+        const spatial = getNaturalSpatialName(area.c1, area.c2, area.r1, area.r2, cols, rows);
+        lines.push(`- ${spatial}: ${desc}.`);
+      }
+
+      if (gridBorders) {
+        lines.push(`[Multi-Panel Layout & Strict Proportional Scale]: Split-screen multi-panel collage layout strictly adhering to the exact percentage width and height boundaries specified above for each column and row without shifting, resizing, or distorting relative panel scales. Each panel is cleanly separated by crisp thin black divider lines, clean comic grid panels, pristine artwork without any text, labels, numbers, coordinates, or watermarks.`);
+      } else {
+        lines.push(`[Global Scene Coherence & Proportional Placement]: Seamlessly blended multi-region composition maintaining the exact spatial percentage boundaries and relative scale for each region, unified realistic lighting, cinematic perspective, and coherent environment bridging all regions, clean presentation without any text, labels, numbers, coordinates, or watermarks.`);
+      }
+
+      bodyPrompt = lines.join("\n");
+      break;
+    }
+
+    case "comfyui_break": {
+      // ComfyUI / SD Regional Prompting (BREAK syntax)
+      const parts = [];
+      if (charProfileTrimmed) {
+        parts.push(`(${charProfileTrimmed}:1.15)`);
+      }
+      for (const area of sortedAreas) {
+        const desc = area.prompt.trim();
+        parts.push(`(${desc}:1.1)`);
+      }
+      bodyPrompt = parts.join(" BREAK\n");
+      break;
+    }
+
+    case "structured": {
+      // Structured Tags
+      const lines = [];
+      lines.push(`[Composition: ${aspectRatio} Grid Layout (${cols}x${rows})]`);
+      if (charProfileTrimmed) {
+        lines.push(`[Character Profile]: ${charProfileTrimmed}`);
+      }
+      for (const area of sortedAreas) {
+        const desc = area.prompt.trim();
+        const info = getSpatialDescription(area.c1, area.c2, area.r1, area.r2, cols, rows);
+        lines.push(`[Area ${area.id} | ${info.direction.toUpperCase()} (${info.percent})]: ${desc}`);
+      }
+      bodyPrompt = lines.join("\n");
+      break;
+    }
+
+    case "coordinates": {
+      // Bounding Box Coordinates
+      const lines = [];
+      lines.push(`[Canvas Layout: ${aspectRatio} | Grid ${cols}x${rows}]`);
+      if (charProfileTrimmed) {
+        lines.push(`<character_profile>${charProfileTrimmed}</character_profile>`);
+      }
+      for (const area of sortedAreas) {
+        const desc = area.prompt.trim();
+        const info = getSpatialDescription(area.c1, area.c2, area.r1, area.r2, cols, rows);
+        lines.push(`<area_${area.id} bbox="[${info.bbox.join(', ')}]"> ${desc} </area_${area.id}>`);
+      }
+      bodyPrompt = lines.join("\n");
+      break;
+    }
+
+    case "comma": {
+      // Comma-Separated List
+      const descs = [];
+      if (charProfileTrimmed) descs.push(charProfileTrimmed);
+      sortedAreas.forEach(a => descs.push(a.prompt.trim()));
+      bodyPrompt = descs.join(", ");
+      break;
+    }
+
+    case "json": {
+      // Raw JSON
+      const jsonPayload = {
+        aspectRatio,
+        cols,
+        rows,
+        characterProfile: charProfileTrimmed || undefined,
+        whiteBg,
+        gridBorders,
+        characterSheetStyle,
+        prefixPrompt,
+        suffixPrompt,
+        areas: sortedAreas.map(a => ({
+          id: a.id,
+          grid: { c1: a.c1, c2: a.c2, r1: a.r1, r2: a.r2 },
+          spatial: getNaturalSpatialName(a.c1, a.c2, a.r1, a.r2, cols, rows),
+          prompt: a.prompt,
+          koPrompt: a.koPrompt
+        }))
+      };
+      return JSON.stringify(jsonPayload, null, 2);
+    }
+  }
+
+  // 옵션 및 Prefix / Suffix 조합
+  const extraTags = [];
+  if (whiteBg) {
+    extraTags.push("clean solid pure white background, studio white backdrop");
+  }
+  if (suffixPrompt && suffixPrompt.trim()) {
+    extraTags.push(suffixPrompt.trim());
+  }
+
+  const combinedSuffix = extraTags.join(", ");
+
+  const finalParts = [];
+  if (prefixPrompt && prefixPrompt.trim()) {
+    finalParts.push(prefixPrompt.trim());
+  }
+  if (bodyPrompt) {
+    finalParts.push(bodyPrompt);
+  }
+  if (combinedSuffix) {
+    finalParts.push(combinedSuffix);
+  }
+
+  const separator = (format === "comma") ? ", " : "\n\n";
+  return finalParts.join(separator);
+}
+
+/**
+ * 네거티브 프롬프트 자동 생성기 (글자/숫자 및 기형 방지)
+ */
+function buildNegativePrompt({ gridBorders }) {
+  const baseNegative = [
+    "text",
+    "watermark",
+    "signature",
+    "letters",
+    "numbers",
+    "labels",
+    "captions",
+    "bad anatomy",
+    "bad hands",
+    "missing fingers",
+    "extra limbs",
+    "blurry",
+    "low quality",
+    "worst quality",
+    "distorted face",
+    "deformed"
+  ];
+
+  if (!gridBorders) {
+    baseNegative.push("unwanted frames", "ugly borders", "unwanted split screen");
+  }
+
+  return baseNegative.join(", ");
+}
+
+
+// ==========================================
+// 4. Main App Controller
+// ==========================================
+
+
+
+/**
+ * Application State
+ */
+const state = {
+  aspectRatio: "16:9",
+  cols: 6,
+  rows: 3,
+  areas: [],
+  selectedAreaId: null,
+  whiteBg: false,
+  gridBorders: true,
+  activeArtStyle: "photorealistic",
+  customPresets: [],
+  characterProfileKo: "",
+  characterProfileEn: "",
+  characterHistory: [],
+  prefixPrompt: "RAW candid photo, authentic portrait photography, shot on 50mm f/1.8 lens, natural human skin texture with subtle pores, soft daylight studio lighting, unretouched real person photography",
+  suffixPrompt: "clean neutral background, true-to-life skin tones, natural shadows, sharp focus, 35mm film grain, high dynamic range",
+  format: "natural",
+  mockupEnabled: true,
+  
+  // Drag state
+  isDragging: false,
+  dragStartCell: null,
+  dragCurrentCell: null,
+};
+
+// DOM Elements
+const elements = {
+  canvasViewport: document.getElementById("canvas-viewport"),
+  canvasWrapper: document.getElementById("canvas-wrapper"),
+  gridBoard: document.getElementById("grid-board"),
+  selectionBox: document.getElementById("selection-box"),
+  areasContainer: document.getElementById("areas-container"),
+  
+  // Controls
+  colsCount: document.getElementById("cols-count"),
+  rowsCount: document.getElementById("rows-count"),
+  btnColsDec: document.getElementById("cols-dec"),
+  btnColsInc: document.getElementById("cols-inc"),
+  btnRowsDec: document.getElementById("rows-dec"),
+  btnRowsInc: document.getElementById("rows-inc"),
+  
+  // Ratio buttons
+  ratioButtons: document.querySelectorAll(".ratio-btn"),
+  
+  // Templates
+  templatesContainer: document.getElementById("templates-container"),
+
+  // Character Profile
+  inputCharacterKo: document.getElementById("input-character-ko"),
+  btnApplyProfile: document.getElementById("btn-apply-profile"),
+  btnSaveProfile: document.getElementById("btn-save-profile"),
+  btnClearProfile: document.getElementById("btn-clear-profile"),
+  profileEnInput: document.getElementById("profile-en-input"),
+  profileHistoryChips: document.getElementById("profile-history-chips"),
+  
+  // Art Styles & Toggles
+  artStylesContainer: document.getElementById("art-styles-container"),
+  toggleWhiteBg: document.getElementById("toggle-white-bg"),
+  toggleGridBorders: document.getElementById("toggle-grid-borders"),
+  toggleMockup: document.getElementById("toggle-mockup"),
+  
+  // Area Editor & Presets
+  areaTabs: document.getElementById("area-tabs"),
+  editorCard: document.getElementById("area-editor-card"),
+  activeAreaTitle: document.getElementById("active-area-title"),
+  activeAreaSpatialBadge: document.getElementById("active-area-spatial"),
+  inputKoPrompt: document.getElementById("input-ko-prompt"),
+  inputEnPrompt: document.getElementById("input-en-prompt"),
+  btnTranslate: document.getElementById("btn-translate"),
+  btnDeleteArea: document.getElementById("btn-delete-area"),
+  presetSelect: document.getElementById("preset-select"),
+  chipsContainer: document.getElementById("chips-container"),
+
+  // Custom Presets & Modal
+  customPresetsSection: document.getElementById("custom-presets-section"),
+  customPresetsToggle: document.getElementById("custom-presets-toggle"),
+  customPresetsCount: document.getElementById("custom-presets-count"),
+  customChipsContainer: document.getElementById("custom-chips-container"),
+  btnAddCustomPreset: document.getElementById("btn-add-custom-preset"),
+  btnSaveAsPreset: document.getElementById("btn-save-as-preset"),
+  modalCustomPreset: document.getElementById("modal-custom-preset"),
+  modalPresetTitle: document.getElementById("modal-preset-title"),
+  btnClosePresetModal: document.getElementById("btn-close-preset-modal"),
+  btnCancelPreset: document.getElementById("btn-cancel-preset"),
+  btnSavePresetConfirm: document.getElementById("btn-save-preset-confirm"),
+  presetEditId: document.getElementById("preset-edit-id"),
+  presetInputLabel: document.getElementById("preset-input-label"),
+  presetInputKo: document.getElementById("preset-input-ko"),
+  presetInputEn: document.getElementById("preset-input-en"),
+  
+  // Global Prompts
+  inputPrefix: document.getElementById("input-prefix"),
+  inputSuffix: document.getElementById("input-suffix"),
+  
+  // Outputs
+  formatSelect: document.getElementById("format-select"),
+  outputPrompt: document.getElementById("output-prompt"),
+  outputNegative: document.getElementById("output-negative"),
+  btnCopyPrompt: document.getElementById("btn-copy-prompt"),
+  btnCopyNegative: document.getElementById("btn-copy-negative"),
+  btnExportJson: document.getElementById("btn-export-json"),
+  btnImportJson: document.getElementById("btn-import-json"),
+  fileImport: document.getElementById("file-import"),
+  btnClearAll: document.getElementById("btn-clear-all"),
+  toastContainer: document.getElementById("toast-container")
+};
+
+/**
+ * Aspect Ratio Map (Width / Height)
+ */
+const RATIO_MAP = {
+  "16:9": 16 / 9,
+  "9:16": 9 / 16,
+  "1:1": 1,
+  "4:3": 4 / 3,
+  "3:4": 3 / 4,
+  "3:2": 3 / 2,
+  "2:3": 2 / 3,
+  "21:9": 21 / 9
+};
+
+// =============================================================================
+// Initialize Application
+// =============================================================================
+
+function initApp() {
+  initArtStylesUI();
+  initPresetsUI();
+  initCustomPresetsUI();
+  initLayoutTemplatesUI();
+  initCharacterProfileUI();
+  bindEvents();
+  
+  // Load saved state or default template
+  const saved = localStorage.getItem("visual_grid_prompt_saved_state");
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      Object.assign(state, parsed);
+    } catch (e) {
+      loadTemplate(LAYOUT_TEMPLATES[0]);
+    }
+  } else {
+    loadTemplate(LAYOUT_TEMPLATES[0]);
+  }
+
+  // Setup ResizeObserver for fluid auto-scaling of canvas
+  if (window.ResizeObserver && elements.canvasViewport) {
+    const ro = new ResizeObserver(() => {
+      updateCanvasDimensions();
+    });
+    ro.observe(elements.canvasViewport);
+  }
+
+  updateCanvasDimensions();
+  renderGridCells();
+  renderAreas();
+  updateUIInputs();
+  updatePromptOutput();
+}
+
+/**
+ * Initialize Art Style Presets UI
+ */
+function initArtStylesUI() {
+  if (!elements.artStylesContainer) return;
+  elements.artStylesContainer.innerHTML = "";
+
+  ART_STYLES.forEach(style => {
+    const btn = document.createElement("button");
+    btn.className = `btn-art-style ${state.activeArtStyle === style.id ? "active" : ""}`;
+    btn.type = "button";
+    btn.dataset.styleId = style.id;
+    btn.innerHTML = `<span>${style.icon}</span><span>${style.name}</span>`;
+
+    btn.addEventListener("click", () => {
+      applyArtStyle(style);
+    });
+
+    elements.artStylesContainer.appendChild(btn);
+  });
+}
+
+function applyArtStyle(style) {
+  state.activeArtStyle = style.id;
+  state.prefixPrompt = style.prefix;
+  state.suffixPrompt = style.suffix;
+  state.whiteBg = style.whiteBg;
+  state.gridBorders = style.gridBorders;
+
+  // Update active UI classes on style buttons
+  if (elements.artStylesContainer) {
+    elements.artStylesContainer.querySelectorAll(".btn-art-style").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.styleId === style.id);
+    });
+  }
+
+  // Sync toggle checkboxes
+  if (elements.toggleWhiteBg) {
+    elements.toggleWhiteBg.checked = state.whiteBg;
+    elements.toggleWhiteBg.parentElement.classList.toggle("active", state.whiteBg);
+  }
+  if (elements.toggleGridBorders) {
+    elements.toggleGridBorders.checked = state.gridBorders;
+    elements.toggleGridBorders.parentElement.classList.toggle("active", state.gridBorders);
+  }
+
+  // Sync input text boxes
+  if (elements.inputPrefix) elements.inputPrefix.value = state.prefixPrompt;
+  if (elements.inputSuffix) elements.inputSuffix.value = state.suffixPrompt;
+
+  updatePromptOutput();
+  saveState();
+  showToast(`🎨 화풍이 '${style.name}'(으)로 변경되었습니다!`);
+}
+
+/**
+ * Default Character Profile Presets for Quick Start
+ */
+const DEFAULT_CHARACTER_PRESETS = [
+  "20대 한국 여성, 검은 뿔테 안경, 긴 흑발 포니테일, 핑크 요가복",
+  "은발 단발의 사이버펑크 여전사, 네온 블루 바이저, 전술 바디슈트",
+  "금발 웨이브 헤어의 판타지 마법사, 푸른 로브, 신비로운 분위기",
+  "단정한 갈색 숏컷의 여대생, 화이트 셔츠, 베이지 가디건"
+];
+
+function initCharacterProfileUI() {
+  // Load history from localStorage
+  const savedHistory = localStorage.getItem("vgs_character_history");
+  if (savedHistory) {
+    try {
+      state.characterHistory = JSON.parse(savedHistory);
+    } catch (e) {
+      state.characterHistory = [...DEFAULT_CHARACTER_PRESETS];
+    }
+  } else {
+    state.characterHistory = [...DEFAULT_CHARACTER_PRESETS];
+  }
+
+  // Restore current value if exists in state
+  if (state.characterProfileKo && elements.inputCharacterKo) {
+    elements.inputCharacterKo.value = state.characterProfileKo;
+  }
+  if (state.characterProfileEn && elements.profileEnInput) {
+    elements.profileEnInput.value = state.characterProfileEn;
+  }
+
+  renderCharacterHistoryChips();
+
+  if (elements.btnApplyProfile) {
+    elements.btnApplyProfile.addEventListener("click", () => {
+      applyCharacterProfile(elements.inputCharacterKo?.value);
+    });
+  }
+
+  if (elements.inputCharacterKo) {
+    elements.inputCharacterKo.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        applyCharacterProfile(elements.inputCharacterKo?.value);
+      }
+    });
+  }
+
+  if (elements.profileEnInput) {
+    elements.profileEnInput.addEventListener("input", () => {
+      state.characterProfileEn = elements.profileEnInput.value.trim();
+      updatePromptOutput();
+      saveState();
+    });
+  }
+
+  if (elements.btnClearProfile) {
+    elements.btnClearProfile.addEventListener("click", () => {
+      if (elements.inputCharacterKo) elements.inputCharacterKo.value = "";
+      if (elements.profileEnInput) elements.profileEnInput.value = "";
+      state.characterProfileKo = "";
+      state.characterProfileEn = "";
+      updatePromptOutput();
+      saveState();
+      showToast("인물 묘사가 비워졌습니다 (공란 처리).");
+    });
+  }
+
+  if (elements.btnSaveProfile) {
+    elements.btnSaveProfile.addEventListener("click", () => {
+      const text = elements.inputCharacterKo?.value.trim();
+      if (!text) {
+        showToast("저장할 인물 묘사를 먼저 입력하세요!");
+        return;
+      }
+      applyCharacterProfile(text, true);
+      showToast("⭐ 인물 묘사가 기록/즐겨찾기에 저장되었습니다!");
+    });
+  }
+}
+
+async function applyCharacterProfile(textKo, saveToHistory = true) {
+  const clean = (textKo || "").trim();
+  state.characterProfileKo = clean;
+
+  if (clean) {
+    const en = await translatePrompt(clean);
+    state.characterProfileEn = en;
+    if (elements.profileEnInput) elements.profileEnInput.value = en;
+
+    if (saveToHistory) {
+      state.characterHistory = [clean, ...state.characterHistory.filter(h => h !== clean)].slice(0, 10);
+      localStorage.setItem("vgs_character_history", JSON.stringify(state.characterHistory));
+      renderCharacterHistoryChips();
+    }
+    showToast("👤 인물 프로필이 적용되었습니다!");
+  } else {
+    state.characterProfileEn = "";
+    if (elements.profileEnInput) elements.profileEnInput.value = "";
+  }
+
+  updatePromptOutput();
+  saveState();
+}
+
+function renderCharacterHistoryChips() {
+  if (!elements.profileHistoryChips) return;
+  elements.profileHistoryChips.innerHTML = "";
+
+  (state.characterHistory || []).forEach(item => {
+    const chip = document.createElement("div");
+    chip.className = "history-chip";
+    chip.title = "클릭하여 이 인물 묘사 적용";
+    
+    const label = document.createElement("span");
+    label.textContent = item.length > 20 ? item.slice(0, 20) + "..." : item;
+    
+    const del = document.createElement("span");
+    del.className = "history-chip-del";
+    del.innerHTML = "×";
+    del.title = "이 기록 삭제";
+    del.addEventListener("click", (e) => {
+      e.stopPropagation();
+      state.characterHistory = state.characterHistory.filter(h => h !== item);
+      localStorage.setItem("vgs_character_history", JSON.stringify(state.characterHistory));
+      renderCharacterHistoryChips();
+    });
+
+    chip.appendChild(label);
+    chip.appendChild(del);
+
+    chip.addEventListener("click", () => {
+      if (elements.inputCharacterKo) elements.inputCharacterKo.value = item;
+      applyCharacterProfile(item, false);
+    });
+
+    elements.profileHistoryChips.appendChild(chip);
+  });
+}
+
+/**
+ * Initialize Preset Dropdown & Chips (원본 ComfyUI 노드 100% 동일 그룹 복원)
+ */
+function initPresetsUI() {
+  elements.presetSelect.innerHTML = `<option value="">▼ ⚡ 프리셋 선택 (샷/구도)</option>`;
+  
+  PRESET_GROUPS.forEach(grp => {
+    const optGroup = document.createElement("optgroup");
+    optGroup.label = grp.group;
+    
+    grp.items.forEach(item => {
+      const opt = document.createElement("option");
+      opt.value = item.en;
+      opt.textContent = item.label;
+      opt.dataset.ko = item.ko;
+      opt.dataset.en = item.en;
+      optGroup.appendChild(opt);
+    });
+    
+    elements.presetSelect.appendChild(optGroup);
+  });
+
+  // Quick Chips
+  const sampleChips = [
+    { label: "얼굴 정면", ko: "얼굴 정면", en: "face, front view, detailed facial features" },
+    { label: "얼굴 45도", ko: "얼굴 45도 측면", en: "face, three-quarter view, 45-degree angle" },
+    { label: "얼굴 초근접", ko: "얼굴 초근접 정면", en: "extreme close-up face, front view, macro detail" },
+    { label: "상반신 (가슴)", ko: "상반신 가슴 정면", en: "bust shot, upper body, front view" },
+    { label: "상반신 (허리)", ko: "상반신 허리 정면", en: "waist shot, waist up, front view" },
+    { label: "전신 정면", ko: "전신 정면", en: "full body, front view" },
+    { label: "전신 45도", ko: "전신 45도 측면", en: "full body, three-quarter view, 45-degree angle" },
+    { label: "하이앵글", ko: "얼굴 하이앵글 (위에서)", en: "face, high angle, from above" },
+    { label: "로우앵글", ko: "얼굴 로우앵글 (아래에서)", en: "face, low angle, from below" },
+    { label: "사이버펑크 도시", ko: "사이버펑크 도시", en: "cyberpunk neon city, glowing holographic lights" }
+  ];
+
+  elements.chipsContainer.innerHTML = "";
+  sampleChips.forEach(chip => {
+    const btn = document.createElement("button");
+    btn.className = "chip-btn";
+    btn.type = "button";
+    btn.textContent = `+ ${chip.label}`;
+    btn.addEventListener("click", () => {
+      appendChipToActiveArea(chip);
+    });
+    elements.chipsContainer.appendChild(btn);
+  });
+}
+
+/**
+ * =============================================================================
+ * Custom Presets Management (추가, 수정, 삭제, 저장, 마우스 드래그 순서 변경)
+ * =============================================================================
+ */
+
+const DEFAULT_CUSTOM_PRESETS = [
+  { id: "cp_1", label: "태아자세 누운 전신", ko: "태아자세로 누워 있는 전신", en: "Full body lying in fetal position" },
+  { id: "cp_2", label: "무릎 안고 앉기", ko: "무릎을 세우고 앉아서 양손으로 자신의 무릎을 감싸고 있는 자세의 전신", en: "Full body sitting with knees bent and covering knees with hands" },
+  { id: "cp_3", label: "핑크 바디슈트", ko: "핑크색 타이트한 운동 전신 슈트, 맨발, 핑크색 발톱", en: "pink tight exercise full body suit, bare feet, pink feet top" }
+];
+
+let draggedPresetIndex = null;
+
+function initCustomPresetsUI() {
+  const saved = localStorage.getItem("visual_grid_custom_presets");
+  if (saved) {
+    try {
+      state.customPresets = JSON.parse(saved);
+    } catch (e) {
+      state.customPresets = [...DEFAULT_CUSTOM_PRESETS];
+    }
+  } else {
+    state.customPresets = [...DEFAULT_CUSTOM_PRESETS];
+  }
+
+  renderCustomPresets();
+
+  if (elements.customPresetsToggle) {
+    elements.customPresetsToggle.addEventListener("click", () => {
+      if (elements.customPresetsSection) {
+        elements.customPresetsSection.classList.toggle("collapsed");
+      }
+    });
+  }
+
+  if (elements.btnAddCustomPreset) {
+    elements.btnAddCustomPreset.addEventListener("click", () => {
+      openPresetModal(null);
+    });
+  }
+
+  if (elements.btnSaveAsPreset) {
+    elements.btnSaveAsPreset.addEventListener("click", () => {
+      saveCurrentInputAsPreset();
+    });
+  }
+
+  if (elements.btnClosePresetModal) {
+    elements.btnClosePresetModal.addEventListener("click", closePresetModal);
+  }
+
+  if (elements.btnCancelPreset) {
+    elements.btnCancelPreset.addEventListener("click", closePresetModal);
+  }
+
+  if (elements.modalCustomPreset) {
+    elements.modalCustomPreset.addEventListener("click", (e) => {
+      if (e.target === elements.modalCustomPreset) {
+        closePresetModal();
+      }
+    });
+  }
+
+  if (elements.btnSavePresetConfirm) {
+    elements.btnSavePresetConfirm.addEventListener("click", savePresetFromModal);
+  }
+}
+
+function updatePresetSelectOptions() {
+  if (!elements.presetSelect) return;
+  elements.presetSelect.innerHTML = `<option value="">▼ ⚡ 프리셋 선택 (샷/구도/커스텀)</option>`;
+
+  // 1. Custom Presets at the top of dropdown
+  if (state.customPresets && state.customPresets.length > 0) {
+    const customGroup = document.createElement("optgroup");
+    customGroup.label = "⭐ 나만의 커스텀 프리셋 (Custom Presets)";
+    state.customPresets.forEach(item => {
+      const opt = document.createElement("option");
+      opt.value = item.en || item.ko;
+      opt.textContent = `⭐ ${item.label || item.ko}`;
+      opt.dataset.ko = item.ko;
+      opt.dataset.en = item.en || item.ko;
+      customGroup.appendChild(opt);
+    });
+    elements.presetSelect.appendChild(customGroup);
+  }
+
+  // 2. Built-in groups
+  PRESET_GROUPS.forEach(grp => {
+    const optGroup = document.createElement("optgroup");
+    optGroup.label = grp.group;
+    grp.items.forEach(item => {
+      const opt = document.createElement("option");
+      opt.value = item.en;
+      opt.textContent = item.label;
+      opt.dataset.ko = item.ko;
+      opt.dataset.en = item.en;
+      optGroup.appendChild(opt);
+    });
+    elements.presetSelect.appendChild(optGroup);
+  });
+}
+
+function renderCustomPresets() {
+  if (elements.customPresetsCount) {
+    elements.customPresetsCount.textContent = state.customPresets.length;
+  }
+
+  updatePresetSelectOptions();
+
+  if (!elements.customChipsContainer) return;
+  elements.customChipsContainer.innerHTML = "";
+
+  if (!state.customPresets || state.customPresets.length === 0) {
+    elements.customChipsContainer.innerHTML = `<span style="font-size:10.5px; color:var(--text-muted); font-style:italic;">등록된 커스텀 프리셋이 없습니다. [➕ 새 프리셋 추가]를 눌러보세요.</span>`;
+    return;
+  }
+
+  state.customPresets.forEach((item, index) => {
+    const chip = document.createElement("div");
+    chip.className = "custom-chip";
+    chip.draggable = true;
+    chip.dataset.index = index;
+
+    // Drag handle
+    const handle = document.createElement("span");
+    handle.className = "custom-chip-drag-handle";
+    handle.textContent = "⠿";
+    handle.title = "마우스로 끌어서 순서 변경 (Drag & Drop)";
+
+    // Label span (click to append to active area)
+    const label = document.createElement("span");
+    label.className = "custom-chip-label";
+    label.textContent = item.label || item.ko;
+    label.title = `클릭하여 [${item.label || item.ko}] 프롬프트 추가`;
+    label.addEventListener("click", () => {
+      appendChipToActiveArea({ ko: item.ko, en: item.en || item.ko });
+    });
+
+    // Action buttons (edit, delete)
+    const actions = document.createElement("span");
+    actions.className = "custom-chip-actions";
+
+    const btnEdit = document.createElement("button");
+    btnEdit.className = "custom-chip-btn edit";
+    btnEdit.type = "button";
+    btnEdit.innerHTML = "✏️";
+    btnEdit.title = "이 프리셋 수정";
+    btnEdit.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openPresetModal(item);
+    });
+
+    const btnDel = document.createElement("button");
+    btnDel.className = "custom-chip-btn delete";
+    btnDel.type = "button";
+    btnDel.innerHTML = "×";
+    btnDel.title = "이 프리셋 삭제";
+    btnDel.addEventListener("click", (e) => {
+      e.stopPropagation();
+      deleteCustomPreset(item.id);
+    });
+
+    actions.appendChild(btnEdit);
+    actions.appendChild(btnDel);
+
+    chip.appendChild(handle);
+    chip.appendChild(label);
+    chip.appendChild(actions);
+
+    // HTML5 Drag & Drop
+    chip.addEventListener("dragstart", (e) => {
+      draggedPresetIndex = index;
+      chip.classList.add("dragging");
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", index);
+    });
+
+    chip.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      chip.classList.add("drag-over");
+    });
+
+    chip.addEventListener("dragleave", () => {
+      chip.classList.remove("drag-over");
+    });
+
+    chip.addEventListener("drop", (e) => {
+      e.preventDefault();
+      chip.classList.remove("drag-over");
+      const targetIndex = index;
+      if (draggedPresetIndex !== null && draggedPresetIndex !== targetIndex) {
+        const [movedItem] = state.customPresets.splice(draggedPresetIndex, 1);
+        state.customPresets.splice(targetIndex, 0, movedItem);
+        saveCustomPresetsToStorage();
+        renderCustomPresets();
+        showToast("프리셋 순서가 변경되었습니다.");
+      }
+    });
+
+    chip.addEventListener("dragend", () => {
+      chip.classList.remove("dragging");
+      draggedPresetIndex = null;
+      document.querySelectorAll(".custom-chip").forEach(c => c.classList.remove("drag-over"));
+    });
+
+    elements.customChipsContainer.appendChild(chip);
+  });
+}
+
+function openPresetModal(preset = null) {
+  if (!elements.modalCustomPreset) return;
+
+  if (preset) {
+    if (elements.modalPresetTitle) elements.modalPresetTitle.textContent = "✏️ 커스텀 프리셋 수정";
+    if (elements.presetEditId) elements.presetEditId.value = preset.id;
+    if (elements.presetInputLabel) elements.presetInputLabel.value = preset.label || "";
+    if (elements.presetInputKo) elements.presetInputKo.value = preset.ko || "";
+    if (elements.presetInputEn) elements.presetInputEn.value = preset.en || "";
+  } else {
+    if (elements.modalPresetTitle) elements.modalPresetTitle.textContent = "➕ 새 커스텀 프리셋 추가";
+    if (elements.presetEditId) elements.presetEditId.value = "";
+    if (elements.presetInputLabel) elements.presetInputLabel.value = "";
+    if (elements.presetInputKo) elements.presetInputKo.value = "";
+    if (elements.presetInputEn) elements.presetInputEn.value = "";
+  }
+
+  elements.modalCustomPreset.style.display = "flex";
+  if (elements.presetInputLabel) elements.presetInputLabel.focus();
+}
+
+function closePresetModal() {
+  if (elements.modalCustomPreset) {
+    elements.modalCustomPreset.style.display = "none";
+  }
+}
+
+async function savePresetFromModal() {
+  const label = (elements.presetInputLabel?.value || "").trim();
+  const ko = (elements.presetInputKo?.value || "").trim();
+  let en = (elements.presetInputEn?.value || "").trim();
+
+  if (!ko && !label) {
+    showToast("프리셋 이름 또는 한글 프롬프트를 입력하세요!");
+    return;
+  }
+
+  const finalLabel = label || ko.slice(0, 15);
+  const finalKo = ko || label;
+
+  if (!en && finalKo) {
+    en = translateViaDictionary(finalKo) || (await translatePrompt(finalKo));
+  }
+
+  const editId = elements.presetEditId?.value;
+
+  if (editId) {
+    const target = state.customPresets.find(p => p.id === editId);
+    if (target) {
+      target.label = finalLabel;
+      target.ko = finalKo;
+      target.en = en;
+      showToast(`'${finalLabel}' 프리셋이 수정되었습니다.`);
+    }
+  } else {
+    const newPreset = {
+      id: "cp_" + Date.now(),
+      label: finalLabel,
+      ko: finalKo,
+      en: en
+    };
+    state.customPresets.push(newPreset);
+    showToast(`'${finalLabel}' 프리셋이 등록되었습니다!`);
+  }
+
+  saveCustomPresetsToStorage();
+  renderCustomPresets();
+  closePresetModal();
+}
+
+function saveCurrentInputAsPreset() {
+  const currentKo = elements.inputKoPrompt?.value?.trim() || "";
+  const currentEn = elements.inputEnPrompt?.value?.trim() || "";
+
+  if (!currentKo && !currentEn) {
+    showToast("먼저 영역 프롬프트 입력창에 내용을 작성하세요!");
+    return;
+  }
+
+  openPresetModal(null);
+  if (elements.presetInputLabel) elements.presetInputLabel.value = currentKo.slice(0, 12);
+  if (elements.presetInputKo) elements.presetInputKo.value = currentKo;
+  if (elements.presetInputEn) elements.presetInputEn.value = currentEn;
+}
+
+function deleteCustomPreset(id) {
+  state.customPresets = state.customPresets.filter(p => p.id !== id);
+  saveCustomPresetsToStorage();
+  renderCustomPresets();
+  showToast("프리셋이 삭제되었습니다.");
+}
+
+function saveCustomPresetsToStorage() {
+  localStorage.setItem("visual_grid_custom_presets", JSON.stringify(state.customPresets));
+}
+
+/**
+ * Initialize Templates Horizontal Bar
+ */
+function initLayoutTemplatesUI() {
+  elements.templatesContainer.innerHTML = "";
+  LAYOUT_TEMPLATES.forEach(tpl => {
+    const btn = document.createElement("button");
+    btn.className = "btn-template";
+    btn.innerHTML = `<span>${tpl.name}</span>`;
+    btn.addEventListener("click", () => {
+      loadTemplate(tpl);
+      showToast(`레이아웃 템플릿 '${tpl.name}' 적용 완료!`);
+    });
+    elements.templatesContainer.appendChild(btn);
+  });
+}
+
+/**
+ * Load Predefined Template
+ */
+function loadTemplate(tpl) {
+  state.aspectRatio = tpl.aspectRatio;
+  state.cols = tpl.cols;
+  state.rows = tpl.rows;
+  state.whiteBg = tpl.whiteBg;
+  state.gridBorders = tpl.gridBorders;
+  state.characterSheetStyle = tpl.characterSheetStyle;
+  state.prefixPrompt = tpl.prefixPrompt || state.prefixPrompt;
+  state.suffixPrompt = tpl.suffixPrompt || state.suffixPrompt;
+  state.areas = JSON.parse(JSON.stringify(tpl.areas));
+  state.selectedAreaId = state.areas.length > 0 ? state.areas[0].id : null;
+
+  updateCanvasDimensions();
+  renderGridCells();
+  renderAreas();
+  updateUIInputs();
+  updatePromptOutput();
+  saveState();
+}
+
+// =============================================================================
+// Canvas & Grid Render Functions (Fluid Auto-Fit)
+// =============================================================================
+
+function updateCanvasDimensions() {
+  if (!elements.canvasViewport || !elements.canvasWrapper) return;
+
+  const containerW = Math.max(260, elements.canvasViewport.clientWidth - 32);
+  const ratio = RATIO_MAP[state.aspectRatio] || (16 / 9);
+
+  let targetW, targetH;
+
+  if (ratio >= 1.3) {
+    // Wide Landscape (16:9, 21:9, 3:2, 4:3)
+    targetW = Math.min(containerW, 580);
+    targetW = Math.max(targetW, 280);
+    targetH = Math.round(targetW / ratio);
+  } else if (ratio >= 0.95 && ratio <= 1.25) {
+    // Square / Near-Square (1:1, 4:3 portrait)
+    targetW = Math.min(containerW, 400);
+    targetW = Math.max(targetW, 260);
+    targetH = Math.round(targetW / ratio);
+  } else {
+    // Tall Portrait (9:16, 3:4, 2:3) - Give generous vertical height
+    targetH = 480;
+    targetW = Math.round(targetH * ratio);
+    
+    // If width exceeds container, scale proportionally
+    if (targetW > containerW) {
+      targetW = containerW;
+      targetH = Math.round(targetW / ratio);
+    }
+  }
+
+  targetW = Math.round(targetW);
+  targetH = Math.round(targetH);
+
+  elements.canvasWrapper.style.width = `${targetW}px`;
+  elements.canvasWrapper.style.height = `${targetH}px`;
+
+  // Update ratio buttons
+  elements.ratioButtons.forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.ratio === state.aspectRatio);
+  });
+
+  // Update stepper counts
+  elements.colsCount.textContent = state.cols;
+  elements.rowsCount.textContent = state.rows;
+}
+
+function renderGridCells() {
+  elements.gridBoard.style.gridTemplateColumns = `repeat(${state.cols}, 1fr)`;
+  elements.gridBoard.style.gridTemplateRows = `repeat(${state.rows}, 1fr)`;
+  elements.gridBoard.innerHTML = "";
+
+  for (let r = 0; r < state.rows; r++) {
+    for (let c = 0; c < state.cols; c++) {
+      const cell = document.createElement("div");
+      cell.className = "grid-cell";
+      cell.dataset.col = c;
+      cell.dataset.row = r;
+      elements.gridBoard.appendChild(cell);
+    }
+  }
+}
+
+function renderAreas() {
+  elements.areasContainer.innerHTML = "";
+
+  const totalCols = state.cols;
+  const totalRows = state.rows;
+
+  state.areas.forEach((area, index) => {
+    const palette = COLOR_PALETTE[index % COLOR_PALETTE.length];
+    const isSelected = area.id === state.selectedAreaId;
+
+    const leftPct = (area.c1 / totalCols) * 100;
+    const topPct = (area.r1 / totalRows) * 100;
+    const widthPct = ((area.c2 - area.c1 + 1) / totalCols) * 100;
+    const heightPct = ((area.r2 - area.r1 + 1) / totalRows) * 100;
+
+    const box = document.createElement("div");
+    box.className = `area-box ${isSelected ? "selected" : ""}`;
+    box.style.left = `${leftPct}%`;
+    box.style.top = `${topPct}%`;
+    box.style.width = `${widthPct}%`;
+    box.style.height = `${heightPct}%`;
+    box.style.borderColor = palette.border;
+    box.style.backgroundColor = palette.bg;
+    box.style.color = palette.border;
+    box.style.setProperty('--area-glow', palette.glow);
+    box.style.setProperty('--area-border', palette.border);
+
+    if (isSelected) {
+      box.style.boxShadow = `0 0 25px ${palette.glow}, inset 0 0 15px ${palette.glow}`;
+    }
+
+    const spatialName = getNaturalSpatialName(area.c1, area.c2, area.r1, area.r2, totalCols, totalRows);
+
+    // Area Header
+    const header = document.createElement("div");
+    header.className = "area-header";
+
+    // Compact [1], [2] badge only in top-left
+    const badge = document.createElement("div");
+    badge.className = "area-badge";
+    badge.innerHTML = `<span>[${area.id}]</span>`;
+    badge.title = `[${area.id}] ${spatialName}`;
+
+    // Close Button [x] with robust click & mousedown deletion
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "area-close-btn";
+    closeBtn.innerHTML = "×";
+    closeBtn.title = "이 영역 삭제 (마우스 우클릭으로도 삭제 가능)";
+
+    const handleDelete = (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      deleteArea(area.id);
+    };
+
+    closeBtn.addEventListener("mousedown", handleDelete);
+    closeBtn.addEventListener("click", handleDelete);
+    closeBtn.addEventListener("touchstart", handleDelete);
+
+    header.appendChild(badge);
+    header.appendChild(closeBtn);
+    box.appendChild(header);
+
+    // Mockup silhouette SVG vector graphic if enabled
+    if (state.mockupEnabled) {
+      const mockupWrap = document.createElement("div");
+      mockupWrap.className = "area-mockup-wrapper";
+      mockupWrap.innerHTML = getMockupSvg(`${area.koPrompt || ''} ${area.prompt || ''}`);
+      box.appendChild(mockupWrap);
+    }
+
+    // =========================================================================
+    // Area Body: 한글 프롬프트만 투명 배경에 선명하게 표시 (영문 서술 제거)
+    // =========================================================================
+    const areaBody = document.createElement("div");
+    areaBody.className = "area-body";
+
+    const ko = area.koPrompt ? area.koPrompt.trim() : "";
+    const en = area.prompt ? area.prompt.trim() : "";
+
+    if (ko) {
+      const mainText = document.createElement("div");
+      mainText.className = "area-prompt-main";
+      mainText.textContent = ko;
+      areaBody.appendChild(mainText);
+    } else if (en) {
+      const mainText = document.createElement("div");
+      mainText.className = "area-prompt-main";
+      mainText.textContent = en;
+      areaBody.appendChild(mainText);
+    } else {
+      const emptyText = document.createElement("div");
+      emptyText.className = "area-prompt-empty";
+      emptyText.textContent = "✏️ 작성";
+      areaBody.appendChild(emptyText);
+    }
+
+    box.appendChild(areaBody);
+
+    // =========================================================================
+    // Mouse Events on Area Box
+    // 1. Left Click -> Select Area ONLY (DO NOT drag-create)
+    // 2. Right Click -> Delete Area
+    // =========================================================================
+    box.addEventListener("mousedown", (e) => {
+      if (e.target.closest(".area-close-btn")) {
+        return; // [x] 버튼 자체 핸들러가 처리
+      }
+
+      if (e.button === 0) {
+        // Left click: Stop propagation so canvasWrapper drag creation DOES NOT fire
+        e.stopPropagation();
+        selectArea(area.id);
+        if (elements.inputKoPrompt) {
+          elements.inputKoPrompt.focus();
+        }
+      } else if (e.button === 2) {
+        // Right click: Delete area
+        e.preventDefault();
+        e.stopPropagation();
+        deleteArea(area.id);
+      }
+    });
+
+    box.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      deleteArea(area.id);
+    });
+
+    elements.areasContainer.appendChild(box);
+  });
+
+  renderAreaTabs();
+}
+
+/**
+ * 포즈 및 구도에 따른 정밀 벡터 SVG 실루엣 생성기 (화면 꽉 찬 실제 렌더링 비율)
+ */
+function getMockupSvg(text = "") {
+  const lower = (text || "").toLowerCase();
+
+  // 1. 태아자세 / 누운 자세 (Fetal / Lying down) - 가로로 넓게 꽉 찬 웅크린 포즈
+  if (lower.includes("fetal") || lower.includes("lying") || lower.includes("누워") || lower.includes("태아") || lower.includes("누운") || lower.includes("바닥에") || lower.includes("sleeping")) {
+    return `<svg viewBox="0 0 100 70" class="mockup-svg" fill="none" stroke="currentColor" preserveAspectRatio="xMidYMid meet">
+      <!-- Head resting on arms -->
+      <ellipse cx="24" cy="38" rx="10" ry="13" stroke-width="2.4"/>
+      <!-- Curled Spine & Torso filling the wide frame -->
+      <path d="M 34 26 Q 64 12 86 32 Q 94 44 88 58" stroke-width="2.6" stroke-linecap="round"/>
+      <!-- Curled Legs (Fetal Knees tucked up) -->
+      <path d="M 88 58 L 56 64 L 42 48" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- Arms tucked under head -->
+      <path d="M 30 46 L 44 54 L 34 62" stroke-width="2.2" stroke-linecap="round"/>
+      <!-- Ground shadow line -->
+      <line x1="6" y1="67" x2="94" y2="67" stroke-width="1.8" stroke-dasharray="4,4" opacity="0.45"/>
+    </svg>`;
+  }
+
+  // 2. 앉은 자세 / 무릎 세운 자세 (Sitting / Kneeling with knees bent) - 위아래/좌우 꽉 찬 착석 포즈
+  if (lower.includes("sitting") || lower.includes("seated") || lower.includes("kneeling") || lower.includes("앉아") || lower.includes("앉은") || lower.includes("무릎")) {
+    return `<svg viewBox="0 0 100 100" class="mockup-svg" fill="none" stroke="currentColor" preserveAspectRatio="xMidYMid meet">
+      <!-- Head -->
+      <ellipse cx="48" cy="16" rx="9" ry="12" stroke-width="2.4"/>
+      <!-- Leaning Back & Torso -->
+      <path d="M 40 28 L 56 28 L 52 60 L 36 60 Z" stroke-width="2.4" stroke-linecap="round"/>
+      <!-- High Bent Knees & Legs filling the frame -->
+      <path d="M 52 60 L 82 50 L 78 88 L 40 88" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 36 60 L 24 88 L 40 88" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- Arms hugging knees -->
+      <path d="M 44 34 L 76 52 L 78 70" stroke-width="2.4" stroke-linecap="round"/>
+      <!-- Base ground line -->
+      <line x1="10" y1="90" x2="90" y2="90" stroke-width="2" opacity="0.5"/>
+    </svg>`;
+  }
+
+  // 3. 얼굴 초근접 / 매크로 (Extreme Close-up / Macro) - 화면 밖으로 눈/코/입이 150% 줌인 꽉 찬 앵글
+  if (lower.includes("extreme close-up") || lower.includes("macro") || lower.includes("초근접") || lower.includes("눈") || lower.includes("eye")) {
+    return `<svg viewBox="0 0 100 100" class="mockup-svg" fill="none" stroke="currentColor" preserveAspectRatio="xMidYMid slice">
+      <!-- Viewfinder corner brackets -->
+      <path d="M 6 22 L 6 6 L 22 6 M 94 22 L 94 6 L 78 6 M 6 78 L 6 94 L 22 94 M 94 78 L 94 94 L 78 94" stroke-width="2.8" stroke-linecap="round"/>
+      <!-- Big Eyebrow line across frame -->
+      <path d="M 8 28 Q 50 14 92 28" stroke-width="3.2" stroke-linecap="round"/>
+      <!-- Macro Focused Eye taking 80% width -->
+      <ellipse cx="50" cy="50" rx="38" ry="24" stroke-width="2.8"/>
+      <circle cx="50" cy="50" r="16" fill="currentColor" opacity="0.25" stroke="currentColor" stroke-width="2.4"/>
+      <circle cx="50" cy="50" r="7" fill="currentColor"/>
+      <circle cx="54" cy="46" r="2.5" fill="#fff"/>
+      <!-- Lips/Nose bridge hint -->
+      <path d="M 24 84 Q 50 96 76 84" stroke-width="2.6" stroke-linecap="round"/>
+    </svg>`;
+  }
+
+  // 4. 얼굴 45도 / 측면 (Face 45° Three-Quarter) - 두상 중심의 꽉 찬 3/4 바스트 앵글
+  if ((lower.includes("three-quarter") && (lower.includes("face") || lower.includes("얼굴"))) || (lower.includes("45도") && (lower.includes("얼굴") || lower.includes("face"))) || lower.includes("profile") || (lower.includes("측면") && !lower.includes("전신"))) {
+    return `<svg viewBox="0 0 100 100" class="mockup-svg" fill="none" stroke="currentColor" preserveAspectRatio="xMidYMid meet">
+      <!-- 3/4 Head Contour filling 85% of frame -->
+      <path d="M 40 8 Q 74 10 78 40 Q 80 66 58 78 L 40 78 Q 20 72 22 40 Z" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M 34 78 L 28 98 M 58 78 L 68 98 M 8 99 Q 50 90 92 99" stroke-width="2.6" stroke-linecap="round"/>
+      <!-- 3/4 Face symmetry curve -->
+      <path d="M 58 12 Q 68 42 56 74" stroke-width="1.4" stroke-dasharray="3,3" opacity="0.65"/>
+      <line x1="26" y1="40" x2="76" y2="40" stroke-width="1.4" stroke-dasharray="3,3" opacity="0.65"/>
+      <!-- Eyes & Features -->
+      <circle cx="44" cy="38" r="3.5" fill="currentColor"/>
+      <circle cx="66" cy="38" r="3.5" fill="currentColor"/>
+      <path d="M 46 60 Q 54 66 62 60" stroke-width="2.2" stroke-linecap="round"/>
+    </svg>`;
+  }
+
+  // 5. 얼굴 정면 (Face Front / Portrait) - 85%를 꽉 채우는 정면 인물 바스트 앵글
+  if (lower.includes("face") || lower.includes("얼굴") || lower.includes("portrait") || (lower.includes("정면") && !lower.includes("전신"))) {
+    return `<svg viewBox="0 0 100 100" class="mockup-svg" fill="none" stroke="currentColor" preserveAspectRatio="xMidYMid meet">
+      <!-- Head Oval filling 85% frame -->
+      <ellipse cx="50" cy="40" rx="27" ry="34" stroke-width="2.4"/>
+      <path d="M 23 30 Q 50 4 77 30" stroke-width="2.4" stroke-linecap="round"/>
+      <!-- Neck & Shoulders stretching to bottom corners -->
+      <path d="M 36 74 L 36 88 M 64 74 L 64 88 M 12 98 Q 50 88 88 98" stroke-width="2.6" stroke-linecap="round"/>
+      <!-- Symmetry guide cross -->
+      <line x1="50" y1="8" x2="50" y2="76" stroke-width="1.4" stroke-dasharray="3,3" opacity="0.65"/>
+      <line x1="23" y1="40" x2="77" y2="40" stroke-width="1.4" stroke-dasharray="3,3" opacity="0.65"/>
+      <!-- Eyes, Nose, Smile -->
+      <circle cx="39" cy="38" r="3.6" fill="currentColor"/>
+      <circle cx="61" cy="38" r="3.6" fill="currentColor"/>
+      <path d="M 49 48 L 47 55 L 53 55" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 41 64 Q 50 70 59 64" stroke-width="2.4" stroke-linecap="round"/>
+    </svg>`;
+  }
+
+  // 6. 상반신 / 가슴 / 허리 (Upper Body / Bust / Waist) - 화면 상단~하단 꽉 채운 상반신
+  if (lower.includes("upper body") || lower.includes("bust") || lower.includes("waist") || lower.includes("상반신") || lower.includes("가슴") || lower.includes("허리")) {
+    return `<svg viewBox="0 0 100 100" class="mockup-svg" fill="none" stroke="currentColor" preserveAspectRatio="xMidYMid meet">
+      <!-- Head -->
+      <ellipse cx="50" cy="18" rx="11" ry="14" stroke-width="2.4"/>
+      <path d="M 44 32 L 44 38 M 56 32 L 56 38" stroke-width="2"/>
+      <!-- Shoulders & Torso expanding wide -->
+      <path d="M 14 48 Q 50 38 86 48 L 78 98 L 22 98 Z" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 14 48 L 6 94 M 86 48 L 94 94" stroke-width="2.4" stroke-linecap="round"/>
+    </svg>`;
+  }
+
+  // 7. 하반신 / 다리 (Lower Body / Legs)
+  if (lower.includes("lower body") || lower.includes("legs") || lower.includes("하반신") || lower.includes("다리")) {
+    return `<svg viewBox="0 0 100 100" class="mockup-svg" fill="none" stroke="currentColor" preserveAspectRatio="xMidYMid meet">
+      <path d="M 30 14 L 70 14 L 62 38 L 38 38 Z" stroke-width="2.4"/>
+      <path d="M 40 38 L 36 94 L 26 96 M 60 38 L 64 94 L 74 96" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <line x1="50" y1="38" x2="50" y2="76" stroke-width="2"/>
+    </svg>`;
+  }
+
+  // 8. 전신 (Full Body Standing - 세로 칸에 맞춰 머리부터 발끝까지 95% 꽉 차는 마네킹 전신 비율)
+  if (lower.includes("full body") || lower.includes("전신")) {
+    return `<svg viewBox="0 0 46 100" class="mockup-svg" fill="none" stroke="currentColor" preserveAspectRatio="xMidYMid meet">
+      <!-- Head at top 4-15% -->
+      <ellipse cx="23" cy="9" rx="5.5" ry="7.5" stroke-width="1.8"/>
+      <!-- Neck -->
+      <path d="M 21 16.5 L 21 19 M 25 16.5 L 25 19" stroke-width="1.5"/>
+      <!-- Shoulders, Torso, Slim Waist, Hips (Fashion Mannequin curve) -->
+      <path d="M 11 21 Q 23 18 35 21 L 31 39 Q 23 44 15 39 Z" stroke-width="1.8" stroke-linejoin="round"/>
+      <!-- Arms -->
+      <path d="M 11 21 L 7 42 L 6 56 M 35 21 L 39 42 L 40 56" stroke-width="1.8" stroke-linecap="round"/>
+      <!-- Legs stretching all the way to 96% bottom height -->
+      <path d="M 17 40 L 15 70 L 13 96 L 9 98" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 29 40 L 31 70 L 33 96 L 37 98" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- Center vertical posture line -->
+      <line x1="23" y1="2" x2="23" y2="98" stroke-width="0.8" stroke-dasharray="2,2" opacity="0.45"/>
+    </svg>`;
+  }
+
+  // 9. 배경 / 도시 / 자연 / 소품 (Scenery / City / Props)
+  if (lower.includes("city") || lower.includes("도시") || lower.includes("forest") || lower.includes("숲") || lower.includes("beach") || lower.includes("바다") || lower.includes("prop") || lower.includes("소품")) {
+    return `<svg viewBox="0 0 100 80" class="mockup-svg" fill="none" stroke="currentColor" preserveAspectRatio="xMidYMid meet">
+      <rect x="8" y="10" width="84" height="66" rx="6" stroke-width="2.4"/>
+      <circle cx="28" cy="30" r="9" stroke-width="2.2"/>
+      <path d="M 10 68 L 36 38 L 58 58 L 70 46 L 90 68 Z" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+  }
+
+  // Default: Humanoid Silhouette
+  return `<svg viewBox="0 0 100 100" class="mockup-svg" fill="none" stroke="currentColor" preserveAspectRatio="xMidYMid meet">
+    <circle cx="50" cy="26" r="14" stroke-width="2.4"/>
+    <path d="M 24 82 C 24 56 76 56 76 82" stroke-width="2.4" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function renderAreaTabs() {
+  elements.areaTabs.innerHTML = "";
+  state.areas.forEach((area, index) => {
+    const palette = COLOR_PALETTE[index % COLOR_PALETTE.length];
+    const isSelected = area.id === state.selectedAreaId;
+
+    const tab = document.createElement("div");
+    tab.className = `area-tab ${isSelected ? "active" : ""}`;
+    if (isSelected) {
+      tab.style.background = palette.border;
+      tab.style.color = "#000";
+      tab.style.fontWeight = "800";
+      tab.style.boxShadow = `0 0 14px ${palette.glow}`;
+      tab.style.borderColor = palette.border;
+      tab.innerHTML = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#000"></span> 영역 [${area.id}] 🎯`;
+    } else {
+      tab.style.background = "var(--bg-surface)";
+      tab.style.color = "var(--text-secondary)";
+      tab.style.fontWeight = "600";
+      tab.style.boxShadow = "none";
+      tab.style.borderColor = "var(--border-subtle)";
+      tab.innerHTML = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${palette.border}"></span> 영역 [${area.id}]`;
+    }
+
+    tab.addEventListener("click", () => selectArea(area.id));
+    elements.areaTabs.appendChild(tab);
+  });
+
+  if (state.areas.length === 0) {
+    elements.areaTabs.innerHTML = `<span style="font-size:11px;color:var(--text-muted);padding:4px 0;">빈 격자 칸을 마우스 좌클릭 드래그하여 영역을 생성하세요.</span>`;
+  }
+}
+
+// =============================================================================
+// Mouse Drag & Area Creation Logic (Empty Cells Only)
+// =============================================================================
+
+function getCellFromMouseEvent(e) {
+  const rect = elements.canvasWrapper.getBoundingClientRect();
+  const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width - 1));
+  const y = Math.max(0, Math.min(e.clientY - rect.top, rect.height - 1));
+
+  const col = Math.floor((x / rect.width) * state.cols);
+  const row = Math.floor((y / rect.height) * state.rows);
+
+  return {
+    col: Math.max(0, Math.min(col, state.cols - 1)),
+    row: Math.max(0, Math.min(row, state.rows - 1))
+  };
+}
+
+function handleMouseDown(e) {
+  // Only Left-Click on canvas background/cells can start drag creation
+  if (e.button !== 0) {
+    return;
+  }
+
+  // If clicked inside an existing area box or any interactive button, ignore!
+  if (e.target.closest(".area-box") || e.target.closest(".area-close-btn") || e.target.closest("button")) {
+    return;
+  }
+  
+  const cell = getCellFromMouseEvent(e);
+  state.isDragging = true;
+  state.dragStartCell = cell;
+  state.dragCurrentCell = cell;
+
+  updateSelectionBox();
+  elements.selectionBox.style.display = "block";
+}
+
+function handleMouseMove(e) {
+  if (!state.isDragging) return;
+  state.dragCurrentCell = getCellFromMouseEvent(e);
+  updateSelectionBox();
+}
+
+function handleMouseUp(e) {
+  if (!state.isDragging) return;
+  state.isDragging = false;
+  elements.selectionBox.style.display = "none";
+
+  if (!state.dragStartCell || !state.dragCurrentCell) return;
+
+  const c1 = Math.min(state.dragStartCell.col, state.dragCurrentCell.col);
+  const c2 = Math.max(state.dragStartCell.col, state.dragCurrentCell.col);
+  const r1 = Math.min(state.dragStartCell.row, state.dragCurrentCell.row);
+  const r2 = Math.max(state.dragStartCell.row, state.dragCurrentCell.row);
+
+  createNewArea(c1, c2, r1, r2);
+}
+
+function updateSelectionBox() {
+  if (!state.dragStartCell || !state.dragCurrentCell) return;
+
+  const c1 = Math.min(state.dragStartCell.col, state.dragCurrentCell.col);
+  const c2 = Math.max(state.dragStartCell.col, state.dragCurrentCell.col);
+  const r1 = Math.min(state.dragStartCell.row, state.dragCurrentCell.row);
+  const r2 = Math.max(state.dragStartCell.row, state.dragCurrentCell.row);
+
+  const leftPct = (c1 / state.cols) * 100;
+  const topPct = (r1 / state.rows) * 100;
+  const widthPct = ((c2 - c1 + 1) / state.cols) * 100;
+  const heightPct = ((r2 - r1 + 1) / state.rows) * 100;
+
+  elements.selectionBox.style.left = `${leftPct}%`;
+  elements.selectionBox.style.top = `${topPct}%`;
+  elements.selectionBox.style.width = `${widthPct}%`;
+  elements.selectionBox.style.height = `${heightPct}%`;
+}
+
+function createNewArea(c1, c2, r1, r2) {
+  const nextId = state.areas.length > 0 ? Math.max(...state.areas.map(a => a.id)) + 1 : 1;
+
+  const newArea = {
+    id: nextId,
+    c1, c2, r1, r2,
+    koPrompt: "",
+    prompt: ""
+  };
+
+  state.areas.push(newArea);
+  state.selectedAreaId = nextId;
+
+  renderAreas();
+  updateUIInputs();
+  updatePromptOutput();
+  saveState();
+
+  showToast(`영역 [${nextId}] 생성 완료!`);
+  if (elements.inputKoPrompt) {
+    elements.inputKoPrompt.focus();
+  }
+}
+
+function deleteArea(areaId) {
+  state.areas = state.areas.filter(a => a.id !== areaId);
+  
+  // Re-index area IDs for clean sequence
+  state.areas.forEach((a, idx) => {
+    a.id = idx + 1;
+  });
+
+  if (state.selectedAreaId === areaId) {
+    state.selectedAreaId = state.areas.length > 0 ? state.areas[0].id : null;
+  }
+
+  renderAreas();
+  updateUIInputs();
+  updatePromptOutput();
+  saveState();
+  showToast(`영역 [${areaId}] 이(가) 해제(삭제)되었습니다.`);
+}
+
+function selectArea(areaId) {
+  state.selectedAreaId = areaId;
+  renderAreas();
+  updateUIInputs();
+}
+
+// =============================================================================
+// Editor & Translation Operations
+// =============================================================================
+
+function getSelectedArea() {
+  return state.areas.find(a => a.id === state.selectedAreaId);
+}
+
+function updateUIInputs() {
+  const current = getSelectedArea();
+  if (current) {
+    elements.editorCard.style.display = "block";
+
+    // Active Area Color Synchronization
+    const areaIndex = state.areas.findIndex(a => a.id === current.id);
+    const palette = COLOR_PALETTE[areaIndex >= 0 ? areaIndex % COLOR_PALETTE.length : 0];
+
+    elements.editorCard.style.setProperty('--active-area-color', palette.border);
+    elements.editorCard.style.setProperty('--active-area-glow', palette.glow);
+    elements.editorCard.style.setProperty('--active-area-bg', palette.bg);
+
+    elements.activeAreaTitle.innerHTML = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${palette.border};box-shadow:0 0 10px ${palette.border};margin-right:6px;"></span>영역 [${current.id}] 프롬프트 설정 <span style="font-size:10px;background:${palette.border};color:#000;padding:2px 7px;border-radius:10px;font-weight:800;margin-left:6px;box-shadow:0 0 8px ${palette.glow};">선택됨 (ACTIVE)</span>`;
+    
+    const spatial = getSpatialDescription(current.c1, current.c2, current.r1, current.r2, state.cols, state.rows);
+    elements.activeAreaSpatialBadge.textContent = `${spatial.direction} (${spatial.grid})`;
+    elements.activeAreaSpatialBadge.style.color = palette.border;
+
+    elements.inputKoPrompt.value = current.koPrompt || "";
+    elements.inputKoPrompt.placeholder = `👉 [영역 ${current.id}] 에 적용할 한글 프롬프트를 입력하세요 (예: 전신 정면, 은발에 푸른 눈...)`;
+
+    elements.inputEnPrompt.value = current.prompt || "";
+    elements.inputEnPrompt.placeholder = `👉 [Area ${current.id}] AI 영어 프롬프트 (자동 번역 또는 직접 수정)`;
+
+    elements.btnTranslate.innerHTML = `✨ [영역 ${current.id}] 번역 & 적용 (Ctrl+Enter)`;
+  } else {
+    elements.editorCard.style.display = state.areas.length > 0 ? "block" : "none";
+    elements.editorCard.style.removeProperty('--active-area-color');
+    elements.editorCard.style.removeProperty('--active-area-glow');
+    elements.editorCard.style.removeProperty('--active-area-bg');
+    elements.activeAreaTitle.textContent = "영역을 선택하거나 새로 드래그하세요";
+    elements.activeAreaSpatialBadge.textContent = "";
+    elements.inputKoPrompt.value = "";
+    elements.inputKoPrompt.placeholder = "편집할 영역을 먼저 선택하세요";
+    elements.inputEnPrompt.value = "";
+    elements.btnTranslate.innerHTML = `✨ 한글 번역 & 적용 (Ctrl+Enter)`;
+  }
+
+  // Sync Art Style Buttons
+  if (elements.artStylesContainer) {
+    elements.artStylesContainer.querySelectorAll(".btn-art-style").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.styleId === state.activeArtStyle);
+    });
+  }
+
+  // Toggles
+  elements.toggleWhiteBg.checked = state.whiteBg;
+  elements.toggleWhiteBg.parentElement.classList.toggle("active", state.whiteBg);
+
+  elements.toggleGridBorders.checked = state.gridBorders;
+  elements.toggleGridBorders.parentElement.classList.toggle("active", state.gridBorders);
+
+  elements.toggleMockup.checked = state.mockupEnabled;
+  elements.toggleMockup.parentElement.classList.toggle("active", state.mockupEnabled);
+
+  // Global inputs
+  elements.inputPrefix.value = state.prefixPrompt;
+  elements.inputSuffix.value = state.suffixPrompt;
+}
+
+async function applyActiveAreaPrompt() {
+  const current = getSelectedArea();
+  if (!current) return;
+
+  const koText = elements.inputKoPrompt.value.trim();
+  current.koPrompt = koText;
+
+  if (koText) {
+    const translated = await translatePrompt(koText);
+    current.prompt = translated;
+    elements.inputEnPrompt.value = translated;
+  } else {
+    current.prompt = elements.inputEnPrompt.value.trim();
+  }
+
+  renderAreas();
+  updatePromptOutput();
+  saveState();
+  showToast("프롬프트가 적용되었습니다!");
+}
+
+function appendChipToActiveArea(chip) {
+  const current = getSelectedArea();
+  if (!current) {
+    showToast("먼저 편집할 영역을 선택하세요!");
+    return;
+  }
+
+  // Append Korean
+  if (elements.inputKoPrompt.value.trim()) {
+    elements.inputKoPrompt.value += `, ${chip.ko}`;
+  } else {
+    elements.inputKoPrompt.value = chip.ko;
+  }
+
+  // Append English
+  if (elements.inputEnPrompt.value.trim()) {
+    elements.inputEnPrompt.value += `, ${chip.en}`;
+  } else {
+    elements.inputEnPrompt.value = chip.en;
+  }
+
+  current.koPrompt = elements.inputKoPrompt.value;
+  current.prompt = elements.inputEnPrompt.value;
+
+  renderAreas();
+  updatePromptOutput();
+  saveState();
+}
+
+function updatePromptOutput() {
+  const finalPos = buildFinalPrompt({
+    areas: state.areas,
+    cols: state.cols,
+    rows: state.rows,
+    aspectRatio: state.aspectRatio,
+    format: state.format,
+    whiteBg: state.whiteBg,
+    gridBorders: state.gridBorders,
+    characterSheetStyle: state.characterSheetStyle,
+    prefixPrompt: state.prefixPrompt,
+    suffixPrompt: state.suffixPrompt,
+    characterProfile: state.characterProfileEn
+  });
+
+  const finalNeg = buildNegativePrompt({
+    gridBorders: state.gridBorders
+  });
+
+  elements.outputPrompt.value = finalPos;
+  elements.outputNegative.value = finalNeg;
+}
+
+function saveState() {
+  localStorage.setItem("visual_grid_prompt_saved_state", JSON.stringify(state));
+}
+
+// =============================================================================
+// Event Listeners Binding
+// =============================================================================
+
+function bindEvents() {
+  // Canvas Mouse Dragging
+  elements.canvasWrapper.addEventListener("mousedown", handleMouseDown);
+  window.addEventListener("mousemove", handleMouseMove);
+  window.addEventListener("mouseup", handleMouseUp);
+
+  // Prevent context menu on canvas wrapper
+  elements.canvasWrapper.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+  });
+
+  // Resize window
+  window.addEventListener("resize", () => {
+    updateCanvasDimensions();
+  });
+
+  // Aspect ratio switch
+  elements.ratioButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      state.aspectRatio = btn.dataset.ratio;
+      updateCanvasDimensions();
+      renderAreas();
+      updatePromptOutput();
+      saveState();
+    });
+  });
+
+  // Steppers
+  elements.btnColsDec.addEventListener("click", () => {
+    if (state.cols > 1) {
+      state.cols--;
+      updateCanvasDimensions();
+      renderGridCells();
+      renderAreas();
+      updatePromptOutput();
+      saveState();
+    }
+  });
+
+  elements.btnColsInc.addEventListener("click", () => {
+    if (state.cols < 20) {
+      state.cols++;
+      updateCanvasDimensions();
+      renderGridCells();
+      renderAreas();
+      updatePromptOutput();
+      saveState();
+    }
+  });
+
+  elements.btnRowsDec.addEventListener("click", () => {
+    if (state.rows > 1) {
+      state.rows--;
+      updateCanvasDimensions();
+      renderGridCells();
+      renderAreas();
+      updatePromptOutput();
+      saveState();
+    }
+  });
+
+  elements.btnRowsInc.addEventListener("click", () => {
+    if (state.rows < 20) {
+      state.rows++;
+      updateCanvasDimensions();
+      renderGridCells();
+      renderAreas();
+      updatePromptOutput();
+      saveState();
+    }
+  });
+
+  // Toggles
+  elements.toggleWhiteBg.addEventListener("change", (e) => {
+    state.whiteBg = e.target.checked;
+    e.target.parentElement.classList.toggle("active", state.whiteBg);
+    updatePromptOutput();
+    saveState();
+  });
+
+  elements.toggleGridBorders.addEventListener("change", (e) => {
+    state.gridBorders = e.target.checked;
+    e.target.parentElement.classList.toggle("active", state.gridBorders);
+    updatePromptOutput();
+    saveState();
+  });
+
+  elements.toggleMockup.addEventListener("change", (e) => {
+    state.mockupEnabled = e.target.checked;
+    e.target.parentElement.classList.toggle("active", state.mockupEnabled);
+    renderAreas();
+    saveState();
+  });
+
+  // Area prompt input events
+  elements.inputKoPrompt.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      applyActiveAreaPrompt();
+    }
+  });
+
+  elements.inputKoPrompt.addEventListener("input", () => {
+    const current = getSelectedArea();
+    if (current) {
+      current.koPrompt = elements.inputKoPrompt.value;
+      const fastEn = translateViaDictionary(current.koPrompt);
+      if (fastEn && fastEn !== current.koPrompt) {
+        elements.inputEnPrompt.value = fastEn;
+        current.prompt = fastEn;
+      }
+      renderAreas();
+      updatePromptOutput();
+    }
+  });
+
+  elements.inputEnPrompt.addEventListener("input", () => {
+    const current = getSelectedArea();
+    if (current) {
+      current.prompt = elements.inputEnPrompt.value;
+      renderAreas();
+      updatePromptOutput();
+      saveState();
+    }
+  });
+
+  elements.btnTranslate.addEventListener("click", applyActiveAreaPrompt);
+
+  elements.btnDeleteArea.addEventListener("click", () => {
+    if (state.selectedAreaId) {
+      deleteArea(state.selectedAreaId);
+    }
+  });
+
+  // Preset dropdown selection
+  elements.presetSelect.addEventListener("change", (e) => {
+    const opt = e.target.selectedOptions[0];
+    if (opt && opt.dataset.ko) {
+      appendChipToActiveArea({ ko: opt.dataset.ko, en: opt.dataset.en });
+      e.target.value = "";
+    }
+  });
+
+  // Global inputs
+  elements.inputPrefix.addEventListener("input", () => {
+    state.prefixPrompt = elements.inputPrefix.value;
+    updatePromptOutput();
+    saveState();
+  });
+
+  elements.inputSuffix.addEventListener("input", () => {
+    state.suffixPrompt = elements.inputSuffix.value;
+    updatePromptOutput();
+    saveState();
+  });
+
+  // Output format selector
+  elements.formatSelect.addEventListener("change", (e) => {
+    state.format = e.target.value;
+    updatePromptOutput();
+    saveState();
+  });
+
+  // Copy Buttons
+  elements.btnCopyPrompt.addEventListener("click", () => {
+    navigator.clipboard.writeText(elements.outputPrompt.value).then(() => {
+      showToast("✨ 포지티브 프롬프트가 복사되었습니다!");
+    });
+  });
+
+  elements.btnCopyNegative.addEventListener("click", () => {
+    navigator.clipboard.writeText(elements.outputNegative.value).then(() => {
+      showToast("🚫 네거티브 프롬프트가 복사되었습니다!");
+    });
+  });
+
+  // Clear All
+  elements.btnClearAll.addEventListener("click", () => {
+    if (confirm("모든 영역을 초기화하시겠습니까?")) {
+      state.areas = [];
+      state.selectedAreaId = null;
+      renderAreas();
+      updateUIInputs();
+      updatePromptOutput();
+      saveState();
+      showToast("모든 영역이 초기화되었습니다.");
+    }
+  });
+
+  // Export JSON
+  elements.btnExportJson.addEventListener("click", () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+    const dlAnchorElem = document.createElement('a');
+    dlAnchorElem.setAttribute("href", dataStr);
+    dlAnchorElem.setAttribute("download", `visual_grid_preset_${state.aspectRatio.replace(':', '_')}.json`);
+    dlAnchorElem.click();
+    showToast("프리셋 JSON 파일이 다운로드되었습니다.");
+  });
+
+  // Import JSON
+  elements.btnImportJson.addEventListener("click", () => {
+    elements.fileImport.click();
+  });
+
+  elements.fileImport.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target.result);
+        if (parsed.areas && Array.isArray(parsed.areas)) {
+          Object.assign(state, parsed);
+          updateCanvasDimensions();
+          renderGridCells();
+          renderAreas();
+          updateUIInputs();
+          updatePromptOutput();
+          saveState();
+          showToast("프리셋 JSON 파일을 성공적으로 불러왔습니다!");
+        } else {
+          alert("유효하지 않은 프리셋 JSON 형식입니다.");
+        }
+      } catch (err) {
+        alert("JSON 파일을 파싱하는 도중 오류가 발생했습니다: " + err.message);
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  // Keyboard Shortcuts
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Delete" && state.selectedAreaId && !["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) {
+      deleteArea(state.selectedAreaId);
+    }
+  });
+}
+
+/**
+ * Toast Notification Popup
+ */
+function showToast(message) {
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.innerHTML = `<span>⚡</span><span>${message}</span>`;
+  elements.toastContainer.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateX(100%)";
+    toast.style.transition = "all 0.3s ease";
+    setTimeout(() => toast.remove(), 300);
+  }, 2400);
+}
+
+// Start app once DOM loaded
+document.addEventListener("DOMContentLoaded", initApp);
+
+
+// Direct self-start check
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}
+})();
+
+</script>
+</body>
+</html>

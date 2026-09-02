@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visual Grid Regional Prompt Studio - AI 공간 레이아웃 프롬프트 빌더</title>
+  <meta name="description" content="Krea, Midjourney, Flux, SD3, GPT-4o, MiniMax를 위한 비주얼 그리드 공간 분할 프롬프트 웹 스튜디오">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%200%20100%20100%22><text y=%22.9em%22 font-size=%2290%22>📐</text></svg>">
+</head>
+<body>
+
+  <!-- Header & Navbar -->
+  <header class="app-header">
+    <div class="brand-section">
+      <div class="brand-logo">📐</div>
+      <div class="brand-info">
+        <h1>Visual Grid Prompt Studio <span class="brand-badge">Web Pro</span></h1>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-secondary" id="btn-import-json" title="JSON 프리셋 파일 불러오기">
+        📥 불러오기
+      </button>
+      <input type="file" id="file-import" accept=".json" style="display: none;">
+      
+      <button class="btn-secondary" id="btn-export-json" title="현재 설정을 JSON 파일로 저장">
+        💾 내보내기
+      </button>
+
+      <button class="btn-danger" id="btn-clear-all" title="캔버스 전체 초기화">
+        🗑️ 초기화
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="app-container">
+    
+    <!-- Left Column: Interactive Canvas & Layout Config -->
+    <section class="panel-canvas">
+      
+      <!-- Templates Quick Bar -->
+      <div class="card">
+        <div class="card-title-row">
+          <span class="card-title">⚡ 원클릭 추천 레이아웃 템플릿</span>
+        </div>
+        <div class="templates-scroll" id="templates-container">
+          <!-- Dynamic Templates injected via JS -->
+        </div>
+      </div>
+
+      <!-- Character Profile Card (인물/피사체 공통 묘사 & 히스토리) -->
+      <div class="card character-profile-card">
+        <div class="card-title-row profile-title-row">
+          <div class="profile-title-left">
+            <span class="card-title">👤 공통 인물 / 피사체 묘사 (Character Profile)</span>
+            <span class="form-label-tag">공란 시 자동 생략 | 입력 시 모든 패널에 외형·의상 일관 유지</span>
+          </div>
+          <div class="profile-title-actions">
+            <button id="btn-save-profile" class="btn btn-secondary btn-xs" title="현재 인물 묘사를 즐겨찾기에 저장">⭐ 저장</button>
+            <button id="btn-clear-profile" class="btn btn-secondary btn-xs" title="입력 내용 초기화">🗑️ 비우기</button>
+          </div>
+        </div>
+
+        <div class="profile-input-wrapper">
+          <div class="form-group" style="margin-bottom: 6px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
+              <label class="form-label" for="input-character-ko" style="margin:0;">
+                <span>한글 인물 묘사 입력 (모서리 드래그로 크기 확장 가능)</span>
+              </label>
+              <button id="btn-apply-profile" class="btn btn-primary btn-sm" style="padding: 4px 12px;">✨ 번역 & 적용 (Ctrl+Enter)</button>
+            </div>
+            <textarea id="input-character-ko" class="form-textarea profile-textarea" rows="2" placeholder="한글로 인물 외형·의상·헤어 등을 자유롭게 입력하세요 (예: 20대 한국 여성, 검은 뿔테 안경, 긴 흑발 포니테일, 핑크 요가복)"></textarea>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 6px;">
+            <label class="form-label" for="profile-en-input" style="margin-bottom: 4px;">
+              <span>AI 영문 번역 결과 (모서리 드래그로 크기 확장 가능 / 직접 수정 가능)</span>
+            </label>
+            <textarea id="profile-en-input" class="form-textarea code-font profile-textarea" rows="2" placeholder="AI 번역 영문 프롬프트 (미입력 시 공란 상태 - 직접 수정 가능)"></textarea>
+          </div>
+        </div>
+
+        <!-- History & Saved Presets Chips -->
+        <div class="profile-history-row" id="profile-history-row">
+          <span class="history-label">⚡ 빠른 선택 / 기록:</span>
+          <div class="history-chips-container" id="profile-history-chips">
+            <!-- Dynamic History Chips injected via JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Canvas Box & Controls -->
+      <div class="card flex-auto">
+        <!-- Canvas Toolbar -->
+        <div class="canvas-toolbar">
+          <!-- Ratio Selector -->
+          <div class="toolbar-group">
+            <span class="toolbar-label">비율 (Ratio):</span>
+            <div class="ratio-selector" id="ratio-selector">
+              <button class="ratio-btn active" data-ratio="16:9">16:9</button>
+              <button class="ratio-btn" data-ratio="9:16">9:16</button>
+              <button class="ratio-btn" data-ratio="1:1">1:1</button>
+              <button class="ratio-btn" data-ratio="4:3">4:3</button>
+              <button class="ratio-btn" data-ratio="3:4">3:4</button>
+              <button class="ratio-btn" data-ratio="3:2">3:2</button>
+              <button class="ratio-btn" data-ratio="21:9">21:9</button>
+            </div>
+          </div>
+
+          <!-- Grid Dimensions -->
+          <div class="toolbar-group">
+            <span class="toolbar-label">가로 칸:</span>
+            <div class="stepper">
+              <button id="cols-dec">-</button>
+              <span id="cols-count">6</span>
+              <button id="cols-inc">+</button>
+            </div>
+
+            <span class="toolbar-label" style="margin-left:6px;">세로 칸:</span>
+            <div class="stepper">
+              <button id="rows-dec">-</button>
+              <span id="rows-count">3</span>
+              <button id="rows-inc">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Canvas Viewport -->
+        <div class="canvas-viewport" id="canvas-viewport">
+          <div class="canvas-wrapper" id="canvas-wrapper">
+            <!-- Background Grid Cells -->
+            <div class="grid-board" id="grid-board"></div>
+
+            <!-- Dragging Active Selection Box -->
+            <div class="selection-box" id="selection-box"></div>
+
+            <!-- Placed Area Boxes Container -->
+            <div id="areas-container"></div>
+          </div>
+        </div>
+
+        <!-- Canvas Bottom Guide -->
+        <div class="canvas-bottom-bar">
+          <div class="canvas-hint">
+            <span>💡 격자 위에서 <kbd>마우스 좌클릭 드래그</kbd>하여 원하는 크기의 영역을 생성하세요.</span>
+          </div>
+          <div class="canvas-shortcuts">
+            <span>단축키: <kbd>Ctrl + Enter</kbd> 번역 적용 | <kbd>Del</kbd> 영역 삭제</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Art Style Presets & Options Card -->
+      <div class="card">
+        <div class="card-title-row">
+          <span class="card-title">🎨 화풍 & 아트 스타일 프리셋 (Art Style Presets)</span>
+          <span class="form-label-tag">클릭 시 최적의 접두사/접미사 자동 완성</span>
+        </div>
+
+        <!-- Dynamic Art Style Buttons Container -->
+        <div class="art-styles-grid" id="art-styles-container">
+          <!-- Injected via JS -->
+        </div>
+
+        <div class="card-title-row" style="margin-top: 14px; margin-bottom: 8px;">
+          <span class="card-title" style="font-size: 11px;">⚙️ 부가 렌더링 옵션</span>
+        </div>
+
+        <div class="style-toggles">
+          <label class="toggle-card" id="toggle-white-bg-label">
+            <input type="checkbox" id="toggle-white-bg">
+            <div class="toggle-switch"></div>
+            <div class="toggle-text">
+              <span class="toggle-title">⚪ 백색 배경 (White Backdrop)</span>
+              <span class="toggle-desc">스튜디오 순백 배경 적용</span>
+            </div>
+          </label>
+
+          <label class="toggle-card active" id="toggle-grid-borders-label">
+            <input type="checkbox" id="toggle-grid-borders" checked>
+            <div class="toggle-switch"></div>
+            <div class="toggle-text">
+              <span class="toggle-title">🔳 검정 실선 분할 (Grid Lines)</span>
+              <span class="toggle-desc">만화/콜라주 패널 구분선</span>
+            </div>
+          </label>
+
+          <label class="toggle-card active" id="toggle-mockup-label">
+            <input type="checkbox" id="toggle-mockup" checked>
+            <div class="toggle-switch"></div>
+            <div class="toggle-text">
+              <span class="toggle-title">✨ 실루엣 목업 표시</span>
+              <span class="toggle-desc">캔버스 내 포즈 아이콘</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Right Column: Area Editor, Global Prompts & Outputs -->
+    <section class="panel-editor">
+      
+      <!-- Area Prompt Editor Card -->
+      <div class="card" id="area-editor-card">
+        <div class="card-title-row">
+          <span class="card-title" id="active-area-title">영역 [1] 프롬프트 설정</span>
+          <span id="active-area-spatial" style="font-size:11px; color:var(--accent-cyan); font-weight:600;"></span>
+        </div>
+
+        <!-- Area Tabs -->
+        <div class="area-tabs-container" id="area-tabs">
+          <!-- Injected via JS -->
+        </div>
+
+        <div class="area-editor-section" style="margin-top: 14px;">
+          <!-- Preset Dropdown -->
+          <div class="form-group">
+            <label class="form-label" for="preset-select">
+              <span>샷 / 구도 프리셋</span>
+              <span class="form-label-tag">선택 시 자동 입력</span>
+            </label>
+            <select class="form-select" id="preset-select"></select>
+          </div>
+
+          <!-- Quick Tag Chips (기본 프리셋) -->
+          <div class="preset-chips-wrap" id="chips-container">
+            <!-- Injected via JS -->
+          </div>
+
+          <!-- Custom Presets Section (커스텀 프리셋: 드롭다운 펼치기/접기 + 드래그 순서 변경) -->
+          <div class="custom-presets-section collapsible open" id="custom-presets-section">
+            <div class="custom-presets-header" id="custom-presets-toggle" title="클릭하여 커스텀 프리셋 목록 펼치기/접기">
+              <div class="custom-presets-title">
+                <span class="accordion-arrow" id="custom-presets-arrow">▼</span>
+                <span>⭐ 나만의 커스텀 프리셋 (<span id="custom-presets-count">0</span>)</span>
+              </div>
+              <div class="custom-presets-actions" onclick="event.stopPropagation();">
+                <button type="button" id="btn-save-as-preset" class="btn btn-secondary btn-xs" title="현재 입력창의 내용을 새 프리셋으로 등록">💾 현재 입력 등록</button>
+                <button type="button" id="btn-add-custom-preset" class="btn btn-primary btn-xs" title="새 커스텀 프리셋 직접 추가">➕ 새 프리셋 추가</button>
+              </div>
+            </div>
+            <div class="custom-presets-body" id="custom-presets-body">
+              <div class="custom-chips-container" id="custom-chips-container">
+                <!-- Dynamic Custom Chips injected via JS, draggable -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Korean Direct Input -->
+          <div class="form-group">
+            <label class="form-label" for="input-ko-prompt">
+              <span>직접 한글 입력 (Korean Prompt)</span>
+              <span class="form-label-tag">Ctrl + Enter 로 즉시 영문 변환</span>
+            </label>
+            <textarea class="form-textarea" id="input-ko-prompt" placeholder="예: 전신 45도 반측면, 은발에 푸른 눈, 밝은 미소..."></textarea>
+          </div>
+
+          <!-- English Output/Input -->
+          <div class="form-group">
+            <label class="form-label" for="input-en-prompt">
+              <span>최종 영문 프롬프트 (English Translated)</span>
+              <span class="form-label-tag">AI 표준 키워드</span>
+            </label>
+            <textarea class="form-textarea code-font" id="input-en-prompt" placeholder="full body shot, three-quarter view, silver hair, glowing blue eyes..."></textarea>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+            <button class="btn-danger" id="btn-delete-area" type="button">
+              🗑️ 현재 영역 삭제
+            </button>
+            <button class="btn-primary" id="btn-translate" type="button">
+              ✨ 한글 번역 & 적용 (Ctrl+Enter)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Global Prefix & Suffix Prompts -->
+      <div class="card">
+        <div class="card-title-row">
+          <span class="card-title">🌐 공통 글로벌 프롬프트 (Prefix / Suffix)</span>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label class="form-label" for="input-prefix">
+            <span>공통 접두사 (Prefix - 화풍/화질/인물 기본값)</span>
+          </label>
+          <input type="text" class="form-input" id="input-prefix" value="masterpiece, best quality, ultra detailed, 1girl, silver hair, blue eyes">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="input-suffix">
+            <span>공통 접미사 (Suffix - 분위기/조명/디테일)</span>
+          </label>
+          <input type="text" class="form-input" id="input-suffix" value="sharp focus, photorealistic 8k, uniform lighting">
+        </div>
+      </div>
+
+      <!-- Live Generated AI Prompt Output -->
+      <div class="card">
+        <div class="output-header-row">
+          <span class="card-title">🚀 최종 생성 프롬프트</span>
+          
+          <select class="format-select" id="format-select">
+            <option value="natural" selected>자연어 공간 표현 (Krea/Flux/Midjourney/GPT-4o)</option>
+            <option value="comfyui_break">ComfyUI / SD Regional (BREAK 문법)</option>
+            <option value="structured">구조화 태그 ([Area 1 - Left] ...)</option>
+            <option value="coordinates">바운딩 박스 (&lt;area bbox="[...]"&gt;)</option>
+            <option value="comma">단순 쉼표 나열 (Comma-Separated)</option>
+            <option value="json">원시 데이터 (Raw JSON Preset)</option>
+          </select>
+        </div>
+
+        <!-- Positive Output Box -->
+        <div class="output-box">
+          <textarea class="output-textarea" id="output-prompt" readonly placeholder="영역을 지정하면 여기에 최종 프롬프트가 실시간으로 조합됩니다..."></textarea>
+          <div class="output-actions">
+            <button class="btn-primary" id="btn-copy-prompt">
+              📋 프롬프트 복사
+            </button>
+          </div>
+        </div>
+
+        <!-- Negative Output Box -->
+        <div class="card-title-row" style="margin-top: 14px; margin-bottom: 8px;">
+          <span class="card-title" style="font-size: 12px;">🚫 추천 네거티브 프롬프트 (글자/숫자 아티팩트 방지)</span>
+        </div>
+        <div class="output-box" style="margin-bottom:0;">
+          <textarea class="output-textarea" id="output-negative" style="min-height:55px;" readonly></textarea>
+          <div class="output-actions">
+            <button class="btn-secondary" id="btn-copy-negative">
+              📋 네거티브 복사
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Custom Preset Modal (프리셋 추가 / 수정 모달) -->
+  <div id="modal-custom-preset" class="modal-backdrop" style="display:none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-preset-title" class="modal-title">⭐ 커스텀 프리셋 등록 / 수정</h3>
+        <button type="button" id="btn-close-preset-modal" class="modal-close-btn" title="닫기">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="preset-edit-id" value="">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label class="form-label" for="preset-input-label">프리셋 버튼 이름 (Label):</label>
+          <input type="text" id="preset-input-label" class="form-input" placeholder="예: 핑크 바디슈트, 무릎 안기, 태아 자세">
+        </div>
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label class="form-label" for="preset-input-ko">한글 프롬프트 (Korean Prompt):</label>
+          <textarea id="preset-input-ko" class="form-textarea" rows="2" placeholder="예: 무릎을 세우고 앉아서 양손으로 무릎을 감싸고 있는 자세의 전신"></textarea>
+        </div>
+        <div class="form-group" style="margin-bottom: 6px;">
+          <label class="form-label" for="preset-input-en">영문 프롬프트 (English Prompt - 공란 시 자동 번역):</label>
+          <textarea id="preset-input-en" class="form-textarea code-font" rows="2" placeholder="예: Full body sitting with knees bent and covering knees with hands"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btn-cancel-preset" class="btn btn-secondary btn-sm">취소</button>
+        <button type="button" id="btn-save-preset-confirm" class="btn btn-primary btn-sm">✨ 저장 및 등록</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>

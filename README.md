@@ -1,10 +1,25 @@
 # 📐 ComfyUI Visual Grid Regional Prompt (비주얼 그리드 프롬프트)
 
-화면을 바둑판 그리드(Grid) 형태로 나누어, 마우스 드래그로 원하는 영역을 시각적으로 지정하고 각 구역의 프롬프트를 설정하여 **최신 이미지/영상 AI(Krea 2, MiniMax, Flux, SD3, Midjourney, Gemini, ChatGPT 등)**에 최적화된 복합 공간 레이아웃 프롬프트(STRING)를 생성하는 ComfyUI 전용 커스텀 노드입니다.
+<div align="center">
+
+![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_Mac_%7C_Web-blue?logo=windows)
+![ComfyUI](https://img.shields.io/badge/ComfyUI-Custom_Node-orange?logo=python)
+![Web Tool](https://img.shields.io/badge/Web_Tool-Single_File_HTML-brightgreen?logo=html5)
+[![Release](https://img.shields.io/badge/Release-v1.2.0-blue.svg)](https://github.com/solokjd-eng/ComfyUI-Visual-Regional-Prompt/releases/latest)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
+
+### 🚀 [▶ 무설치 단독 실행형 웹 도구 (Visual_Grid_Prompt.html) 즉시 다운로드](https://github.com/solokjd-eng/ComfyUI-Visual-Regional-Prompt/releases/latest)
+
+**ComfyUI 전용 커스텀 노드 및 웹 브라우저 단독 실행형 멀티 패널 공간 구도 프롬프트 생성기**  
+(Krea 2, MiniMax, Flux, SD3, Midjourney, Imagen 3, ChatGPT, Gemini 최적화)
+
+[한국어 설명](#-주요-기능) | [English Overview](#-english-overview)
+
+</div>
 
 ---
 
-## 🌟 노드 전체 화면 (Overview)
+## 🌟 노드 및 웹 도구 전체 화면 (Overview)
 
 ![Visual Grid Regional Prompt 노드 전체 화면](assets/node_overview.png)
 
@@ -19,21 +34,34 @@
 
 ---
 
-### 2. 원클릭 샷/구도 프리셋으로 다양한 앵글 간편 지정
-* **프리셋을 선택하면 얼굴, 상반신, 전신, 45도 각도, 하이앵글/로우앵글 등 다양한 구도를 원클릭으로 쉽게 지정**할 수 있습니다 (선택 즉시 해당 구역에 자동 적용).
-
-![원클릭 샷 및 구도 프리셋 선택](assets/preset_dropdown.png)
+### 2. 🧍 실제 생성 비율 1:1 동적 벡터 실루엣 뷰어
+* 전신(세로 96% 꽉 찬 마네킹), 얼굴 150% 매크로 초근접 줌인, 인물 바스트(85%), 착석/누운 자세 등 **실제 AI 생성 이미지와 완벽히 일치하는 네온 벡터 실루엣**이 캔버스에 실시간 투영됩니다.
 
 ---
 
-### 3. 직접 한글 입력 & 실시간 자동 영문 번역
+### 3. ⭐ 나만의 커스텀 프리셋 시스템 (Custom Presets Drawer)
+* 자주 사용하는 포즈, 의상, 캐릭터 스타일을 **원클릭으로 등록(`💾 현재 입력 등록`)**하고, **접이식 아코디언 서랍**에서 편리하게 관리할 수 있습니다.
+* **마우스 드래그 앤 드롭(Drag & Drop)**으로 프리셋 순서를 자유롭게 변경할 수 있으며, `localStorage`에 자동 영구 보존됩니다.
+
+---
+
+### 4. 🎨 5대 프리미엄 아트 스타일 프리셋 (Art Styles)
+* **📷 극실사 사진 (Photorealistic RAW)**: 50mm f/1.8 렌즈, 자연스러운 피부 텍스처, 소프트 데이라이트 스튜디오 조명.
+* **✨ 반실사 (Semi-Realistic / 2.5D)**: 세련된 디지털 페인팅, 부드러운 음영 및 화려한 2.5D 비주얼.
+* **🎨 2D 애니 / 웹툰 (Anime & Manga)**: 깔끔한 라인 아트, 선명한 셀 채색, 트렌디한 일본 애니메이션/웹툰 스타일.
+* **📐 캐릭터 설정화 (Concept Art Sheet)**: 게임/애니메이션 공식 캐릭터 디자인 시트, 삼면도/턴어라운드 레퍼런스.
+* **🎮 3D CG 캐릭터 (3D CGI / Unreal 5)**: 옥테인 렌더링, 언리얼 엔진 5 시네마틱 3D 모델링.
+
+---
+
+### 5. 직접 한글 입력 & 실시간 자동 영문 번역
 * **직접 한글로 원하는 프롬프트를 자유롭게 입력한 후 [적용 (Ctrl+Enter)]을 누르면**, 구글 실시간 번역 API 및 AI 최적화 사전으로 자동 영문 번역되어 최종 프롬프트에 실시간 반영됩니다.
 
 ![직접 한글 입력 및 실시간 자동 번역](assets/direct_korean_input.png)
 
 ---
 
-### 4. 가로/세로 자유로운 멀티 패널 레이아웃 구성
+### 6. 가로/세로 자유로운 멀티 패널 레이아웃 구성
 * **세로(9:16), 가로(16:9), 정방형(1:1)** 등 원하는 비율과 칸 수에 맞춰 다채로운 분할 구도를 자유자재로 구성할 수 있습니다.
 * 캐릭터 전신 샷 + 다각도 얼굴 클로즈업 + 상반신 포즈 등 **캐릭터 디자인 시트(Model Sheet)** 구성에 최적화되어 있습니다.
 
@@ -41,32 +69,20 @@
 
 ---
 
-## ✨ 주요 기능 (Key Features)
+## ✨ 핵심 기능 요약 (Key Features)
 
-1. **시각적 그리드 캔버스 & 모서리 리사이즈 (Interactive Resizable Grid Canvas)**
-   * `16:9`, `9:16`, `1:1`, `4:3`, `3:4`, `3:2`, `2:3`, `21:9` 등 다양한 화면비 지원.
-   * 그리드 캔버스 우측 하단 모서리를 마우스로 드래그하여 **원하는 크기로 확대/축소** 가능 (새로고침 시 크기 기억).
-   * **마우스 조작 최적화**: 노드 위에서 마우스 중간 버튼 클릭 드래그(Canvas Pan) 및 휠 줌(Zoom) 완벽 지원.
-
-2. **직관적인 영역(Area) 지정 & 번호 관리**
-   * **좌클릭 드래그**: 원하는 크기의 직사각형 구역을 자유롭게 생성 (자동 번호 부여 및 고유 네온 색상 하이라이트).
-   * **구역 클릭**: 프롬프트 설정 팝업창 열기.
-   * **우클릭** 또는 **우상단 [×] 버튼**: 구역 삭제 및 번호 자동 재정렬.
-
-3. **원클릭 샷/구도 프리셋 & 실시간 자동 영문 번역**
-   * **원클릭 프리셋**: 얼굴, 상반신, 전신, 45도 각도, 클로즈업 등 체계적인 샷/구도 프리셋 드롭다운 지원 (선택 시 즉시 적용).
-   * **직접 한글 입력**: 한글로 입력 시 실시간 무료 번역 API 및 AI 최적화 사전 기반으로 자연스러운 영어 프롬프트로 자동 변환 (작성 후 `적용` 클릭).
-
-4. **원클릭 스타일 옵션 토글 바**
-   * **⚪ 백색 배경 [ON/OFF]**: 스튜디오 순백색 배경(Clean Studio White Backdrop) 효과 적용.
-   * **🔳 검정 실선 격자 [ON/OFF]**: 각 구역을 얇은 검정 실선(Black Divider Lines)으로 명확히 구분하는 만화/콜라주 패널 레이아웃 적용.
-   * **👤 캐릭터 시트용 추천 효과 [ON/OFF]**: 인물 일관성(Model Sheet Consistency), 균일한 스튜디오 조명(Soft Even Studio Lighting), 전 패널 선명도(Sharp Focus)를 접두사/접미사에 원클릭 자동 반영.
-
-5. **텍스트 렌더링 아티팩트 방지 (Natural Spatial Output)**
-   * 이미지 내에 숫자나 글자가 새겨지는 문제를 방지하기 위해 좌표/숫자 대신 자연스러운 영어 위치 표현(`On the left side (full height)`, `In the top-center panel` 등)과 글자 방지 네거티브 키워드를 자동 조합.
-
-6. **프롬프트 미리보기 창 자동 조절 & 높이 기억**
-   * 텍스트 길이에 따라 자동으로 높이가 유연하게 늘어나며, 사용자가 수동 조절한 높이도 영구 기억.
+1. **🌐 무설치 단독 실행형 HTML 도구 (`Visual_Grid_Prompt.html`) 제공**:
+   * ComfyUI 설치 없이도 크롬, 엣지, 웨일, 모바일 브라우저에서 더블클릭 즉시 실행 가능.
+2. **📐 반응형 뷰포트 & 화면 확대(Zoom 100%/80%/50%) 100% 자동 유지**:
+   * 브라우저 확대 배율이나 창 크기에 관계없이 종횡비와 여백을 유연하게 자동 계산.
+3. **🧍 1:1 완벽 일치 동적 벡터 실루엣 엔진**:
+   * 칸 크기와 포즈에 최적화된 마네킹/뷰파인더/포트레이트 실루엣 실시간 오버레이.
+4. **⭐ 커스텀 프리셋 & 마우스 드래그 앤 드롭 순서 변경**:
+   * 접이식 아코디언 서랍, 원클릭 입력 등록, 순서 변경, 수정, 삭제 지원.
+5. **👤 캐릭터 프로필 & 다중 저장 히스토리**:
+   * 마우스로 모서리를 끌어 늘릴 수 있는 한글/영문 텍스트 박스 및 즐겨찾기 프로필 관리.
+6. **🚫 텍스트 아티팩트 방지 (Natural Spatial Output)**:
+   * 이미지 내에 숫자나 글자가 새겨지는 문제를 방지하기 위해 자연스러운 영어 공간 서술 및 네거티브 프롬프트 자동 조합.
 
 ---
 
@@ -76,16 +92,20 @@
 
 ---
 
-## 🚀 설치 방법 (Installation)
+## 🚀 설치 및 실행 방법 (Installation & Usage)
 
-### 방법 1: Git Clone
+### 방법 1: 무설치 단독 웹 도구 사용 (추천 ⭐)
+1. [`Visual_Grid_Prompt.html`](Visual_Grid_Prompt.html) 파일을 다운로드합니다.
+2. 더블클릭하여 크롬/엣지 브라우저에서 즉시 실행합니다. (설치 불필요, 오프라인 사용 가능)
+
+### 방법 2: ComfyUI 커스텀 노드 설치 (Git Clone)
 ComfyUI의 `custom_nodes` 디렉토리에서 아래 명령어를 실행합니다:
 ```bash
 cd ComfyUI/custom_nodes
 git clone https://github.com/solokjd-eng/ComfyUI-Visual-Regional-Prompt.git
 ```
 
-### 방법 2: ComfyUI Manager
+### 방법 3: ComfyUI Manager
 1. ComfyUI Manager에서 **`Visual Grid Regional Prompt`** 검색 후 설치합니다.
 2. ComfyUI를 재시작하고 웹 브라우저에서 **`Ctrl + Shift + R`**(강력 새로고침)을 실행합니다.
 
