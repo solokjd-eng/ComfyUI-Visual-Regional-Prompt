@@ -473,46 +473,65 @@ async function translateTextOnline(text) {
     return translateToEnglish(clean);
 }
 
-// 100% 자연어 공간 위치 서술어 생성 함수 (숫자/라벨 렌더링 방지)
+// 100% 자연어 공간 위치 서술어 생성 함수 (엄격한 분할 비율 및 퍼센트 바운더리 포함)
 function getNaturalSpatialDescription(c1, c2, r1, r2, totalCols, totalRows) {
     const colSpan = (c2 - c1 + 1) / totalCols;
     const rowSpan = (r2 - r1 + 1) / totalRows;
     const colCenter = (c1 + c2 + 1) / (2.0 * totalCols);
     const rowCenter = (r1 + r2 + 1) / (2.0 * totalRows);
 
-    // 전체 영역
+    const wPct = Math.round(colSpan * 100);
+    const hPct = Math.round(rowSpan * 100);
+    const x1Pct = Math.round((c1 / totalCols) * 100);
+    const x2Pct = Math.round(((c2 + 1) / totalCols) * 100);
+    const y1Pct = Math.round((r1 / totalRows) * 100);
+    const y2Pct = Math.round(((r2 + 1) / totalRows) * 100);
+
+    // 1. 전체 영역 (Full frame)
     if (colSpan >= 0.85 && rowSpan >= 0.85) {
-        return "Across the entire image";
+        return "Across the entire frame (full 100% canvas)";
     }
 
-    // 전폭 가로 띠
-    if (colSpan >= 0.85) {
-        if (rowCenter < 0.35) return "In the top full-width section";
-        else if (rowCenter > 0.65) return "In the bottom full-width section";
-        else return "In the middle full-width band";
-    }
-
-    // 전고 세로 띠
+    // 2. 전고 세로 띠 (Full-height vertical columns)
     if (rowSpan >= 0.85) {
-        if (colCenter < 0.35) return "On the left side (full height)";
-        else if (colCenter > 0.65) return "On the right side (full height)";
-        else return "In the center column (full height)";
+        const colType = wPct >= 40 ? "wide vertical section" : (wPct <= 25 ? "narrow vertical strip" : "vertical panel");
+        if (colCenter < 0.35) {
+            return `Left ${colType} (occupying exactly ${wPct}% width from 0% to ${x2Pct}%, full 100% height)`;
+        } else if (colCenter > 0.65) {
+            return `Right ${colType} (occupying exactly ${wPct}% width from ${x1Pct}% to 100%, full 100% height)`;
+        } else {
+            return `Center ${colType} (occupying exactly ${wPct}% width from ${x1Pct}% to ${x2Pct}%, full 100% height)`;
+        }
     }
 
-    // 좌우 위치
+    // 3. 전폭 가로 띠 (Full-width horizontal bands)
+    if (colSpan >= 0.85) {
+        const rowType = hPct >= 40 ? "wide horizontal band" : (hPct <= 25 ? "narrow horizontal strip" : "horizontal panel");
+        if (rowCenter < 0.35) {
+            return `Top ${rowType} (full 100% width, occupying exactly ${hPct}% height from 0% to ${y2Pct}%)`;
+        } else if (rowCenter > 0.65) {
+            return `Bottom ${rowType} (full 100% width, occupying exactly ${hPct}% height from ${y1Pct}% to 100%)`;
+        } else {
+            return `Middle ${rowType} (full 100% width, occupying exactly ${hPct}% height from ${y1Pct}% to ${y2Pct}%)`;
+        }
+    }
+
+    // 4. 분할 사분면 / 그리드 패널 (Quadrants & multi-cells)
     let hPos = "center";
     if (colCenter < 0.35) hPos = "left";
     else if (colCenter > 0.65) hPos = "right";
 
-    // 상하 위치
     let vPos = "middle";
     if (rowCenter < 0.35) vPos = "top";
     else if (rowCenter > 0.65) vPos = "bottom";
 
-    if (hPos === "center" && vPos === "middle") return "In the center frame";
-    else if (vPos === "middle") return `On the ${hPos} side`;
-    else if (hPos === "center") return `In the ${vPos}-center panel`;
-    else return `In the ${vPos}-${hPos} panel`;
+    let panelName = "Center frame";
+    if (hPos === "center" && vPos === "middle") panelName = "Center frame";
+    else if (vPos === "middle") panelName = `${hPos.charAt(0).toUpperCase() + hPos.slice(1)} middle panel`;
+    else if (hPos === "center") panelName = `${vPos.charAt(0).toUpperCase() + vPos.slice(1)} center panel`;
+    else panelName = `${vPos.charAt(0).toUpperCase() + vPos.slice(1)}-${hPos} panel`;
+
+    return `${panelName} (occupying exactly ${wPct}% width from ${x1Pct}% to ${x2Pct}%, ${hPct}% height from ${y1Pct}% to ${y2Pct}%)`;
 }
 
 // 구조화 태그 및 바운딩 박스용 상세 좌표/퍼센트 정보 생성 함수
@@ -1470,8 +1489,8 @@ app.registerExtension({
                 if (validAreas.length > 0) {
                     if (currentFormat.startsWith("Natural")) {
                         const lines = [
-                            `A high-definition ${currentRatio} multi-region composition.`,
-                            `[Spatial Layout & Regional Placement]:`
+                            `A high-definition ${currentRatio} multi-panel composition strictly partitioned into ${validAreas.length} proportional sections.`,
+                            `[Spatial Layout & Exact Proportional Placement]:`
                         ];
                         validAreas.forEach(a => {
                             const rawPrompt = a.prompt || a.ko_prompt || "";
@@ -1481,9 +1500,9 @@ app.registerExtension({
                         });
                         
                         if (gridBorders) {
-                            lines.push(`[Multi-Panel Layout]: Split-screen multi-panel collage layout, each panel clearly separated by crisp thin black divider lines, clean comic grid panels, pristine artwork without any text, labels, numbers, or watermarks.`);
+                            lines.push(`[Multi-Panel Layout & Strict Proportional Scale]: Split-screen multi-panel collage layout strictly adhering to the exact percentage width and height boundaries specified above for each column and row without shifting, resizing, or distorting relative panel scales. Each panel is cleanly separated by crisp thin black divider lines, clean comic grid panels, pristine artwork without any text, labels, numbers, coordinates, or watermarks.`);
                         } else {
-                            lines.push(`[Global Scene Coherence]: Seamlessly blended depth of field, unified realistic lighting, cinematic perspective, and coherent environment bridging all regions, clean presentation without any text, labels, numbers, or watermarks.`);
+                            lines.push(`[Global Scene Coherence & Proportional Placement]: Seamlessly blended multi-region composition maintaining the exact spatial percentage boundaries and relative scale for each region, unified realistic lighting, cinematic perspective, and coherent environment bridging all regions, clean presentation without any text, labels, numbers, coordinates, or watermarks.`);
                         }
                         finalPrompt = lines.join("\n");
                     } else if (currentFormat.startsWith("Structured")) {

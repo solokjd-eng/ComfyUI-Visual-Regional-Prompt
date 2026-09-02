@@ -251,8 +251,9 @@ def translate_prompt_to_english(text):
 
 def get_natural_spatial_name(col_start, col_end, row_start, row_end, total_cols, total_rows):
     """
-    Krea, Flux, Midjourney, SD3 등 최신 AI가 이미지에 숫자나 기호를 글자로 새기지 않도록
-    Area 번호나 좌표/퍼센트 대신 순수 100% 자연어 공간 위치 서술어를 반환합니다.
+    Krea, Flux, Midjourney, SD3, GPT-4o 등 최신 AI가
+    사용자가 지정한 그리드 비율(가로폭 %, 세로폭 %, 정확한 위치)을 엄격하게 준수하여
+    의도한 패널 크기와 분할 비율대로 이미지를 렌더링하도록 상세 공간 비율 정보를 포함한 서술어를 반환합니다.
     """
     c1, c2 = col_start, col_end
     r1, r2 = row_start, row_end
@@ -262,29 +263,38 @@ def get_natural_spatial_name(col_start, col_end, row_start, row_end, total_cols,
     col_center = (c1 + c2 + 1) / (2.0 * total_cols)
     row_center = (r1 + r2 + 1) / (2.0 * total_rows)
 
-    # 전체 영역
+    w_pct = int(round(col_span * 100))
+    h_pct = int(round(row_span * 100))
+    x1_pct = int(round((c1 / total_cols) * 100))
+    x2_pct = int(round(((c2 + 1) / total_cols) * 100))
+    y1_pct = int(round((r1 / total_rows) * 100))
+    y2_pct = int(round(((r2 + 1) / total_rows) * 100))
+
+    # 1. 전체 영역 (Full canvas)
     if col_span >= 0.85 and row_span >= 0.85:
-        return "Across the entire image"
+        return "Across the entire frame (full 100% canvas)"
 
-    # 전폭 가로 띠 (Full-width bands)
-    if col_span >= 0.85:
-        if row_center < 0.35:
-            return "In the top full-width section"
-        elif row_center > 0.65:
-            return "In the bottom full-width section"
-        else:
-            return "In the middle full-width band"
-
-    # 전고 세로 띠 (Full-height columns)
+    # 2. 전고 세로 띠 (Full-height vertical columns)
     if row_span >= 0.85:
+        col_type = "wide vertical section" if w_pct >= 40 else ("narrow vertical strip" if w_pct <= 25 else "vertical panel")
         if col_center < 0.35:
-            return "On the left side (full height)"
+            return f"Left {col_type} (occupying exactly {w_pct}% width from 0% to {x2_pct}%, full 100% height)"
         elif col_center > 0.65:
-            return "On the right side (full height)"
+            return f"Right {col_type} (occupying exactly {w_pct}% width from {x1_pct}% to 100%, full 100% height)"
         else:
-            return "In the center column (full height)"
+            return f"Center {col_type} (occupying exactly {w_pct}% width from {x1_pct}% to {x2_pct}%, full 100% height)"
 
-    # 좌우 위치
+    # 3. 전폭 가로 띠 (Full-width horizontal bands)
+    if col_span >= 0.85:
+        row_type = "wide horizontal band" if h_pct >= 40 else ("narrow horizontal strip" if h_pct <= 25 else "horizontal panel")
+        if row_center < 0.35:
+            return f"Top {row_type} (full 100% width, occupying exactly {h_pct}% height from 0% to {y2_pct}%)"
+        elif row_center > 0.65:
+            return f"Bottom {row_type} (full 100% width, occupying exactly {h_pct}% height from {y1_pct}% to 100%)"
+        else:
+            return f"Middle {row_type} (full 100% width, occupying exactly {h_pct}% height from {y1_pct}% to {y2_pct}%)"
+
+    # 4. 분할 사분면 / 그리드 패널 (Quadrants & multi-cells)
     if col_center < 0.35:
         h_pos = "left"
     elif col_center > 0.65:
@@ -292,7 +302,6 @@ def get_natural_spatial_name(col_start, col_end, row_start, row_end, total_cols,
     else:
         h_pos = "center"
 
-    # 상하 위치
     if row_center < 0.35:
         v_pos = "top"
     elif row_center > 0.65:
@@ -301,13 +310,15 @@ def get_natural_spatial_name(col_start, col_end, row_start, row_end, total_cols,
         v_pos = "middle"
 
     if h_pos == "center" and v_pos == "middle":
-        return "In the center frame"
+        panel_name = "Center frame"
     elif v_pos == "middle":
-        return f"On the {h_pos} side"
+        panel_name = f"{h_pos.capitalize()} middle panel"
     elif h_pos == "center":
-        return f"In the {v_pos}-center panel"
+        panel_name = f"{v_pos.capitalize()} center panel"
     else:
-        return f"In the {v_pos}-{h_pos} panel"
+        panel_name = f"{v_pos.capitalize()}-{h_pos} panel"
+
+    return f"{panel_name} (occupying exactly {w_pct}% width from {x1_pct}% to {x2_pct}%, {h_pct}% height from {y1_pct}% to {y2_pct}%)"
 
 
 def get_spatial_description(col_start, col_end, row_start, row_end, total_cols, total_rows):
@@ -428,8 +439,8 @@ class VisualGridPromptNode:
                     formatted_parts = []
                     
                     if format.startswith("Natural"):
-                        formatted_parts.append(f"A high-definition {aspect_ratio} multi-region composition.")
-                        formatted_parts.append("[Spatial Layout & Regional Placement]:")
+                        formatted_parts.append(f"A high-definition {aspect_ratio} multi-panel composition strictly partitioned into {len(valid_areas)} proportional sections.")
+                        formatted_parts.append("[Spatial Layout & Exact Proportional Placement]:")
                         for area in sorted(valid_areas, key=lambda x: x.get("id", 0)):
                             raw_desc = area.get("prompt", "").strip() or area.get("ko_prompt", "").strip()
                             desc = translate_prompt_to_english(raw_desc)
@@ -441,9 +452,9 @@ class VisualGridPromptNode:
                             formatted_parts.append(f"- {spatial_name}: {desc}.")
                         
                         if grid_borders:
-                            formatted_parts.append("[Multi-Panel Layout]: Split-screen multi-panel collage layout, each panel clearly separated by crisp thin black divider lines, clean comic grid panels, pristine artwork without any text, labels, numbers, or watermarks.")
+                            formatted_parts.append("[Multi-Panel Layout & Strict Proportional Scale]: Split-screen multi-panel collage layout strictly adhering to the exact percentage width and height boundaries specified above for each column and row without shifting, resizing, or distorting relative panel scales. Each panel is cleanly separated by crisp thin black divider lines, clean comic grid panels, pristine artwork without any text, labels, numbers, coordinates, or watermarks.")
                         else:
-                            formatted_parts.append("[Global Scene Coherence]: Seamlessly blended depth of field, unified realistic lighting, cinematic perspective, and coherent environment bridging all regions, clean presentation without any text, labels, numbers, or watermarks.")
+                            formatted_parts.append("[Global Scene Coherence & Proportional Placement]: Seamlessly blended multi-region composition maintaining the exact spatial percentage boundaries and relative scale for each region, unified realistic lighting, cinematic perspective, and coherent environment bridging all regions, clean presentation without any text, labels, numbers, coordinates, or watermarks.")
                         final_prompt = "\n".join(formatted_parts)
                         
                     elif format.startswith("Structured"):
