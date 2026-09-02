@@ -56,7 +56,12 @@ PROMPT_TRANSLATIONS = [
     (re.compile(r'금안|노란\s*눈', re.IGNORECASE), "golden eyes"),
     (re.compile(r'오드아이', re.IGNORECASE), "heterochromia, odd eyes"),
 
-    (re.compile(r'어여쁜\s*소녀|예쁜\s*소녀|소녀|미소녀', re.IGNORECASE), "1girl, beautiful anime girl"),
+    (re.compile(r'(\d+)\s*세', re.IGNORECASE), r'\1-year-old'),
+    (re.compile(r'한국인|한국\s*(사람|여성|소녀|소년대)?', re.IGNORECASE), "korean"),
+    (re.compile(r'여고생|고등학교\s*여학생', re.IGNORECASE), "high school girl, student"),
+    (re.compile(r'남고생|고등학교\s*남학생', re.IGNORECASE), "high school boy, student"),
+    (re.compile(r'여대생|대학생\s*여성', re.IGNORECASE), "college girl, university student"),
+    (re.compile(r'어여쁜\s*소녀|예쁜\s*소녀|소녀|미소녀', re.IGNORECASE), "1girl, beautiful girl"),
     (re.compile(r'여자|여성|미녀', re.IGNORECASE), "1woman, beautiful woman"),
     (re.compile(r'소년|미소년', re.IGNORECASE), "1boy, handsome boy"),
     (re.compile(r'남자|남성|미남', re.IGNORECASE), "1man, handsome man"),
@@ -169,8 +174,8 @@ PROMPT_TRANSLATIONS = [
     (re.compile(r'팔짱\s*낀', re.IGNORECASE), "arms crossed"),
     (re.compile(r'주머니에\s*손', re.IGNORECASE), "hands in pockets"),
     (re.compile(r'턱을\s*괸', re.IGNORECASE), "resting chin on hand"),
-    (re.compile(r'손을\s*뻗은|손을\s*내미는', re.IGNORECASE), "reaching out hand towards viewer"),
-    (re.compile(r'브이|V포즈', re.IGNORECASE), "peace sign, v gesture"),
+    (re.compile(r'브이(\s*포즈)?|V\s*포즈', re.IGNORECASE), "peace sign, v gesture"),
+    (re.compile(r'포즈|자세', re.IGNORECASE), "pose"),
 
     # 6. 인체 부위 & 디테일 (헤어/표정 이후 매칭)
     (re.compile(r'얼굴', re.IGNORECASE), "face, detailed face"),
@@ -185,6 +190,8 @@ PROMPT_TRANSLATIONS = [
     (re.compile(r'어깨', re.IGNORECASE), "shoulders"),
 
     # 7. 배경 & 조명 & 환경
+    (re.compile(r'백색\s*배경|흰색\s*배경|화이트\s*배경', re.IGNORECASE), "clean solid pure white background, studio white backdrop"),
+    (re.compile(r'검정\s*(색\s*)?실선\s*(격자)?|분할선|격자선', re.IGNORECASE), "split-screen multi-panel layout, separated by thin black divider lines"),
     (re.compile(r'사이버펑크(\s*도시)?', re.IGNORECASE), "cyberpunk neon city, glowing holographic lights"),
     (re.compile(r'미래\s*도시|SF\s*도시', re.IGNORECASE), "futuristic sci-fi city, high-tech skyscrapers"),
     (re.compile(r'도시|빌딩숲|거리', re.IGNORECASE), "modern cityscape, streets, skyscrapers"),
@@ -236,15 +243,76 @@ def translate_prompt_to_english(text):
     # 조사 및 잉여 어미 정리
     res = re.sub(r'(\s*이|가|을|를|의|에|에서|으로|로|과|와|하고|하며|있는|있음|한|된|인)\b', ' ', res)
     res = re.sub(r'\s{2,}', ' ', res).strip()
-    res = re.sub(r',\s*,', ',', res)
+    res = re.sub(r'\s*,\s*', ', ', res)
+    res = re.sub(r'(,\s*){2,}', ', ', res)
     res = re.sub(r'^,\s*|,\s*$', '', res)
     return res
 
 
+def get_natural_spatial_name(col_start, col_end, row_start, row_end, total_cols, total_rows):
+    """
+    Krea, Flux, Midjourney, SD3 등 최신 AI가 이미지에 숫자나 기호를 글자로 새기지 않도록
+    Area 번호나 좌표/퍼센트 대신 순수 100% 자연어 공간 위치 서술어를 반환합니다.
+    """
+    c1, c2 = col_start, col_end
+    r1, r2 = row_start, row_end
+    
+    col_span = (c2 - c1 + 1) / total_cols
+    row_span = (r2 - r1 + 1) / total_rows
+    col_center = (c1 + c2 + 1) / (2.0 * total_cols)
+    row_center = (r1 + r2 + 1) / (2.0 * total_rows)
+
+    # 전체 영역
+    if col_span >= 0.85 and row_span >= 0.85:
+        return "Across the entire image"
+
+    # 전폭 가로 띠 (Full-width bands)
+    if col_span >= 0.85:
+        if row_center < 0.35:
+            return "In the top full-width section"
+        elif row_center > 0.65:
+            return "In the bottom full-width section"
+        else:
+            return "In the middle full-width band"
+
+    # 전고 세로 띠 (Full-height columns)
+    if row_span >= 0.85:
+        if col_center < 0.35:
+            return "On the left side (full height)"
+        elif col_center > 0.65:
+            return "On the right side (full height)"
+        else:
+            return "In the center column (full height)"
+
+    # 좌우 위치
+    if col_center < 0.35:
+        h_pos = "left"
+    elif col_center > 0.65:
+        h_pos = "right"
+    else:
+        h_pos = "center"
+
+    # 상하 위치
+    if row_center < 0.35:
+        v_pos = "top"
+    elif row_center > 0.65:
+        v_pos = "bottom"
+    else:
+        v_pos = "middle"
+
+    if h_pos == "center" and v_pos == "middle":
+        return "In the center frame"
+    elif v_pos == "middle":
+        return f"On the {h_pos} side"
+    elif h_pos == "center":
+        return f"In the {v_pos}-center panel"
+    else:
+        return f"In the {v_pos}-{h_pos} panel"
+
+
 def get_spatial_description(col_start, col_end, row_start, row_end, total_cols, total_rows):
     """
-    최신 AI(Krea 2, Gemini, MiniMax, Sora, FLUX, ChatGPT 등)가 완벽하게 이해할 수 있도록
-    자연어 공간 방향 + 상세 격자 좌표(Columns/Rows) + 백분율(%) 범위를 함께 제공합니다.
+    구조화 태그 및 바운딩 박스용 상세 좌표/퍼센트 정보 생성 함수
     """
     c1, c2 = col_start, col_end
     r1, r2 = row_start, row_end
@@ -341,6 +409,8 @@ class VisualGridPromptNode:
     def generate(self, prompt_text, format, aspect_ratio, grid_cols, grid_rows, ui_language, grid_data="{}", prefix_prompt="", suffix_prompt=""):
         final_prompt = ""
         has_parsed_areas = False
+        white_bg = False
+        grid_borders = False
         
         # grid_data 파싱 및 포맷별 영문 공간 프롬프트 구성
         if grid_data and grid_data != "{}":
@@ -349,6 +419,8 @@ class VisualGridPromptNode:
                 areas = data.get("areas", [])
                 total_cols = data.get("cols", grid_cols)
                 total_rows = data.get("rows", grid_rows)
+                white_bg = bool(data.get("white_bg", False))
+                grid_borders = bool(data.get("grid_borders", False))
                 
                 valid_areas = [a for a in areas if a.get("prompt", "").strip() or a.get("ko_prompt", "").strip()]
                 if valid_areas:
@@ -359,17 +431,19 @@ class VisualGridPromptNode:
                         formatted_parts.append(f"A high-definition {aspect_ratio} multi-region composition.")
                         formatted_parts.append("[Spatial Layout & Regional Placement]:")
                         for area in sorted(valid_areas, key=lambda x: x.get("id", 0)):
-                            idx = area.get("id", 1)
                             raw_desc = area.get("prompt", "").strip() or area.get("ko_prompt", "").strip()
-                            # 한글인 경우 자동 영문 번역 적용
                             desc = translate_prompt_to_english(raw_desc)
-                            info = get_spatial_description(
+                            spatial_name = get_natural_spatial_name(
                                 area.get("c1", 0), area.get("c2", 0),
                                 area.get("r1", 0), area.get("r2", 0),
                                 total_cols, total_rows
                             )
-                            formatted_parts.append(f"- Area {idx} [{info['full']}]: {desc}.")
-                        formatted_parts.append("[Global Scene Coherence]: Seamlessly blended depth of field, unified realistic lighting, cinematic perspective, and coherent environment bridging all regions.")
+                            formatted_parts.append(f"- {spatial_name}: {desc}.")
+                        
+                        if grid_borders:
+                            formatted_parts.append("[Multi-Panel Layout]: Split-screen multi-panel collage layout, each panel clearly separated by crisp thin black divider lines, clean comic grid panels, pristine artwork without any text, labels, numbers, or watermarks.")
+                        else:
+                            formatted_parts.append("[Global Scene Coherence]: Seamlessly blended depth of field, unified realistic lighting, cinematic perspective, and coherent environment bridging all regions, clean presentation without any text, labels, numbers, or watermarks.")
                         final_prompt = "\n".join(formatted_parts)
                         
                     elif format.startswith("Structured"):
@@ -414,20 +488,30 @@ class VisualGridPromptNode:
             if final_prompt:
                 return (final_prompt, aspect_ratio, grid_data if isinstance(grid_data, str) else json.dumps(grid_data))
 
-        # Prefix 및 Suffix 조합 (Prefix/Suffix도 한글인 경우 자동 번역)
+        # 백색 배경 & 접두사/접미사 처리
         eng_prefix = translate_prompt_to_english(prefix_prompt.strip())
         eng_suffix = translate_prompt_to_english(suffix_prompt.strip())
+
+        extra_tags = []
+        if white_bg:
+            extra_tags.append("clean solid pure white background, studio white backdrop")
+
+        if eng_suffix:
+            extra_tags.append(eng_suffix)
+
+        combined_suffix = ", ".join(extra_tags) if extra_tags else ""
 
         result_parts = []
         if eng_prefix:
             result_parts.append(eng_prefix)
         if final_prompt:
             result_parts.append(final_prompt)
-        if eng_suffix:
-            result_parts.append(eng_suffix)
+        if combined_suffix:
+            result_parts.append(combined_suffix)
 
         separator = ", " if format.startswith("Comma") else "\n\n"
         full_output = separator.join(result_parts)
         
         raw_json_str = grid_data if isinstance(grid_data, str) else json.dumps(grid_data, ensure_ascii=False)
         return (full_output, aspect_ratio, raw_json_str)
+

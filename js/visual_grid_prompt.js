@@ -9,6 +9,12 @@ const I18N = {
         apply: "적용",
         format: "출력 포맷",
         lang: "UI:",
+        whiteBg: "⚪ 백색 배경",
+        whiteBgTooltip: "배경을 깔끔한 순백색 스튜디오(White Studio Backdrop)로 설정",
+        blackGrid: "🔳 검정 실선 격자",
+        blackGridTooltip: "각 구역을 얇은 검정색 실선(Black Divider Lines)으로 명확하게 분할",
+        charSheet: "👤 캐릭터 시트용 추천 효과",
+        charSheetTooltip: "동일 인물 일관성, 균일한 스튜디오 조명, 전 패널 선명도 효과를 접두사/접미사에 자동 적용",
         prefix: "접두사 (Prefix):",
         prefixPlaceholder: "공통 스타일, 조명 등 (예: masterpiece, cinematic lighting)...",
         suffix: "접미사 (Suffix):",
@@ -33,7 +39,7 @@ const I18N = {
         apiBadgeTranslating: "⏳ 실시간 번역 중...",
         apiBadgeDone: "✅ 실시간 번역 완료",
         apiBadgePreset: "⚡ 프리셋 적용 완료",
-        modalSave: "저장 (Ctrl+Enter)",
+        modalSave: "적용 (Ctrl+Enter)",
         modalCancel: "취소 (Esc)",
         modalDelete: "구역 삭제",
         previewTitle: "최종 출력 프롬프트 (100% 영문 AI 최적화):",
@@ -48,6 +54,12 @@ const I18N = {
         apply: "Apply",
         format: "Format",
         lang: "UI:",
+        whiteBg: "⚪ White BG",
+        whiteBgTooltip: "Set clean pure solid white background",
+        blackGrid: "🔳 Black Grid Lines",
+        blackGridTooltip: "Demarcate each area with thin black border lines",
+        charSheet: "👤 Char Sheet Preset",
+        charSheetTooltip: "Automatically apply character model sheet consistency, even studio lighting, and sharp focus to prefix/suffix",
         prefix: "Prefix Prompt:",
         prefixPlaceholder: "Global style, lighting (e.g. masterpiece, cinematic lighting)...",
         suffix: "Suffix Prompt:",
@@ -72,7 +84,7 @@ const I18N = {
         apiBadgeTranslating: "⏳ Translating in real-time...",
         apiBadgeDone: "✅ Translated successfully",
         apiBadgePreset: "⚡ Preset applied",
-        modalSave: "Save (Ctrl+Enter)",
+        modalSave: "Apply (Ctrl+Enter)",
         modalCancel: "Cancel (Esc)",
         modalDelete: "Delete Area",
         previewTitle: "Generated Output Prompt (100% English AI Optimized):",
@@ -230,7 +242,12 @@ const PROMPT_TRANSLATIONS = [
     [/금안|노란\s*눈/gi, "golden eyes"],
     [/오드아이/gi, "heterochromia, odd eyes"],
 
-    [/어여쁜\s*소녀|예쁜\s*소녀|소녀|미소녀/gi, "1girl, beautiful anime girl"],
+    [/(\d+)\s*세/gi, "$1-year-old"],
+    [/한국인|한국\s*(사람|여성|소녀|소년대)?/gi, "korean"],
+    [/여고생|고등학교\s*여학생/gi, "high school girl, student"],
+    [/남고생|고등학교\s*남학생/gi, "high school boy, student"],
+    [/여대생|대학생\s*여성/gi, "college girl, university student"],
+    [/어여쁜\s*소녀|예쁜\s*소녀|소녀|미소녀/gi, "1girl, beautiful girl"],
     [/여자|여성|미녀/gi, "1woman, beautiful woman"],
     [/소년|미소년/gi, "1boy, handsome boy"],
     [/남자|남성|미남/gi, "1man, handsome man"],
@@ -344,7 +361,8 @@ const PROMPT_TRANSLATIONS = [
     [/주머니에\s*손/gi, "hands in pockets"],
     [/턱을\s*괸/gi, "resting chin on hand"],
     [/손을\s*뻗은|손을\s*내미는/gi, "reaching out hand towards viewer"],
-    [/브이|V포즈/gi, "peace sign, v gesture"],
+    [/브이(\s*포즈)?|V\s*포즈/gi, "peace sign, v gesture"],
+    [/포즈|자세/gi, "pose"],
 
     // 6. 인체 부위 & 디테일 (헤어/표정 이후 매칭)
     [/얼굴/gi, "face, detailed face"],
@@ -359,6 +377,8 @@ const PROMPT_TRANSLATIONS = [
     [/어깨/gi, "shoulders"],
 
     // 7. 배경 & 조명 & 환경
+    [/백색\s*배경|흰색\s*배경|화이트\s*배경/gi, "clean solid pure white background, studio white backdrop"],
+    [/검정\s*(색\s*)?실선\s*(격자)?|분할선|격자선/gi, "split-screen multi-panel layout, separated by thin black divider lines"],
     [/사이버펑크(\s*도시)?/gi, "cyberpunk neon city, glowing holographic lights"],
     [/미래\s*도시|SF\s*도시/gi, "futuristic sci-fi city, high-tech skyscrapers"],
     [/도시|빌딩숲|거리/gi, "modern cityscape, streets, skyscrapers"],
@@ -406,7 +426,9 @@ function translateToEnglish(text) {
 
     res = res.replace(/(\s*이|가|을|를|의|에|에서|으로|로|과|와|하고|하며|있는|있음|한|된|인)\b/g, " ");
     res = res.replace(/\s{2,}/g, " ").trim();
-    res = res.replace(/,\s*,/g, ",").replace(/^,\s*|,\s*$/g, "");
+    res = res.replace(/\s*,\s*/g, ", ");
+    res = res.replace(/(,\s*){2,}/g, ", ");
+    res = res.replace(/^,\s*|,\s*$/g, "");
     return res;
 }
 
@@ -451,7 +473,49 @@ async function translateTextOnline(text) {
     return translateToEnglish(clean);
 }
 
-// 공간 위치 및 격자 좌표 설명 생성 함수
+// 100% 자연어 공간 위치 서술어 생성 함수 (숫자/라벨 렌더링 방지)
+function getNaturalSpatialDescription(c1, c2, r1, r2, totalCols, totalRows) {
+    const colSpan = (c2 - c1 + 1) / totalCols;
+    const rowSpan = (r2 - r1 + 1) / totalRows;
+    const colCenter = (c1 + c2 + 1) / (2.0 * totalCols);
+    const rowCenter = (r1 + r2 + 1) / (2.0 * totalRows);
+
+    // 전체 영역
+    if (colSpan >= 0.85 && rowSpan >= 0.85) {
+        return "Across the entire image";
+    }
+
+    // 전폭 가로 띠
+    if (colSpan >= 0.85) {
+        if (rowCenter < 0.35) return "In the top full-width section";
+        else if (rowCenter > 0.65) return "In the bottom full-width section";
+        else return "In the middle full-width band";
+    }
+
+    // 전고 세로 띠
+    if (rowSpan >= 0.85) {
+        if (colCenter < 0.35) return "On the left side (full height)";
+        else if (colCenter > 0.65) return "On the right side (full height)";
+        else return "In the center column (full height)";
+    }
+
+    // 좌우 위치
+    let hPos = "center";
+    if (colCenter < 0.35) hPos = "left";
+    else if (colCenter > 0.65) hPos = "right";
+
+    // 상하 위치
+    let vPos = "middle";
+    if (rowCenter < 0.35) vPos = "top";
+    else if (rowCenter > 0.65) vPos = "bottom";
+
+    if (hPos === "center" && vPos === "middle") return "In the center frame";
+    else if (vPos === "middle") return `On the ${hPos} side`;
+    else if (hPos === "center") return `In the ${vPos}-center panel`;
+    else return `In the ${vPos}-${hPos} panel`;
+}
+
+// 구조화 태그 및 바운딩 박스용 상세 좌표/퍼센트 정보 생성 함수
 function getSpatialDescription(c1, c2, r1, r2, totalCols, totalRows) {
     const colCenter = (c1 + c2 + 1) / (2.0 * totalCols);
     const rowCenter = (r1 + r2 + 1) / (2.0 * totalRows);
@@ -496,6 +560,70 @@ function getSpatialDescription(c1, c2, r1, r2, totalCols, totalRows) {
     };
 }
 
+// 캔버스 마우스 중간 버튼 드래그(Pan) 핸들러
+function installMiddleMouseCanvasPan(root) {
+    let activePanCleanup = null;
+    root.addEventListener("pointerdown", (e) => {
+        if (e.button !== 1) return; // 중간 버튼만 처리
+        const canvas = app.canvas;
+        if (!canvas?.ds?.offset) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        let lastX = e.clientX;
+        let lastY = e.clientY;
+        let active = true;
+
+        const cleanup = () => {
+            if (!active) return;
+            active = false;
+            window.removeEventListener("pointermove", move, true);
+            window.removeEventListener("pointerup", done, true);
+            window.removeEventListener("pointercancel", done, true);
+            if (activePanCleanup === cleanup) activePanCleanup = null;
+        };
+
+        const move = (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+
+            const scale = canvas.ds.scale || 1;
+            canvas.ds.offset[0] += (ev.clientX - lastX) / scale;
+            canvas.ds.offset[1] += (ev.clientY - lastY) / scale;
+            lastX = ev.clientX;
+            lastY = ev.clientY;
+
+            if (canvas.setDirty) canvas.setDirty(true, true);
+            else app.graph?.setDirtyCanvas?.(true, true);
+        };
+
+        const done = (ev) => {
+            ev?.preventDefault?.();
+            ev?.stopPropagation?.();
+            cleanup();
+        };
+
+        activePanCleanup?.();
+        activePanCleanup = cleanup;
+        window.addEventListener("pointermove", move, true);
+        window.addEventListener("pointerup", done, true);
+        window.addEventListener("pointercancel", done, true);
+    }, true);
+
+    root.addEventListener("auxclick", (e) => {
+        if (e.button === 1) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }, true);
+
+    return () => {
+        activePanCleanup?.();
+        activePanCleanup = null;
+    };
+}
+
 app.registerExtension({
     name: "Comfy.VisualGridPrompt",
     async beforeRegisterNodeDef(nodeType, nodeData, app) {
@@ -515,6 +643,11 @@ app.registerExtension({
             let selectedAreaId = null;
             let prefixVal = "";
             let suffixVal = "";
+            let whiteBg = false;
+            let gridBorders = false;
+            let charSheet = false;
+            let customPreviewHeight = null;
+            let customGridHeight = null;
 
             // 기본 LiteGraph 위젯 숨김 처리 함수 (상단 캔버스에 원시 JSON 등이 그려지는 것 원천 차단)
             function hideAllBackendWidgets(targetNode) {
@@ -538,6 +671,11 @@ app.registerExtension({
                         if (parsed.aspect_ratio) currentRatio = parsed.aspect_ratio;
                         if (parsed.areas) areas = parsed.areas;
                         if (parsed.lang) currentLang = parsed.lang;
+                        if (parsed.white_bg !== undefined) whiteBg = !!parsed.white_bg;
+                        if (parsed.grid_borders !== undefined) gridBorders = !!parsed.grid_borders;
+                        if (parsed.char_sheet !== undefined) charSheet = !!parsed.char_sheet;
+                        if (parsed.custom_preview_height !== undefined) customPreviewHeight = parsed.custom_preview_height;
+                        if (parsed.custom_grid_height !== undefined) customGridHeight = parsed.custom_grid_height;
                     } catch (e) {}
                 }
                 if (w.name === "prefix_prompt" && w.value) prefixVal = w.value;
@@ -563,6 +701,44 @@ app.registerExtension({
                 gap: 10px;
                 user-select: none;
             `;
+
+            // 마우스 중간 버튼 드래그(Canvas Pan) 활성화
+            const panCleanup = installMiddleMouseCanvasPan(container);
+
+            // 마우스 휠 스크롤(Canvas Zoom) 활성화 (스크롤 가능한 텍스트창 내부 제외)
+            container.addEventListener("wheel", (e) => {
+                const target = e.target;
+                if (target && (target.tagName === "TEXTAREA" || target.tagName === "INPUT")) {
+                    const isScrollable = target.scrollHeight > target.clientHeight;
+                    if (isScrollable) {
+                        const atTop = target.scrollTop === 0 && e.deltaY < 0;
+                        const atBottom = Math.abs(target.scrollHeight - target.clientHeight - target.scrollTop) < 1 && e.deltaY > 0;
+                        if (!atTop && !atBottom) {
+                            return; // 텍스트 영역 내부 스크롤 허용
+                        }
+                    }
+                }
+
+                const cv = app.canvas?.canvas;
+                if (!cv) return;
+                e.preventDefault();
+                cv.dispatchEvent(new WheelEvent("wheel", {
+                    deltaX: e.deltaX,
+                    deltaY: e.deltaY,
+                    deltaZ: e.deltaZ,
+                    deltaMode: e.deltaMode,
+                    clientX: e.clientX,
+                    clientY: e.clientY,
+                    screenX: e.screenX,
+                    screenY: e.screenY,
+                    ctrlKey: e.ctrlKey,
+                    shiftKey: e.shiftKey,
+                    altKey: e.altKey,
+                    metaKey: e.metaKey,
+                    bubbles: true,
+                    cancelable: true,
+                }));
+            }, { passive: false });
 
             // 1. 상단 컨트롤 툴바
             const toolbar = document.createElement("div");
@@ -663,6 +839,133 @@ app.registerExtension({
             toolbar.appendChild(formatBox);
             toolbar.appendChild(langBox);
 
+            // 옵션 토글 바 (백색 배경, 검정 실선 격자, 캐릭터 시트 추천 효과)
+            const optionsBar = document.createElement("div");
+            optionsBar.style.cssText = "display: flex; gap: 8px; align-items: center; font-size: 11px;";
+
+            const whiteBgBtn = document.createElement("button");
+            whiteBgBtn.style.cssText = "flex: 1; padding: 6px 8px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 11px; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap;";
+
+            const gridBorderBtn = document.createElement("button");
+            gridBorderBtn.style.cssText = "flex: 1; padding: 6px 8px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 11px; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap;";
+
+            const charSheetBtn = document.createElement("button");
+            charSheetBtn.style.cssText = "flex: 1.25; padding: 6px 8px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 11px; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap;";
+
+            function updateOptionButtons() {
+                const dict = I18N[currentLang];
+                whiteBgBtn.textContent = `${dict.whiteBg} [${whiteBg ? "ON" : "OFF"}]`;
+                whiteBgBtn.title = dict.whiteBgTooltip;
+                if (whiteBg) {
+                    whiteBgBtn.style.background = "linear-gradient(135deg, #3730a3, #4f46e5)";
+                    whiteBgBtn.style.border = "1.5px solid #818cf8";
+                    whiteBgBtn.style.color = "#ffffff";
+                    whiteBgBtn.style.boxShadow = "0 0 10px rgba(99, 102, 241, 0.45)";
+                    whiteBgBtn.style.fontWeight = "700";
+                } else {
+                    whiteBgBtn.style.background = "#161822";
+                    whiteBgBtn.style.border = "1px solid #2e3444";
+                    whiteBgBtn.style.color = "#94a3b8";
+                    whiteBgBtn.style.boxShadow = "none";
+                    whiteBgBtn.style.fontWeight = "600";
+                }
+
+                gridBorderBtn.textContent = `${dict.blackGrid} [${gridBorders ? "ON" : "OFF"}]`;
+                gridBorderBtn.title = dict.blackGridTooltip;
+                if (gridBorders) {
+                    gridBorderBtn.style.background = "linear-gradient(135deg, #3730a3, #4f46e5)";
+                    gridBorderBtn.style.border = "1.5px solid #818cf8";
+                    gridBorderBtn.style.color = "#ffffff";
+                    gridBorderBtn.style.boxShadow = "0 0 10px rgba(99, 102, 241, 0.45)";
+                    gridBorderBtn.style.fontWeight = "700";
+                } else {
+                    gridBorderBtn.style.background = "#161822";
+                    gridBorderBtn.style.border = "1px solid #2e3444";
+                    gridBorderBtn.style.color = "#94a3b8";
+                    gridBorderBtn.style.boxShadow = "none";
+                    gridBorderBtn.style.fontWeight = "600";
+                }
+
+                charSheetBtn.textContent = `${dict.charSheet} [${charSheet ? "ON" : "OFF"}]`;
+                charSheetBtn.title = dict.charSheetTooltip;
+                if (charSheet) {
+                    charSheetBtn.style.background = "linear-gradient(135deg, #3730a3, #4f46e5)";
+                    charSheetBtn.style.border = "1.5px solid #818cf8";
+                    charSheetBtn.style.color = "#ffffff";
+                    charSheetBtn.style.boxShadow = "0 0 10px rgba(99, 102, 241, 0.45)";
+                    charSheetBtn.style.fontWeight = "700";
+                } else {
+                    charSheetBtn.style.background = "#161822";
+                    charSheetBtn.style.border = "1px solid #2e3444";
+                    charSheetBtn.style.color = "#94a3b8";
+                    charSheetBtn.style.boxShadow = "none";
+                    charSheetBtn.style.fontWeight = "600";
+                }
+            }
+
+            whiteBgBtn.addEventListener("click", () => {
+                whiteBg = !whiteBg;
+                updateOptionButtons();
+                syncToWidgets();
+            });
+
+            gridBorderBtn.addEventListener("click", () => {
+                gridBorders = !gridBorders;
+                updateOptionButtons();
+                syncToWidgets();
+            });
+
+            charSheetBtn.addEventListener("click", () => {
+                charSheet = !charSheet;
+                const charPrefixTag = "character design model sheet, consistent character features, masterpiece, best quality";
+                const charSuffixTag = "soft even studio lighting, crisp sharp focus across all panels, pristine artwork";
+
+                if (charSheet) {
+                    // ON: 접두사와 접미사에 캐릭터 시트 추천 효과 자동 삽입
+                    if (!prefixVal.trim()) {
+                        prefixVal = charPrefixTag;
+                    } else if (!prefixVal.includes("character design model sheet")) {
+                        prefixVal = prefixVal.trim() + ", " + charPrefixTag;
+                    }
+                    prefixInput.value = prefixVal;
+
+                    if (!suffixVal.trim()) {
+                        suffixVal = charSuffixTag;
+                    } else if (!suffixVal.includes("soft even studio lighting")) {
+                        suffixVal = suffixVal.trim() + ", " + charSuffixTag;
+                    }
+                    suffixInput.value = suffixVal;
+                } else {
+                    // OFF: 삽입되었던 캐릭터 시트 추천 태그 깔끔하게 제거
+                    const pTags = [
+                        "character design model sheet, consistent character features, masterpiece, best quality",
+                        "character design model sheet, consistent character features",
+                        "character design model sheet"
+                    ];
+                    for (const t of pTags) {
+                        prefixVal = prefixVal.replace(t, "").replace(/,\s*,/g, ",").replace(/^,\s*|,\s*$/g, "").trim();
+                    }
+                    prefixInput.value = prefixVal;
+
+                    const sTags = [
+                        "soft even studio lighting, crisp sharp focus across all panels, pristine artwork",
+                        "soft even studio lighting, crisp sharp focus across all panels",
+                        "soft even studio lighting, crisp sharp focus"
+                    ];
+                    for (const t of sTags) {
+                        suffixVal = suffixVal.replace(t, "").replace(/,\s*,/g, ",").replace(/^,\s*|,\s*$/g, "").trim();
+                    }
+                    suffixInput.value = suffixVal;
+                }
+
+                updateOptionButtons();
+                syncToWidgets();
+            });
+
+            optionsBar.appendChild(whiteBgBtn);
+            optionsBar.appendChild(gridBorderBtn);
+            optionsBar.appendChild(charSheetBtn);
+
             // 2. 가이드 텍스트
             const guideBox = document.createElement("div");
             guideBox.style.cssText = "display: flex; flex-wrap: wrap; justify-content: space-between; font-size: 11px; color: #94a3b8; background: #181b22; padding: 6px 10px; border-radius: 6px; border-left: 3px solid #6366f1;";
@@ -693,25 +996,59 @@ app.registerExtension({
                 previewArea.placeholder = dict.previewPlaceholder;
                 copyBtn.textContent = dict.copyBtn;
                 if (langLabel) langLabel.textContent = dict.lang || "UI:";
+                updateOptionButtons();
                 if (typeof populatePresetOptions === "function") populatePresetOptions();
             }
 
-            // 3. 그리드 캔버스 영역
+            // 3. 그리드 캔버스 영역 (모서리 드래그로 상하/확대 축소 조절 가능)
             const gridWrapper = document.createElement("div");
             gridWrapper.style.cssText = `
                 position: relative;
                 width: 100%;
-                height: 240px;
+                min-height: 160px;
+                height: ${customGridHeight && customGridHeight >= 140 ? customGridHeight + "px" : "260px"};
+                max-height: 900px;
                 background: #090a0f;
                 border: 1px solid #232733;
                 border-radius: 8px;
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                padding: 8px;
+                padding: 10px;
                 box-sizing: border-box;
                 overflow: hidden;
+                resize: vertical;
             `;
+
+            // 마우스 드래그로 그리드 캔버스 크기 조절 시 LiteGraph 노드 이동 간섭 방지 (중간 클릭 Pan은 통과)
+            const stopGridWrapperDrag = (e) => {
+                if (e.button === 1) return;
+                // 클릭 위치가 gridContainer 내부가 아닌 gridWrapper의 패딩/모서리 리사이즈 핸들일 때 노드 이동 방지
+                if (e.target === gridWrapper || !gridContainer.contains(e.target)) {
+                    e.stopPropagation();
+                }
+            };
+            gridWrapper.addEventListener("mousedown", stopGridWrapperDrag);
+            gridWrapper.addEventListener("pointerdown", stopGridWrapperDrag);
+            gridWrapper.addEventListener("touchstart", stopGridWrapperDrag);
+
+            // 사용자가 모서리를 직접 드래그해서 크기를 지정했을 때 높이 저장 (새로고침/재렌더링 시에도 유지)
+            const onGridUserResize = () => {
+                const currentH = parseInt(gridWrapper.style.height, 10) || gridWrapper.clientHeight;
+                if (currentH && currentH >= 140 && currentH !== customGridHeight) {
+                    customGridHeight = currentH;
+                    syncToWidgets();
+                    renderGrid();
+                }
+            };
+            gridWrapper.addEventListener("mouseup", onGridUserResize);
+            gridWrapper.addEventListener("pointerup", onGridUserResize);
+
+            // 그리드 래퍼 크기 변경 감지 시 그리드 자동 리사이징
+            const gridResizeObserver = new ResizeObserver(() => {
+                renderGrid();
+            });
+            gridResizeObserver.observe(gridWrapper);
 
             const gridContainer = document.createElement("div");
             gridContainer.style.cssText = `
@@ -725,6 +1062,7 @@ app.registerExtension({
                 border-radius: 6px;
                 padding: 4px;
                 box-sizing: border-box;
+                transition: width 0.08s ease, height 0.08s ease;
             `;
 
             // 4. 모달 프롬프트 설정창 (프리셋 선택 + 직접 입력 + 실시간 API 번역)
@@ -844,7 +1182,7 @@ app.registerExtension({
                 outline: none;
             `;
 
-            // 프리셋 선택 이벤트
+            // 프리셋 선택 이벤트 (선택 시 저장/적용 버튼을 누르지 않아도 즉시 해당 구역에 자동 적용)
             presetSelect.addEventListener("change", (e) => {
                 if (e.target.value) {
                     try {
@@ -853,6 +1191,19 @@ app.registerExtension({
                         modalEnInput.value = item.en;
                         transStatusBadge.textContent = I18N[currentLang].apiBadgePreset;
                         transStatusBadge.style.color = "#38bdf8";
+
+                        // 선택 즉시 해당 구역에 저장 및 모달 닫기
+                        if (selectedAreaId !== null) {
+                            const area = areas.find(a => a.id === selectedAreaId);
+                            if (area) {
+                                area.ko_prompt = item.ko;
+                                area.prompt = item.en;
+                                syncToWidgets();
+                                renderGrid();
+                            }
+                        }
+                        modal.style.display = "none";
+                        selectedAreaId = null;
                     } catch (err) {}
                 }
             });
@@ -1004,7 +1355,7 @@ app.registerExtension({
 
             const previewArea = document.createElement("textarea");
             previewArea.readOnly = true;
-            previewArea.rows = 5;
+            previewArea.rows = 4;
             previewArea.style.cssText = `
                 width: 100%;
                 min-height: 80px;
@@ -1020,19 +1371,47 @@ app.registerExtension({
                 resize: vertical;
                 overflow-y: auto;
                 cursor: text;
+                transition: height 0.12s ease;
             `;
 
-            // 마우스 드래그로 텍스트창 크기 조절 시 LiteGraph 캔버스 노드 드래그 간섭 방지
-            const stopDrag = (e) => e.stopPropagation();
+            function adjustPreviewHeight() {
+                if (customPreviewHeight && customPreviewHeight >= 60) {
+                    previewArea.style.height = customPreviewHeight + "px";
+                } else {
+                    previewArea.style.height = "auto";
+                    const scrollH = previewArea.scrollHeight;
+                    // 내용 길이에 따라 80px ~ 280px 사이로 자동 신축 (초과 시 스크롤바 제공)
+                    const targetH = Math.min(280, Math.max(80, scrollH + 6));
+                    previewArea.style.height = targetH + "px";
+                }
+            }
+
+            // 마우스 드래그로 텍스트창 크기 조절 시 LiteGraph 캔버스 노드 드래그 간섭 방지 (중간 클릭 Pan은 통과)
+            const stopDrag = (e) => {
+                if (e.button === 1) return;
+                e.stopPropagation();
+            };
             previewArea.addEventListener("mousedown", stopDrag);
             previewArea.addEventListener("pointerdown", stopDrag);
             previewArea.addEventListener("touchstart", stopDrag);
+
+            // 사용자가 모서리를 직접 드래그해서 크기를 지정했을 때 높이 저장 (새로고침/재렌더링 시에도 유지)
+            const onPreviewUserResize = () => {
+                const currentH = parseInt(previewArea.style.height, 10);
+                if (currentH && currentH >= 60) {
+                    customPreviewHeight = currentH;
+                    syncToWidgets();
+                }
+            };
+            previewArea.addEventListener("mouseup", onPreviewUserResize);
+            previewArea.addEventListener("pointerup", onPreviewUserResize);
 
             previewWrapper.appendChild(previewHeader);
             previewWrapper.appendChild(previewArea);
 
             // 컨테이너 조립
             container.appendChild(toolbar);
+            container.appendChild(optionsBar);
             container.appendChild(guideBox);
             gridWrapper.appendChild(gridContainer);
             container.appendChild(gridWrapper);
@@ -1048,7 +1427,12 @@ app.registerExtension({
                     rows,
                     aspect_ratio: currentRatio,
                     lang: currentLang,
-                    areas
+                    areas,
+                    white_bg: whiteBg,
+                    grid_borders: gridBorders,
+                    char_sheet: charSheet,
+                    custom_preview_height: customPreviewHeight,
+                    custom_grid_height: customGridHeight
                 };
                 const jsonStr = JSON.stringify(data);
 
@@ -1092,10 +1476,15 @@ app.registerExtension({
                         validAreas.forEach(a => {
                             const rawPrompt = a.prompt || a.ko_prompt || "";
                             const engPrompt = translateToEnglish(rawPrompt);
-                            const info = getSpatialDescription(a.c1, a.c2, a.r1, a.r2, cols, rows);
-                            lines.push(`- Area ${a.id} [${info.full}]: ${engPrompt}.`);
+                            const spatialName = getNaturalSpatialDescription(a.c1, a.c2, a.r1, a.r2, cols, rows);
+                            lines.push(`- ${spatialName}: ${engPrompt}.`);
                         });
-                        lines.push(`[Global Scene Coherence]: Seamlessly blended depth of field, unified realistic lighting, cinematic perspective, and coherent environment bridging all regions.`);
+                        
+                        if (gridBorders) {
+                            lines.push(`[Multi-Panel Layout]: Split-screen multi-panel collage layout, each panel clearly separated by crisp thin black divider lines, clean comic grid panels, pristine artwork without any text, labels, numbers, or watermarks.`);
+                        } else {
+                            lines.push(`[Global Scene Coherence]: Seamlessly blended depth of field, unified realistic lighting, cinematic perspective, and coherent environment bridging all regions, clean presentation without any text, labels, numbers, or watermarks.`);
+                        }
                         finalPrompt = lines.join("\n");
                     } else if (currentFormat.startsWith("Structured")) {
                         const lines = [`[Composition: ${currentRatio} Grid Layout (${cols}x${rows})]`];
@@ -1121,7 +1510,7 @@ app.registerExtension({
                     } else if (currentFormat.startsWith("Comma")) {
                         finalPrompt = validAreas.map(a => translateToEnglish(a.prompt || a.ko_prompt || "")).join(", ");
                     } else {
-                        finalPrompt = JSON.stringify({ aspect_ratio: currentRatio, cols, rows, areas: validAreas }, null, 2);
+                        finalPrompt = JSON.stringify({ aspect_ratio: currentRatio, cols, rows, areas: validAreas, white_bg: whiteBg, grid_borders: gridBorders }, null, 2);
                     }
                 }
 
@@ -1129,13 +1518,23 @@ app.registerExtension({
                 const engPrefix = translateToEnglish(prefixVal.trim());
                 const engSuffix = translateToEnglish(suffixVal.trim());
 
+                const extraTags = [];
+                if (whiteBg) {
+                    extraTags.push("clean solid pure white background, studio white backdrop");
+                }
+                if (engSuffix) {
+                    extraTags.push(engSuffix);
+                }
+                const combinedSuffix = extraTags.join(", ");
+
                 const resultParts = [];
                 if (engPrefix) resultParts.push(engPrefix);
                 if (finalPrompt) resultParts.push(finalPrompt);
-                if (engSuffix) resultParts.push(engSuffix);
+                if (combinedSuffix) resultParts.push(combinedSuffix);
 
                 const fullOutput = currentFormat.startsWith("Comma") ? resultParts.join(", ") : resultParts.join("\n\n");
                 previewArea.value = fullOutput;
+                adjustPreviewHeight();
 
                 const promptW = node.widgets?.find(w => w.name === "prompt_text");
                 if (promptW) promptW.value = fullOutput;
@@ -1198,8 +1597,9 @@ app.registerExtension({
             function renderGrid() {
                 const [rw, rh] = currentRatio.split(":").map(Number);
                 const ratioVal = (rw && rh) ? (rw / rh) : (16 / 9);
-                const wrapperW = gridWrapper.clientWidth || 440;
-                const wrapperH = gridWrapper.clientHeight || 224;
+                const paddingSpace = 20;
+                const wrapperW = Math.max(60, (gridWrapper.clientWidth || 440) - paddingSpace);
+                const wrapperH = Math.max(60, (gridWrapper.clientHeight || 260) - paddingSpace);
                 const wrapperRatio = wrapperW / wrapperH;
 
                 if (ratioVal > wrapperRatio) {
@@ -1405,6 +1805,7 @@ app.registerExtension({
 
             const onDestroy = node.onDestroy;
             node.onDestroy = function () {
+                if (typeof panCleanup === "function") panCleanup();
                 window.removeEventListener("mousemove", onMouseMove);
                 window.removeEventListener("mouseup", onMouseUp);
                 if (onDestroy) onDestroy.apply(this, arguments);
@@ -1567,6 +1968,16 @@ app.registerExtension({
                         if (parsed.aspect_ratio) currentRatio = parsed.aspect_ratio;
                         if (parsed.areas) areas = parsed.areas;
                         if (parsed.lang) currentLang = parsed.lang;
+                        if (parsed.white_bg !== undefined) whiteBg = !!parsed.white_bg;
+                        if (parsed.grid_borders !== undefined) gridBorders = !!parsed.grid_borders;
+                        if (parsed.char_sheet !== undefined) charSheet = !!parsed.char_sheet;
+                        if (parsed.custom_preview_height !== undefined) customPreviewHeight = parsed.custom_preview_height;
+                        if (parsed.custom_grid_height !== undefined) {
+                            customGridHeight = parsed.custom_grid_height;
+                            if (customGridHeight && customGridHeight >= 140) {
+                                gridWrapper.style.height = customGridHeight + "px";
+                            }
+                        }
                         colsInput.value = cols;
                         rowsInput.value = rows;
                         ratioSelect.value = currentRatio;
@@ -1592,6 +2003,7 @@ app.registerExtension({
                 updateTexts();
                 renderGrid();
                 buildOutputPrompt();
+                adjustPreviewHeight();
                 hideAllBackendWidgets(this);
             };
 
@@ -1604,7 +2016,7 @@ app.registerExtension({
             // DOM Widget 부착
             node.addDOMWidget("visual_grid_ui", "custom", container, {
                 getValue() {
-                    return JSON.stringify({ cols, rows, aspect_ratio: currentRatio, areas, lang: currentLang, prefix: prefixVal, suffix: suffixVal, format: currentFormat });
+                    return JSON.stringify({ cols, rows, aspect_ratio: currentRatio, areas, lang: currentLang, prefix: prefixVal, suffix: suffixVal, format: currentFormat, white_bg: whiteBg, grid_borders: gridBorders, char_sheet: charSheet, custom_preview_height: customPreviewHeight, custom_grid_height: customGridHeight });
                 },
                 setValue(v) {
                     if (v) {
@@ -1615,6 +2027,16 @@ app.registerExtension({
                             if (parsed.aspect_ratio) currentRatio = parsed.aspect_ratio;
                             if (parsed.areas) areas = parsed.areas;
                             if (parsed.lang) currentLang = parsed.lang;
+                            if (parsed.white_bg !== undefined) whiteBg = !!parsed.white_bg;
+                            if (parsed.grid_borders !== undefined) gridBorders = !!parsed.grid_borders;
+                            if (parsed.char_sheet !== undefined) charSheet = !!parsed.char_sheet;
+                            if (parsed.custom_preview_height !== undefined) customPreviewHeight = parsed.custom_preview_height;
+                            if (parsed.custom_grid_height !== undefined) {
+                                customGridHeight = parsed.custom_grid_height;
+                                if (customGridHeight && customGridHeight >= 140) {
+                                    gridWrapper.style.height = customGridHeight + "px";
+                                }
+                            }
                             if (parsed.prefix !== undefined) { prefixVal = parsed.prefix; prefixInput.value = prefixVal; }
                             if (parsed.suffix !== undefined) { suffixVal = parsed.suffix; suffixInput.value = suffixVal; }
                             if (parsed.format !== undefined) { currentFormat = parsed.format; formatSelect.value = currentFormat; }
@@ -1625,6 +2047,7 @@ app.registerExtension({
                             updateTexts();
                             renderGrid();
                             buildOutputPrompt();
+                            adjustPreviewHeight();
                         } catch (e) {}
                     }
                 }
