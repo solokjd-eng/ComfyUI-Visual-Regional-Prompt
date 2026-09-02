@@ -1153,12 +1153,42 @@ app.registerExtension({
                 selectedAreaId = id;
                 const area = getSelectedArea();
                 if (area) {
-                    activeAreaTitle.textContent = `📍 영역 [${area.id}] 편집 중 (${getNaturalSpatialName(area.c1, area.c2, area.r1, area.r2, cols, rows)})`;
+                    const areaIndex = areas.findIndex(a => a.id === area.id);
+                    const palette = COLOR_PALETTE[areaIndex >= 0 ? areaIndex % COLOR_PALETTE.length : 0];
+
+                    // Dynamic Color Theme Synchronization with Selected Area
+                    editorCard.style.borderColor = palette.border;
+                    editorCard.style.boxShadow = `0 0 16px ${palette.glow}, inset 0 0 10px ${palette.bg}`;
+                    editorCard.style.transition = "border-color 0.2s ease, box-shadow 0.2s ease";
+
+                    activeAreaTitle.innerHTML = `<span style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                        <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${palette.border}; box-shadow:0 0 8px ${palette.border}; flex-shrink:0;"></span>
+                        <span style="color:${palette.border}; font-weight:800;">영역 [${area.id}] 프롬프트 설정</span>
+                        <span style="font-size:10px; background:${palette.border}; color:#000; padding:1px 6px; border-radius:8px; font-weight:800; box-shadow:0 0 6px ${palette.glow};">선택됨 (ACTIVE)</span>
+                        <span style="font-size:10px; color:#a1a1aa; font-weight:500;">(${getNaturalSpatialName(area.c1, area.c2, area.r1, area.r2, cols, rows)})</span>
+                    </span>`;
+
+                    treeBtn.style.borderColor = palette.border;
+                    treeBtn.style.boxShadow = `0 0 8px ${palette.glow}`;
+
+                    areaKoInput.placeholder = `👉 [영역 ${area.id}] 한글 프롬프트 (프리셋 선택 시 1:1 교체)`;
+                    areaKoInput.style.borderColor = palette.border;
                     areaKoInput.value = area.ko_prompt || "";
+
+                    areaEnInput.placeholder = `👉 [Area ${area.id}] AI 영문 프롬프트 (자동 번역 또는 직접 수정)`;
+                    areaEnInput.style.borderColor = palette.border;
                     areaEnInput.value = area.prompt || "";
                 } else {
-                    activeAreaTitle.textContent = "📍 편집할 영역을 선택하세요";
+                    editorCard.style.borderColor = "#27272a";
+                    editorCard.style.boxShadow = "none";
+                    activeAreaTitle.innerHTML = `<span style="color:#71717a;">📍 편집할 영역을 선택하세요 (또는 캔버스에서 드래그)</span>`;
+                    treeBtn.style.borderColor = "#4f46e5";
+                    treeBtn.style.boxShadow = "none";
+                    areaKoInput.placeholder = "🇰🇷 한글 프롬프트 (프리셋 선택 시 1:1 교체)";
+                    areaKoInput.style.borderColor = "#3f3f46";
                     areaKoInput.value = "";
+                    areaEnInput.placeholder = "🇺🇸 영문 프롬프트 (AI 최종 전달용 / 직접 수정 가능)";
+                    areaEnInput.style.borderColor = "#3f3f46";
                     areaEnInput.value = "";
                 }
                 renderGrid();
