@@ -422,16 +422,34 @@ function translateToEnglish(text) {
 
 async function translateToEnglishAsync(text) {
     if (!text || typeof text !== "string") return "";
-    let res = text.trim();
-    if (!/[가-힣]/.test(res)) return res;
+    const trimmed = text.trim();
+    if (!trimmed) return "";
+    if (!/[가-힣]/.test(trimmed)) return trimmed;
 
     // 1. 빠른 규칙 사전 치환
-    res = translateToEnglish(res);
+    let res = translateToEnglish(trimmed);
 
-    // 2. 한글이 여전히 포함되어 있으면 Google Translate 무료 API 호출
-    if (/[가-힣]/.test(res) || /[가-힣]/.test(text)) {
+    // 2. 한글이 남아있으면 ComfyUI 백엔드 프록시 API 호출 (CORS 완전 회피)
+    if (/[가-힣]/.test(res) || /[가-힣]/.test(trimmed)) {
         try {
-            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ko&tl=en&dt=t&q=${encodeURIComponent(text.trim())}`;
+            const resp = await fetch("/visual_grid_prompt/translate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: trimmed })
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                if (data && data.translated && data.translated.trim()) {
+                    return data.translated.trim();
+                }
+            }
+        } catch (e) {
+            console.warn("[VisualGridPrompt] Backend translate route error, trying direct API:", e);
+        }
+
+        // 3. 브라우저 직접 Google Translate 무료 API 호출
+        try {
+            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ko&tl=en&dt=t&q=${encodeURIComponent(trimmed)}`;
             const resp = await fetch(url);
             if (resp.ok) {
                 const json = await resp.json();
@@ -443,7 +461,7 @@ async function translateToEnglishAsync(text) {
                 }
             }
         } catch (e) {
-            console.warn("[VisualGridPrompt] Google Translate API error:", e);
+            console.warn("[VisualGridPrompt] Google Translate direct API error:", e);
         }
     }
     return res;
@@ -676,6 +694,51 @@ app.registerExtension({
                 gap: 8px;
                 user-select: none;
             `;
+
+            // Forward Mouse Wheel (Canvas Zoom) & Middle-Click (Canvas Pan) to LiteGraph Canvas
+            container.addEventListener("wheel", (e) => {
+                const scrollable = e.target.closest(".vg-tree-drawer, .vg-drawer");
+                if (scrollable && scrollable.scrollHeight > scrollable.clientHeight) {
+                    return; // Allow internal drawer scrolling
+                }
+                if (app && app.canvas) {
+                    if (app.canvas.ds) {
+                        const zoomDelta = e.deltaY < 0 ? 1.1 : 0.9;
+                        app.canvas.ds.changeDeltaScale(zoomDelta, [e.clientX, e.clientY]);
+                        app.canvas.setDirty(true, true);
+                    } else if (app.canvas.canvas) {
+                        app.canvas.canvas.dispatchEvent(new WheelEvent("wheel", {
+                            bubbles: true,
+                            cancelable: true,
+                            clientX: e.clientX,
+                            clientY: e.clientY,
+                            deltaX: e.deltaX,
+                            deltaY: e.deltaY,
+                            deltaZ: e.deltaZ,
+                            deltaMode: e.deltaMode
+                        }));
+                    }
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
+            container.addEventListener("pointerdown", (e) => {
+                if (e.button === 1) { // Middle mouse click pan
+                    if (app && app.canvas && app.canvas.processMouseDown) {
+                        app.canvas.processMouseDown(e);
+                        e.preventDefault();
+                    }
+                }
+            });
+
+            container.addEventListener("mousedown", (e) => {
+                if (e.button === 1) { // Middle mouse click pan
+                    if (app && app.canvas && app.canvas.processMouseDown) {
+                        app.canvas.processMouseDown(e);
+                        e.preventDefault();
+                    }
+                }
+            });
 
             // Inject CSS Styles
             const styleTag = document.createElement("style");
@@ -1139,8 +1202,65 @@ app.registerExtension({
                 }
             });
 
+            // 7-2. Apply & Translate Action Button
+            const btnApplyPrompt = document.createElement("button");
+            btnApplyPrompt.className = "vg-btn";
+            btnApplyPrompt.type = "button";
+            btnApplyPrompt.style.cssText = "width:100%; padding:6px 12px; font-weight:700; font-size:12px; background:#4f46e5; border:1px solid #6366f1; color:#fff; border-radius:4px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 0 10px rgba(99,102,241,0.35); transition:all 0.15s ease;";
+            btnApplyPrompt.innerHTML = `<span>적용 (Ctrl+Enter)</span>`;
+
+            async function triggerApplyAndTranslate() {
+                const area = getSelectedArea();
+                if (!area) return;
+                btnApplyPrompt.innerHTML = `<span>⏳ 번역 및 적용 중...</span>`;
+                btnApplyPrompt.style.opacity = "0.7";
+                
+                area.ko_prompt = areaKoInput.value.trim();
+                if (area.ko_prompt) {
+                    const translated = await translateToEnglishAsync(area.ko_prompt);
+                    if (translated) {
+                        area.prompt = translated;
+                        areaEnInput.value = translated;
+                    } else {
+                        area.prompt = areaEnInput.value.trim();
+                    }
+                } else {
+                    area.prompt = areaEnInput.value.trim();
+                }
+
+                renderGrid();
+                syncToWidgets();
+
+                btnApplyPrompt.innerHTML = `<span>✅ 적용 완료!</span>`;
+                btnApplyPrompt.style.opacity = "1";
+                setTimeout(() => {
+                    btnApplyPrompt.innerHTML = `<span>적용 (Ctrl+Enter)</span>`;
+                }, 1000);
+            }
+
+            btnApplyPrompt.addEventListener("click", (e) => {
+                e.stopPropagation();
+                triggerApplyAndTranslate();
+            });
+
+            // Shortcut Ctrl+Enter on both textareas
+            areaKoInput.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    triggerApplyAndTranslate();
+                }
+            });
+
+            areaEnInput.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    triggerApplyAndTranslate();
+                }
+            });
+
             editorCard.appendChild(areaKoInput);
             editorCard.appendChild(areaEnInput);
+            editorCard.appendChild(btnApplyPrompt);
             container.appendChild(editorCard);
 
             // 8. Global Prefix / Suffix & Format
@@ -1235,6 +1355,11 @@ app.registerExtension({
                     treeBtn.style.borderColor = palette.border;
                     treeBtn.style.boxShadow = `0 0 8px ${palette.glow}`;
 
+                    btnApplyPrompt.style.background = palette.border;
+                    btnApplyPrompt.style.borderColor = palette.border;
+                    btnApplyPrompt.style.boxShadow = `0 0 10px ${palette.glow}`;
+                    btnApplyPrompt.style.color = "#000";
+
                     areaKoInput.placeholder = `👉 [영역 ${area.id}] 한글 프롬프트 (프리셋 선택 시 1:1 교체)`;
                     areaKoInput.style.borderColor = palette.border;
                     areaKoInput.value = area.ko_prompt || "";
@@ -1248,6 +1373,10 @@ app.registerExtension({
                     activeAreaTitle.innerHTML = `<span style="color:#71717a;">📍 편집할 영역을 선택하세요 (또는 캔버스에서 드래그)</span>`;
                     treeBtn.style.borderColor = "#4f46e5";
                     treeBtn.style.boxShadow = "none";
+                    btnApplyPrompt.style.background = "#4f46e5";
+                    btnApplyPrompt.style.borderColor = "#6366f1";
+                    btnApplyPrompt.style.boxShadow = "none";
+                    btnApplyPrompt.style.color = "#fff";
                     areaKoInput.placeholder = "🇰🇷 한글 프롬프트 (프리셋 선택 시 1:1 교체)";
                     areaKoInput.style.borderColor = "#3f3f46";
                     areaKoInput.value = "";

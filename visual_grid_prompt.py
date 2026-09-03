@@ -245,6 +245,24 @@ def translate_prompt_to_english(text: str) -> str:
     return res
 
 
+# Register ComfyUI Server API for Translation Proxy
+try:
+    import server
+    from aiohttp import web
+
+    @server.PromptServer.instance.routes.post("/visual_grid_prompt/translate")
+    async def api_translate_prompt(request):
+        try:
+            data = await request.json()
+            text = data.get("text", "")
+            translated = translate_prompt_to_english(text)
+            return web.json_response({"translated": translated, "status": "success"})
+        except Exception as e:
+            return web.json_response({"translated": text, "error": str(e), "status": "error"})
+except Exception:
+    pass
+
+
 def get_natural_spatial_name(c1: int, c2: int, r1: int, r2: int, total_cols: int, total_rows: int) -> str:
     """
     최신 AI(Krea, Midjourney, Flux, SD3, GPT, Gemini)가 아티팩트 없이 이해하도록
