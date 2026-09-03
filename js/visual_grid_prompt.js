@@ -2818,8 +2818,8 @@ app.registerExtension({
 
             // LiteGraph Minimum Size Boundary Hook (Prevents shrinking past minimum bounds)
             node.computeSize = function (out) {
-                const minW = 420;
-                let minH = 750;
+                const minW = 400;
+                let minH = 650;
                 const isTreeOpen = treeDrawer && !treeDrawer.classList.contains("collapsed");
                 const isCharOpen = charManagerDrawer && charManagerDrawer.style.display !== "none";
                 const isCustomOpen = customManagerDrawer && customManagerDrawer.style.display !== "none";
@@ -2827,14 +2827,12 @@ app.registerExtension({
                 if (isCharOpen) minH += 240;
                 if (isCustomOpen) minH += 240;
                 
-                const curW = (this.size && this.size[0] > minW) ? this.size[0] : minW;
-                const curH = (this.size && this.size[1] > minH) ? this.size[1] : minH;
                 if (out) {
-                    out[0] = curW;
-                    out[1] = curH;
+                    out[0] = minW;
+                    out[1] = minH;
                     return out;
                 }
-                return [curW, curH];
+                return [minW, minH];
             };
 
             // LiteGraph Dynamic Resize Hook (Scales width and height freely while strictly respecting minimum bounds)
