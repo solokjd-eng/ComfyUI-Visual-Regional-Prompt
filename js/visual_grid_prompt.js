@@ -666,6 +666,7 @@ app.registerExtension({
             let whiteBg = false;
             let gridBorders = true;
             let mockupEnabled = true;
+            let stageMaxHeight = 320;
             let characterProfile = "";
             let characterProfileKo = "";
             let charPresets = [
