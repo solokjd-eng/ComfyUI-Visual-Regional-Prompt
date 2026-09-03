@@ -2060,6 +2060,7 @@ app.registerExtension({
                             renderGrid();
                         } catch (e) {}
                     }
+                }
             });
 
             // Initial Sizing & Setup
