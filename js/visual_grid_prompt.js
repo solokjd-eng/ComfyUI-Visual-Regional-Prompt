@@ -687,6 +687,12 @@ app.registerExtension({
                 { id: "cp_2", label: "무릎 안고 앉기", ko: "무릎을 세우고 앉아서 양손으로 자신의 무릎을 감싸고 있는 자세의 전신", en: "Full body sitting with knees bent and covering knees with hands" },
                 { id: "cp_3", label: "핑크 바디슈트", ko: "핑크색 타이트한 운동 전신 슈트, 맨발, 핑크색 발톱", en: "pink tight exercise full body suit, bare feet, pink feet top" }
             ];
+            try {
+                const savedCustomPresets = localStorage.getItem("comfyui_vg_custom_presets");
+                if (savedCustomPresets) {
+                    customPresets = JSON.parse(savedCustomPresets);
+                }
+            } catch (e) {}
 
             // Drag selection state
             let isDragging = false;
@@ -908,32 +914,78 @@ app.registerExtension({
                 syncToWidgets();
             });
 
-            // Grid Steppers
-            const colsInput = document.createElement("input");
-            colsInput.type = "number";
-            colsInput.className = "vg-input";
-            colsInput.style.width = "36px";
-            colsInput.value = cols;
-            colsInput.min = 1; colsInput.max = 20;
-            colsInput.addEventListener("change", () => {
-                cols = parseInt(colsInput.value) || 6;
+            // Clean & Comfortable Steppers for Columns and Rows
+            function createStepper(initialVal, min, max, onChange) {
+                const wrap = document.createElement("div");
+                wrap.style.cssText = "display:inline-flex; align-items:center; background:#18181b; border:1px solid #3f3f46; border-radius:4px; overflow:hidden; vertical-align:middle;";
+
+                const btnMinus = document.createElement("button");
+                btnMinus.type = "button";
+                btnMinus.className = "vg-btn";
+                btnMinus.textContent = "−";
+                btnMinus.title = "감소 (Decrease)";
+                btnMinus.style.cssText = "width:20px; height:24px; padding:0; font-size:14px; font-weight:bold; display:flex; align-items:center; justify-content:center; border:none; border-radius:0; background:#27272a; color:#d4d4d8; cursor:pointer;";
+
+                const numInput = document.createElement("input");
+                numInput.type = "number";
+                numInput.className = "vg-input";
+                numInput.value = initialVal;
+                numInput.min = min;
+                numInput.max = max;
+                numInput.style.cssText = "width:26px; height:24px; padding:0; font-size:12px; font-weight:700; text-align:center; border:none; background:transparent; color:#fff; -moz-appearance:textfield;";
+
+                const btnPlus = document.createElement("button");
+                btnPlus.type = "button";
+                btnPlus.className = "vg-btn";
+                btnPlus.textContent = "+";
+                btnPlus.title = "증가 (Increase)";
+                btnPlus.style.cssText = "width:20px; height:24px; padding:0; font-size:14px; font-weight:bold; display:flex; align-items:center; justify-content:center; border:none; border-radius:0; background:#27272a; color:#d4d4d8; cursor:pointer;";
+
+                btnMinus.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    let val = (parseInt(numInput.value) || min) - 1;
+                    if (val < min) val = min;
+                    numInput.value = val;
+                    onChange(val);
+                });
+
+                btnPlus.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    let val = (parseInt(numInput.value) || min) + 1;
+                    if (val > max) val = max;
+                    numInput.value = val;
+                    onChange(val);
+                });
+
+                numInput.addEventListener("change", () => {
+                    let val = parseInt(numInput.value) || min;
+                    if (val < min) val = min;
+                    if (val > max) val = max;
+                    numInput.value = val;
+                    onChange(val);
+                });
+
+                wrap.appendChild(btnMinus);
+                wrap.appendChild(numInput);
+                wrap.appendChild(btnPlus);
+                return { wrap, input: numInput };
+            }
+
+            const colsStepper = createStepper(cols, 1, 20, (val) => {
+                cols = val;
                 areas = areas.filter(a => a.c2 < cols);
                 renderGrid();
                 syncToWidgets();
             });
+            const colsInput = colsStepper.input;
 
-            const rowsInput = document.createElement("input");
-            rowsInput.type = "number";
-            rowsInput.className = "vg-input";
-            rowsInput.style.width = "36px";
-            rowsInput.value = rows;
-            rowsInput.min = 1; rowsInput.max = 20;
-            rowsInput.addEventListener("change", () => {
-                rows = parseInt(rowsInput.value) || 3;
+            const rowsStepper = createStepper(rows, 1, 20, (val) => {
+                rows = val;
                 areas = areas.filter(a => a.r2 < rows);
                 renderGrid();
                 syncToWidgets();
             });
+            const rowsInput = rowsStepper.input;
 
             // White BG toggle
             const whiteBgLabel = document.createElement("label");
@@ -982,9 +1034,9 @@ app.registerExtension({
 
             toggleBar.appendChild(ratioSelect);
             toggleBar.appendChild(document.createTextNode("📐"));
-            toggleBar.appendChild(colsInput);
+            toggleBar.appendChild(colsStepper.wrap);
             toggleBar.appendChild(document.createTextNode("x"));
-            toggleBar.appendChild(rowsInput);
+            toggleBar.appendChild(rowsStepper.wrap);
             toggleBar.appendChild(whiteBgLabel);
             toggleBar.appendChild(gridBorderLabel);
             toggleBar.appendChild(mockupLabel);
@@ -1551,143 +1603,71 @@ app.registerExtension({
             editorCard.appendChild(treeBtn);
             editorCard.appendChild(treeDrawer);
 
-            // 6. Custom Presets 2nd Dropdown & Drawer Toggle
+            // 6. Custom Presets Bar (Dropdown + [나만의 프리셋 설정] Button)
             const customPresetsBar = document.createElement("div");
-            customPresetsBar.style.cssText = "display:flex; gap:4px; align-items:center;";
+            customPresetsBar.style.cssText = "display:flex; gap:6px; align-items:center; width:100%; justify-content:space-between;";
 
             const customSelect = document.createElement("select");
             customSelect.className = "vg-select";
-            customSelect.style.flex = "1";
+            customSelect.style.cssText = "padding:2px 6px; font-size:10.5px; flex:1; min-width:160px; text-overflow:ellipsis; overflow:hidden;";
             
             function updateCustomSelect() {
                 customSelect.innerHTML = `<option value="">▼ ⭐ 나만의 프리셋 (${customPresets.length}개)</option>`;
-                customPresets.forEach(cp => {
+                customPresets.forEach((cp, idx) => {
                     const opt = document.createElement("option");
-                    opt.value = cp.en || cp.ko;
-                    opt.textContent = `⭐ ${cp.label || cp.ko}`;
-                    opt.dataset.ko = cp.ko;
-                    opt.dataset.en = cp.en || cp.ko;
+                    opt.value = idx;
+                    const displayTxt = cp.label ? cp.label : (cp.ko ? cp.ko.slice(0, 30) : cp.en.slice(0, 30));
+                    opt.textContent = `⭐ ${displayTxt}`;
                     customSelect.appendChild(opt);
                 });
             }
             updateCustomSelect();
 
             customSelect.addEventListener("change", (e) => {
-                const opt = e.target.selectedOptions[0];
-                if (opt && opt.value) {
-                    applyPresetToActiveArea({ ko: opt.dataset.ko, en: opt.dataset.en });
+                const idx = e.target.value;
+                if (idx !== "" && customPresets[idx]) {
+                    const cp = customPresets[idx];
+                    applyPresetToActiveArea({ ko: cp.ko, en: cp.en });
                     e.target.value = "";
                 }
             });
 
-            const btnToggleDrawer = document.createElement("button");
-            btnToggleDrawer.className = "vg-btn";
-            btnToggleDrawer.type = "button";
-            btnToggleDrawer.textContent = "⚙️ 관리";
-            btnToggleDrawer.addEventListener("click", (e) => {
-                e.stopPropagation();
-                customDrawer.classList.toggle("collapsed");
-                updateHeightOnDrawerToggle();
-            });
-            
+            // Button to open Dedicated Custom Presets Manager Drawer
+            const btnOpenCustomManager = document.createElement("button");
+            btnOpenCustomManager.className = "vg-btn";
+            btnOpenCustomManager.type = "button";
+            btnOpenCustomManager.style.cssText = "padding:2px 8px; font-size:10.5px; border-color:#6366f1; background:#1e1e2e; color:#c7d2fe; white-space:nowrap;";
+            btnOpenCustomManager.textContent = currentLang === "English" ? "⚙️ Custom Presets Settings" : "나만의 프리셋 설정";
+            btnOpenCustomManager.title = "나만의 구도/포즈 프리셋 관리 (추가, 수정, 삭제, 순서 변경)";
+
             customPresetsBar.appendChild(customSelect);
-            customPresetsBar.appendChild(btnToggleDrawer);
+            customPresetsBar.appendChild(btnOpenCustomManager);
             editorCard.appendChild(customPresetsBar);
 
-            // Collapsible Custom Drawer
-            const customDrawer = document.createElement("div");
-            customDrawer.className = "vg-drawer collapsed";
-            
-            const drawerChipsContainer = document.createElement("div");
-            drawerChipsContainer.style.cssText = "display:flex; flex-direction:column; gap:4px; max-height:120px; overflow-y:auto;";
-            
-            function renderCustomDrawer() {
-                updateCustomSelect();
-                drawerChipsContainer.innerHTML = "";
-                customPresets.forEach((cp, idx) => {
-                    const chip = document.createElement("div");
-                    chip.className = "custom-chip";
-                    chip.draggable = true;
-                    chip.innerHTML = `<span>⠿ ${cp.label || cp.ko}</span>`;
-                    
-                    const del = document.createElement("span");
-                    del.className = "custom-chip-del";
-                    del.textContent = "×";
-                    del.addEventListener("click", (e) => {
-                        e.stopPropagation();
-                        customPresets.splice(idx, 1);
-                        renderCustomDrawer();
-                    });
-                    
-                    chip.appendChild(del);
-                    chip.addEventListener("click", () => {
-                        applyPresetToActiveArea({ ko: cp.ko, en: cp.en });
-                    });
+            // 7. Area Prompts Inputs (2-Column Layout with Right Quick-Action Buttons ⭐ 저장 & 비우기)
+            const areaBodyRow = document.createElement("div");
+            areaBodyRow.style.cssText = "display:flex; gap:6px; align-items:stretch; width:100%; box-sizing:border-box;";
 
-                    // Reorder drag & drop
-                    chip.addEventListener("dragstart", () => { draggedPresetIndex = idx; chip.classList.add("dragging"); });
-                    chip.addEventListener("dragover", (e) => { e.preventDefault(); });
-                    chip.addEventListener("drop", (e) => {
-                        e.preventDefault();
-                        if (draggedPresetIndex !== null && draggedPresetIndex !== idx) {
-                            const [moved] = customPresets.splice(draggedPresetIndex, 1);
-                            customPresets.splice(idx, 0, moved);
-                            renderCustomDrawer();
-                        }
-                    });
-                    chip.addEventListener("dragend", () => { draggedPresetIndex = null; chip.classList.remove("dragging"); });
+            const areaInputsCol = document.createElement("div");
+            areaInputsCol.style.cssText = "flex:1; display:flex; flex-direction:column; gap:4px; min-width:0;";
 
-                    drawerChipsContainer.appendChild(chip);
-                });
-            }
-            renderCustomDrawer();
-
-            const btnSaveCurrent = document.createElement("button");
-            btnSaveCurrent.className = "vg-btn";
-            btnSaveCurrent.type = "button";
-            btnSaveCurrent.textContent = "💾 현재 구도를 새 프리셋으로 등록";
-            btnSaveCurrent.addEventListener("click", () => {
-                const ko = areaKoInput.value.trim();
-                const en = areaEnInput.value.trim();
-                if (!ko && !en) return;
-                const newPreset = {
-                    id: "cp_" + Date.now(),
-                    label: ko ? ko.slice(0, 15) : en.slice(0, 15),
-                    ko: ko || en,
-                    en: en || translateToEnglish(ko)
-                };
-                customPresets.push(newPreset);
-                renderCustomDrawer();
-            });
-
-            customDrawer.appendChild(drawerChipsContainer);
-            customDrawer.appendChild(btnSaveCurrent);
-            editorCard.appendChild(customDrawer);
-
-            btnToggleDrawer.addEventListener("click", () => {
-                customDrawer.classList.toggle("collapsed");
-            });
-
-            // 7. Area Prompts Inputs (Korean + English)
             const areaKoInput = document.createElement("textarea");
             areaKoInput.className = "vg-textarea";
             areaKoInput.rows = 2;
-            areaKoInput.placeholder = "🇰🇷 한글 프롬프트 (프리셋 선택 시 1:1 교체, 한글 입력 시 실시간 자동 번역)";
+            areaKoInput.style.cssText = "min-height:36px; resize:vertical; font-size:11px; padding:4px 6px; width:100%; box-sizing:border-box;";
+            areaKoInput.placeholder = "KR: 한글 프롬프트 (프리셋 선택 시 1:1 교체, 한글 입력 시 실시간 자동 번역)";
             
             let autoTranslateTimer = null;
             areaKoInput.addEventListener("input", () => {
                 const area = getSelectedArea();
                 if (area) {
                     area.ko_prompt = areaKoInput.value;
-
-                    // 1차: 즉각적인 사전 번역 반영
                     const fastEn = translateToEnglish(area.ko_prompt);
                     area.prompt = fastEn;
                     areaEnInput.value = fastEn;
                     renderGrid();
                     syncToWidgets();
 
-                    // 2차: 한글이 포함된 경우 실시간 구글 번역 호출 (300ms 디바운스)
                     clearTimeout(autoTranslateTimer);
                     if (/[가-힣]/.test(area.ko_prompt)) {
                         autoTranslateTimer = setTimeout(async () => {
@@ -1709,7 +1689,8 @@ app.registerExtension({
             const areaEnInput = document.createElement("textarea");
             areaEnInput.className = "vg-textarea";
             areaEnInput.rows = 2;
-            areaEnInput.placeholder = "🇺🇸 영문 프롬프트 (AI 최종 전달용 / 직접 수정 가능)";
+            areaEnInput.style.cssText = "min-height:36px; resize:vertical; font-size:11px; padding:4px 6px; border-color:#3f3f46; color:#d4d4d8; width:100%; box-sizing:border-box;";
+            areaEnInput.placeholder = "US: 영문 프롬프트 (AI 최종 전달용 / 직접 수정 가능)";
             areaEnInput.addEventListener("input", () => {
                 const area = getSelectedArea();
                 if (area) {
@@ -1718,6 +1699,272 @@ app.registerExtension({
                     syncToWidgets();
                 }
             });
+
+            areaInputsCol.appendChild(areaKoInput);
+            areaInputsCol.appendChild(areaEnInput);
+
+            // Right Action Column (⭐ 저장 / 비우기)
+            const areaActionsCol = document.createElement("div");
+            areaActionsCol.style.cssText = "width:52px; display:flex; flex-direction:column; gap:4px; justify-content:space-between; flex-shrink:0;";
+
+            const btnQuickSaveCustom = document.createElement("button");
+            btnQuickSaveCustom.className = "vg-btn";
+            btnQuickSaveCustom.type = "button";
+            btnQuickSaveCustom.style.cssText = "flex:1; padding:2px 4px; font-size:10.5px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:2px; background:#22222a; border-color:#eab308; color:#fef08a;";
+            btnQuickSaveCustom.innerHTML = `<span>⭐ 저장</span>`;
+            btnQuickSaveCustom.title = "현재 구도/포즈를 나만의 프리셋으로 빠른 추가";
+
+            btnQuickSaveCustom.addEventListener("click", () => {
+                const ko = areaKoInput.value.trim();
+                const en = areaEnInput.value.trim();
+                if (!ko && !en) {
+                    alert("저장할 구도/포즈 프롬프트를 먼저 입력해주세요.");
+                    return;
+                }
+                const defaultLabel = ko.slice(0, 14) || en.slice(0, 14);
+                const label = prompt("새 나만의 프리셋 이름:", defaultLabel);
+                if (label) {
+                    customPresets.push({ id: "cp_" + Date.now(), label: label.trim(), ko, en: en || ko });
+                    try { localStorage.setItem("comfyui_vg_custom_presets", JSON.stringify(customPresets)); } catch (e) {}
+                    updateCustomSelect();
+                    btnQuickSaveCustom.innerHTML = `<span>✅ 완료</span>`;
+                    setTimeout(() => { btnQuickSaveCustom.innerHTML = `<span>⭐ 저장</span>`; }, 1200);
+                }
+            });
+
+            const btnClearArea = document.createElement("button");
+            btnClearArea.className = "vg-btn";
+            btnClearArea.type = "button";
+            btnClearArea.style.cssText = "flex:1; padding:2px 4px; font-size:10.5px; display:flex; align-items:center; justify-content:center; background:#22222a; color:#a1a1aa;";
+            btnClearArea.textContent = "비우기";
+            btnClearArea.title = "현재 선택된 영역의 프롬프트 지우기";
+            btnClearArea.addEventListener("click", () => {
+                areaKoInput.value = "";
+                areaEnInput.value = "";
+                const area = getSelectedArea();
+                if (area) {
+                    area.ko_prompt = "";
+                    area.prompt = "";
+                    renderGrid();
+                    syncToWidgets();
+                }
+            });
+
+            areaActionsCol.appendChild(btnQuickSaveCustom);
+            areaActionsCol.appendChild(btnClearArea);
+
+            areaBodyRow.appendChild(areaInputsCol);
+            areaBodyRow.appendChild(areaActionsCol);
+            editorCard.appendChild(areaBodyRow);
+
+            // Dedicated Custom Presets Manager Drawer
+            const customManagerDrawer = document.createElement("div");
+            customManagerDrawer.className = "vg-char-manager-drawer";
+            customManagerDrawer.style.display = "none";
+
+            function renderCustomManagerList() {
+                customManagerDrawer.innerHTML = "";
+                
+                // Header
+                const mHeader = document.createElement("div");
+                mHeader.style.cssText = "display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #3f3f46; padding-bottom:4px;";
+                mHeader.innerHTML = `<div style="font-size:11.5px; font-weight:700; color:#fef08a; display:flex; align-items:center; gap:4px;">⚙️ ${currentLang === "English" ? "Custom Pose & Shot Presets Manager" : "나만의 구도/포즈 프리셋 관리"} <span style="font-size:10px; color:#a1a1aa;">(${customPresets.length})</span></div>`;
+
+                const btnCloseM = document.createElement("button");
+                btnCloseM.className = "vg-btn";
+                btnCloseM.type = "button";
+                btnCloseM.style.cssText = "padding:1px 6px; font-size:12px; line-height:1;";
+                btnCloseM.textContent = "×";
+                btnCloseM.addEventListener("click", () => {
+                    customManagerDrawer.style.display = "none";
+                    setTimeout(updateHeightOnDrawerToggle, 30);
+                });
+                mHeader.appendChild(btnCloseM);
+                customManagerDrawer.appendChild(mHeader);
+
+                // List Container
+                const listContainer = document.createElement("div");
+                listContainer.style.cssText = "max-height:220px; overflow-y:auto; display:flex; flex-direction:column; gap:5px; padding-right:2px;";
+
+                customPresets.forEach((cp, idx) => {
+                    const item = document.createElement("div");
+                    item.className = "vg-char-item";
+
+                    const itemTop = document.createElement("div");
+                    itemTop.style.cssText = "display:flex; gap:4px; align-items:center;";
+
+                    // Move Up / Down
+                    const btnUp = document.createElement("button");
+                    btnUp.className = "vg-btn";
+                    btnUp.type = "button";
+                    btnUp.style.cssText = "padding:1px 4px; font-size:9.5px;";
+                    btnUp.textContent = "▲";
+                    btnUp.disabled = idx === 0;
+                    btnUp.addEventListener("click", () => {
+                        if (idx > 0) {
+                            const tmp = customPresets[idx];
+                            customPresets[idx] = customPresets[idx - 1];
+                            customPresets[idx - 1] = tmp;
+                            saveAndRefreshCustomPresets();
+                        }
+                    });
+
+                    const btnDown = document.createElement("button");
+                    btnDown.className = "vg-btn";
+                    btnDown.type = "button";
+                    btnDown.style.cssText = "padding:1px 4px; font-size:9.5px;";
+                    btnDown.textContent = "▼";
+                    btnDown.disabled = idx === customPresets.length - 1;
+                    btnDown.addEventListener("click", () => {
+                        if (idx < customPresets.length - 1) {
+                            const tmp = customPresets[idx];
+                            customPresets[idx] = customPresets[idx + 1];
+                            customPresets[idx + 1] = tmp;
+                            saveAndRefreshCustomPresets();
+                        }
+                    });
+
+                    // Preset Title input
+                    const inputTitle = document.createElement("input");
+                    inputTitle.className = "vg-input";
+                    inputTitle.type = "text";
+                    inputTitle.style.cssText = "flex:1; font-weight:700; font-size:11px; padding:2px 5px;";
+                    inputTitle.value = cp.label || "";
+                    inputTitle.placeholder = "프리셋 이름";
+                    inputTitle.addEventListener("input", () => {
+                        cp.label = inputTitle.value;
+                        try { localStorage.setItem("comfyui_vg_custom_presets", JSON.stringify(customPresets)); } catch (e) {}
+                        updateCustomSelect();
+                    });
+
+                    // Delete button
+                    const btnDel = document.createElement("button");
+                    btnDel.className = "vg-btn";
+                    btnDel.type = "button";
+                    btnDel.style.cssText = "padding:1px 5px; font-size:10px; color:#f87171; border-color:#7f1d1d;";
+                    btnDel.textContent = "🗑️";
+                    btnDel.title = "프리셋 삭제";
+                    btnDel.addEventListener("click", () => {
+                        if (confirm(`'${cp.label}' 프리셋을 삭제하시겠습니까?`)) {
+                            customPresets.splice(idx, 1);
+                            saveAndRefreshCustomPresets();
+                        }
+                    });
+
+                    itemTop.appendChild(btnUp);
+                    itemTop.appendChild(btnDown);
+                    itemTop.appendChild(inputTitle);
+                    itemTop.appendChild(btnDel);
+                    item.appendChild(itemTop);
+
+                    // Korean / English Textareas with auto-trans
+                    const inputKo = document.createElement("textarea");
+                    inputKo.className = "vg-textarea";
+                    inputKo.rows = 1;
+                    inputKo.style.cssText = "min-height:22px; font-size:10.5px; padding:2px 4px;";
+                    inputKo.value = cp.ko || "";
+                    inputKo.placeholder = "KR: 한글 구도/포즈 묘사";
+                    inputKo.addEventListener("input", () => {
+                        cp.ko = inputKo.value;
+                        try { localStorage.setItem("comfyui_vg_custom_presets", JSON.stringify(customPresets)); } catch (e) {}
+                    });
+
+                    const inputEn = document.createElement("textarea");
+                    inputEn.className = "vg-textarea";
+                    inputEn.rows = 1;
+                    inputEn.style.cssText = "min-height:22px; font-size:10.5px; padding:2px 4px; border-color:#3f3f46; color:#d4d4d8;";
+                    inputEn.value = cp.en || "";
+                    inputEn.placeholder = "US: 영문 구도/포즈 묘사";
+                    inputEn.addEventListener("input", () => {
+                        cp.en = inputEn.value;
+                        try { localStorage.setItem("comfyui_vg_custom_presets", JSON.stringify(customPresets)); } catch (e) {}
+                    });
+
+                    // Inline translate for this preset
+                    inputKo.addEventListener("blur", async () => {
+                        if (inputKo.value.trim() && (!inputEn.value.trim() || /[가-힣]/.test(inputEn.value))) {
+                            const fast = translateToEnglish(inputKo.value.trim());
+                            if (fast) { inputEn.value = fast; cp.en = fast; }
+                            const res = await translateToEnglishAsync(inputKo.value.trim());
+                            if (res) {
+                                inputEn.value = res;
+                                cp.en = res;
+                                try { localStorage.setItem("comfyui_vg_custom_presets", JSON.stringify(customPresets)); } catch (e) {}
+                            }
+                        }
+                    });
+
+                    item.appendChild(inputKo);
+                    item.appendChild(inputEn);
+                    listContainer.appendChild(item);
+                });
+
+                customManagerDrawer.appendChild(listContainer);
+
+                // Footer Bar (Add New, Reset Default, Save & Close)
+                const mFooter = document.createElement("div");
+                mFooter.style.cssText = "display:flex; justify-content:space-between; align-items:center; gap:4px; padding-top:4px; border-top:1px solid #3f3f46;";
+
+                const btnAddRow = document.createElement("button");
+                btnAddRow.className = "vg-btn";
+                btnAddRow.type = "button";
+                btnAddRow.style.cssText = "padding:3px 7px; font-size:10.5px; background:#4f46e5; border-color:#6366f1; color:#fff;";
+                btnAddRow.textContent = "➕ 새 프리셋 추가";
+                btnAddRow.addEventListener("click", () => {
+                    customPresets.unshift({ id: "cp_" + Date.now(), label: "새 구도 프리셋", ko: "", en: "" });
+                    saveAndRefreshCustomPresets();
+                });
+
+                const btnResetDefaults = document.createElement("button");
+                btnResetDefaults.className = "vg-btn";
+                btnResetDefaults.type = "button";
+                btnResetDefaults.style.cssText = "padding:3px 6px; font-size:10.5px;";
+                btnResetDefaults.textContent = "🔄 초기화";
+                btnResetDefaults.title = "기본 나만의 프리셋으로 초기화";
+                btnResetDefaults.addEventListener("click", () => {
+                    if (confirm("모든 나만의 프리셋을 기본값으로 초기화하시겠습니까?")) {
+                        customPresets = [
+                            { id: "cp_1", label: "태아자세 누운 전신", ko: "태아자세로 누워 있는 전신", en: "Full body lying in fetal position" },
+                            { id: "cp_2", label: "무릎 안고 앉기", ko: "무릎을 세우고 앉아서 양손으로 자신의 무릎을 감싸고 있는 자세의 전신", en: "Full body sitting with knees bent and covering knees with hands" },
+                            { id: "cp_3", label: "핑크 바디슈트", ko: "핑크색 타이트한 운동 전신 슈트, 맨발, 핑크색 발톱", en: "pink tight exercise full body suit, bare feet, pink feet top" }
+                        ];
+                        saveAndRefreshCustomPresets();
+                    }
+                });
+
+                const btnCloseFooter = document.createElement("button");
+                btnCloseFooter.className = "vg-btn";
+                btnCloseFooter.type = "button";
+                btnCloseFooter.style.cssText = "padding:3px 8px; font-size:10.5px; background:#10b981; border-color:#34d399; color:#fff; font-weight:700;";
+                btnCloseFooter.textContent = "💾 완료";
+                btnCloseFooter.addEventListener("click", () => {
+                    customManagerDrawer.style.display = "none";
+                    setTimeout(updateHeightOnDrawerToggle, 30);
+                });
+
+                mFooter.appendChild(btnAddRow);
+                mFooter.appendChild(btnResetDefaults);
+                mFooter.appendChild(btnCloseFooter);
+                customManagerDrawer.appendChild(mFooter);
+            }
+
+            function saveAndRefreshCustomPresets() {
+                try { localStorage.setItem("comfyui_vg_custom_presets", JSON.stringify(customPresets)); } catch (e) {}
+                updateCustomSelect();
+                renderCustomManagerList();
+            }
+
+            btnOpenCustomManager.addEventListener("click", () => {
+                if (customManagerDrawer.style.display === "none") {
+                    renderCustomManagerList();
+                    customManagerDrawer.style.display = "flex";
+                } else {
+                    customManagerDrawer.style.display = "none";
+                }
+                setTimeout(updateHeightOnDrawerToggle, 30);
+            });
+
+            editorCard.appendChild(customManagerDrawer);
 
             // 7-2. Apply & Translate Action Button
             const btnApplyPrompt = document.createElement("button");
@@ -1775,8 +2022,6 @@ app.registerExtension({
                 }
             });
 
-            editorCard.appendChild(areaKoInput);
-            editorCard.appendChild(areaEnInput);
             editorCard.appendChild(btnApplyPrompt);
             container.appendChild(editorCard);
 
@@ -2099,10 +2344,12 @@ app.registerExtension({
             function updateHeightOnDrawerToggle() {
                 if (!node || !node.size) return;
                 const isTreeOpen = treeDrawer && !treeDrawer.classList.contains("collapsed");
-                const isCustomOpen = customDrawer && !customDrawer.classList.contains("collapsed");
+                const isCharManagerOpen = charManagerDrawer && charManagerDrawer.style.display !== "none";
+                const isCustomManagerOpen = customManagerDrawer && customManagerDrawer.style.display !== "none";
                 let targetH = 880;
                 if (isTreeOpen) targetH += 220;
-                if (isCustomOpen) targetH += 140;
+                if (isCharManagerOpen) targetH += 240;
+                if (isCustomManagerOpen) targetH += 240;
                 if (node.size[1] < targetH) {
                     node.size[1] = targetH;
                     if (app && app.canvas) app.canvas.setDirty(true, true);
@@ -2170,8 +2417,12 @@ app.registerExtension({
                 if (stageResizeHandle) stageResizeHandle.title = isEn ? "Drag to resize canvas area" : "드래그하여 격자 캔버스 영역 크기 조절";
                 if (guideEl) guideEl.textContent = isEn ? "🖱️ Drag: Create Area | ✏️ Click: Edit | ❌ Right-click or [×]: Delete" : "🖱️ 드래그: 영역 생성 | ✏️ 클릭: 구도 편집 | ❌ [×]버튼 또는 우클릭: 삭제";
                 if (treeBtn) treeBtn.querySelector("span:first-child").textContent = isEn ? "📂 10 Category Shot & Angle Explorer" : "📂 10대 캐릭터 시트 구도 탐색기";
-                if (btnSaveCurrent) btnSaveCurrent.textContent = isEn ? "💾 Save Current Preset" : "💾 현재 구도를 새 프리셋으로 등록";
-                if (btnToggleDrawer) btnToggleDrawer.textContent = isEn ? "⚙️ Manage" : "⚙️ 관리";
+                if (btnOpenCustomManager) btnOpenCustomManager.textContent = isEn ? "⚙️ Custom Presets Settings" : "나만의 프리셋 설정";
+                if (typeof updateCustomSelect === "function") updateCustomSelect();
+                if (btnQuickSaveCustom) btnQuickSaveCustom.innerHTML = `<span>${isEn ? "⭐ Save" : "⭐ 저장"}</span>`;
+                if (btnClearArea) btnClearArea.textContent = isEn ? "Clear" : "비우기";
+                if (areaKoInput) areaKoInput.placeholder = isEn ? "KR: Korean area prompt (Auto-translated to English)" : "KR: 한글 프롬프트 (프리셋 선택 시 1:1 교체, 한글 입력 시 실시간 자동 번역)";
+                if (areaEnInput) areaEnInput.placeholder = isEn ? "US: English area prompt (Sent to AI)" : "US: 영문 프롬프트 (AI 최종 전달용 / 직접 수정 가능)";
                 if (btnApplyPrompt) btnApplyPrompt.innerHTML = `<span>${isEn ? "Apply (Ctrl+Enter)" : "적용 (Ctrl+Enter)"}</span>`;
                 if (previewTitle) previewTitle.innerHTML = isEn ? `<span>📋 Final Output Prompt Preview</span>` : `<span>📋 최종 프롬프트 미리보기</span>`;
                 if (btnCopyFullPrompt) btnCopyFullPrompt.innerHTML = isEn ? `<span>📋 Copy</span>` : `<span>📋 복사 (Copy)</span>`;
