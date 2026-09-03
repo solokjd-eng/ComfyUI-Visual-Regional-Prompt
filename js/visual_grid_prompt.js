@@ -780,8 +780,10 @@ app.registerExtension({
                 .vg-input { background: #18181b; color: #f4f4f5; border: 1px solid #3f3f46; border-radius: 4px; padding: 3px 6px; font-size: 11px; }
                 .vg-textarea { background: #18181b; color: #f4f4f5; border: 1px solid #3f3f46; border-radius: 4px; padding: 5px 8px; font-size: 11px; line-height: 1.4; font-family: inherit; resize: vertical; min-height: 32px; box-sizing: border-box; width: 100%; outline: none; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
                 .vg-textarea:focus { border-color: #6366f1; box-shadow: 0 0 8px rgba(99, 102, 241, 0.4); }
-                .vg-canvas-stage { width: 100%; background: #0d0d11; border: 1px solid #27272a; border-radius: 6px; padding: 6px; box-sizing: border-box; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+                .vg-canvas-stage { width: 100%; height: 320px; min-height: 150px; max-height: 850px; background: #0d0d11; border: 1px solid #27272a; border-radius: 6px; padding: 6px; box-sizing: border-box; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; user-select: none; }
                 .vg-grid-wrapper { position: relative; background: #18181b; border: 1.5px solid #4f46e5; border-radius: 4px; overflow: hidden; box-sizing: border-box; flex-shrink: 0; box-shadow: 0 0 16px rgba(0,0,0,0.6); }
+                .vg-stage-resize-handle { position: absolute; right: 3px; bottom: 3px; width: 18px; height: 18px; cursor: nwse-resize; color: #a1a1aa; font-size: 13px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 15; user-select: none; background: rgba(24,24,27,0.85); border-radius: 3px; border: 1px solid #3f3f46; transition: all 0.15s; }
+                .vg-stage-resize-handle:hover { color: #ffffff; border-color: #6366f1; background: #4f46e5; }
                 .vg-grid-cells { position: absolute; inset: 0; display: grid; pointer-events: none; }
                 .vg-cell { border-right: 2px dashed rgba(255, 255, 255, 0.38); border-bottom: 2px dashed rgba(255, 255, 255, 0.38); box-sizing: border-box; }
                 .vg-area-box { position: absolute; border: 2px solid; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-between; padding: 3px; box-sizing: border-box; cursor: pointer; overflow: hidden; }
@@ -812,16 +814,24 @@ app.registerExtension({
             // UI Sections Build
             // =========================================================================
             
-            // 1. Header Toolbar (Art Styles)
+            // 1. Header Toolbar (Art Styles + UI Language Switcher)
             const artStyleBar = document.createElement("div");
             artStyleBar.className = "vg-toolbar";
-            artStyleBar.innerHTML = `<span style="font-size:11px; font-weight:600; color:#a1a1aa;">🎨 화풍:</span>`;
-            
+            artStyleBar.style.cssText = "display:flex; justify-content:space-between; align-items:center; width:100%; flex-wrap:wrap; gap:4px;";
+
+            const artBtnGroup = document.createElement("div");
+            artBtnGroup.style.cssText = "display:flex; align-items:center; gap:4px; flex-wrap:wrap;";
+            const artBarLabel = document.createElement("span");
+            artBarLabel.style.cssText = "font-size:11px; font-weight:600; color:#a1a1aa;";
+            artBarLabel.textContent = currentLang === "English" ? "🎨 Style:" : "🎨 화풍:";
+            artBtnGroup.appendChild(artBarLabel);
+
             ART_STYLES.forEach(st => {
                 const b = document.createElement("button");
                 b.className = `vg-btn ${st.id === activeArtStyle ? "active" : ""}`;
                 b.type = "button";
-                b.textContent = `${st.icon} ${st.id === "none" ? "없음" : (st.name.split(' ')[1] || st.name)}`;
+                b.dataset.styleId = st.id;
+                b.textContent = `${st.icon} ${st.id === "none" ? (currentLang === "English" ? "None" : "없음") : (st.name.split(' ')[1] || st.name)}`;
                 b.title = st.name;
                 b.addEventListener("click", () => {
                     activeArtStyle = st.id;
@@ -829,12 +839,32 @@ app.registerExtension({
                     suffixVal = st.suffix;
                     prefixInput.value = prefixVal;
                     suffixInput.value = suffixVal;
-                    artStyleBar.querySelectorAll(".vg-btn").forEach(btn => btn.classList.remove("active"));
+                    artBtnGroup.querySelectorAll(".vg-btn").forEach(btn => btn.classList.remove("active"));
                     b.classList.add("active");
                     syncToWidgets();
                 });
-                artStyleBar.appendChild(b);
+                artBtnGroup.appendChild(b);
             });
+
+            // UI Language Switcher (한국어 / English)
+            const langSelect = document.createElement("select");
+            langSelect.className = "vg-select";
+            langSelect.style.cssText = "padding:2px 6px; font-size:10.5px; border-color:#6366f1; background:#1e1e2e; color:#c7d2fe; font-weight:600; cursor:pointer;";
+            ["한국어", "English"].forEach(lang => {
+                const opt = document.createElement("option");
+                opt.value = lang;
+                opt.textContent = `🌐 ${lang}`;
+                if (lang === currentLang) opt.selected = true;
+                langSelect.appendChild(opt);
+            });
+            langSelect.addEventListener("change", (e) => {
+                currentLang = e.target.value;
+                updateAllUILanguage();
+                syncToWidgets();
+            });
+
+            artStyleBar.appendChild(artBtnGroup);
+            artStyleBar.appendChild(langSelect);
             container.appendChild(artStyleBar);
 
             // 2. Toggles & Ratio Bar
@@ -894,8 +924,10 @@ app.registerExtension({
                 whiteBg = whiteBgCheck.checked;
                 syncToWidgets();
             });
+            const whiteBgSpan = document.createElement("span");
+            whiteBgSpan.textContent = currentLang === "English" ? " White BG" : " 백색 배경";
             whiteBgLabel.appendChild(whiteBgCheck);
-            whiteBgLabel.appendChild(document.createTextNode("⚪ 백색 배경"));
+            whiteBgLabel.appendChild(whiteBgSpan);
 
             // Grid Borders toggle
             const gridBorderLabel = document.createElement("label");
@@ -907,8 +939,10 @@ app.registerExtension({
                 gridBorders = gridBorderCheck.checked;
                 syncToWidgets();
             });
+            const gridBorderSpan = document.createElement("span");
+            gridBorderSpan.textContent = currentLang === "English" ? " Grid Borders" : " 격자 실선";
             gridBorderLabel.appendChild(gridBorderCheck);
-            gridBorderLabel.appendChild(document.createTextNode("🔳 격자 실선"));
+            gridBorderLabel.appendChild(gridBorderSpan);
 
             // Silhouette toggle
             const mockupLabel = document.createElement("label");
@@ -920,8 +954,10 @@ app.registerExtension({
                 mockupEnabled = mockupCheck.checked;
                 renderGrid();
             });
+            const mockupSpan = document.createElement("span");
+            mockupSpan.textContent = currentLang === "English" ? " Silhouette" : " 실루엣";
             mockupLabel.appendChild(mockupCheck);
-            mockupLabel.appendChild(document.createTextNode("🧍 실루엣"));
+            mockupLabel.appendChild(mockupSpan);
 
             toggleBar.appendChild(ratioSelect);
             toggleBar.appendChild(document.createTextNode("📐"));
@@ -1069,7 +1105,7 @@ app.registerExtension({
             charCard.appendChild(charEnInput);
             container.appendChild(charCard);
 
-            // 4. Interactive Grid Canvas Viewport (Locked True Mathematical Aspect Ratio Stage)
+            // 4. Interactive Grid Canvas Viewport (Stage with Corner Drag Resizing & Locked True Aspect Ratio)
             const canvasStage = document.createElement("div");
             canvasStage.className = "vg-canvas-stage";
 
@@ -1088,7 +1124,48 @@ app.registerExtension({
             selectionBox.style.cssText = "position:absolute; border:2px dashed #6366f1; background:rgba(99,102,241,0.25); pointer-events:none; display:none;";
             canvasWrapper.appendChild(selectionBox);
 
+            // Bottom-Right Corner Drag Resize Handle for Canvas Stage
+            const stageResizeHandle = document.createElement("div");
+            stageResizeHandle.className = "vg-stage-resize-handle";
+            stageResizeHandle.innerHTML = `⇲`;
+            stageResizeHandle.title = currentLang === "English" ? "Drag to resize canvas area" : "드래그하여 격자 영역 크기 조절";
+
+            // Interactive Drag Resizing on Stage
+            let isStageResizing = false;
+            let startStageY = 0;
+            let startStageH = 320;
+
+            stageResizeHandle.addEventListener("mousedown", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                isStageResizing = true;
+                startStageY = e.clientY;
+                startStageH = canvasStage.offsetHeight || 320;
+
+                const onMouseMove = (moveEvent) => {
+                    if (!isStageResizing) return;
+                    const deltaY = moveEvent.clientY - startStageY;
+                    const newHeight = Math.min(Math.max(startStageH + deltaY, 150), 850);
+                    canvasStage.style.height = `${newHeight}px`;
+                    stageMaxHeight = newHeight;
+                    updateCanvasDimensions();
+                };
+
+                const onMouseUp = () => {
+                    if (isStageResizing) {
+                        isStageResizing = false;
+                        window.removeEventListener("mousemove", onMouseMove);
+                        window.removeEventListener("mouseup", onMouseUp);
+                        syncToWidgets();
+                    }
+                };
+
+                window.addEventListener("mousemove", onMouseMove);
+                window.addEventListener("mouseup", onMouseUp);
+            });
+
             canvasStage.appendChild(canvasWrapper);
+            canvasStage.appendChild(stageResizeHandle);
             container.appendChild(canvasStage);
 
             // Guide text
@@ -1739,25 +1816,32 @@ app.registerExtension({
                 }
             }
 
+            let stageMaxHeight = 320;
+
             function updateCanvasDimensions() {
                 const ratioParts = currentRatio.split(":");
                 const w = parseFloat(ratioParts[0]) || 16;
                 const h = parseFloat(ratioParts[1]) || 9;
                 const ratio = w / h;
 
-                const availableW = (container && container.clientWidth) ? (container.clientWidth - 28) : 460;
-                const maxAllowedHeight = 360;
+                const stageWidth = (canvasStage && canvasStage.clientWidth) ? (canvasStage.clientWidth - 16) : ((container && container.clientWidth) ? container.clientWidth - 28 : 460);
+                const stageHeight = (canvasStage && canvasStage.clientHeight) ? (canvasStage.clientHeight - 16) : stageMaxHeight;
 
-                let canvasW = availableW;
-                let canvasH = availableW / ratio;
+                let canvasW = stageWidth;
+                let canvasH = stageWidth / ratio;
 
-                if (canvasH > maxAllowedHeight) {
-                    canvasH = maxAllowedHeight;
+                if (canvasH > stageHeight) {
+                    canvasH = stageHeight;
                     canvasW = canvasH * ratio;
                 }
 
-                if (canvasW < 120) {
-                    canvasW = 120;
+                if (canvasW > stageWidth) {
+                    canvasW = stageWidth;
+                    canvasH = canvasW / ratio;
+                }
+
+                if (canvasW < 80) {
+                    canvasW = 80;
                     canvasH = canvasW / ratio;
                 }
 
@@ -1766,6 +1850,41 @@ app.registerExtension({
                 canvasWrapper.style.aspectRatio = `${w} / ${h}`;
 
                 renderGrid();
+            }
+
+            function updateAllUILanguage() {
+                const isEn = currentLang === "English";
+                if (artBarLabel) artBarLabel.textContent = isEn ? "🎨 Style:" : "🎨 화풍:";
+                if (artBtnGroup) {
+                    artBtnGroup.querySelectorAll(".vg-btn").forEach(btn => {
+                        const sid = btn.dataset.styleId;
+                        const st = ART_STYLES.find(s => s.id === sid);
+                        if (st) {
+                            btn.textContent = `${st.icon} ${st.id === "none" ? (isEn ? "None" : "없음") : (st.name.split(' ')[1] || st.name)}`;
+                        }
+                    });
+                }
+                if (whiteBgSpan) whiteBgSpan.textContent = isEn ? " White BG" : " 백색 배경";
+                if (gridBorderSpan) gridBorderSpan.textContent = isEn ? " Grid Borders" : " 격자 실선";
+                if (mockupSpan) mockupSpan.textContent = isEn ? " Silhouette" : " 실루엣";
+                if (charTitle) charTitle.innerHTML = isEn ? `<span>👤 Master Character Profile</span>` : `<span>👤 인물 공통 외모 (Character Profile)</span>`;
+                if (typeof renderCharPresetsDropdown === "function") renderCharPresetsDropdown();
+                if (btnSaveCharPreset) btnSaveCharPreset.textContent = isEn ? "⭐ Save" : "⭐ 저장";
+                if (btnClearChar) btnClearChar.textContent = isEn ? "Clear" : "비우기";
+                if (charKoInput) charKoInput.placeholder = isEn ? "KR: Korean character profile (Auto-translated to English)" : "KR: 한글 인물 공통 외모 (예: 한국인, 40대, 여성, 갈색 파마머리, 뿔테 안경...)";
+                if (charEnInput) charEnInput.placeholder = isEn ? "US: English character profile (Sent to AI)" : "US: 영문 인물 공통 외모 (AI 최종 전달용 / 한글 입력 시 실시간 자동 번역)";
+                if (stageResizeHandle) stageResizeHandle.title = isEn ? "Drag to resize canvas area" : "드래그하여 격자 캔버스 영역 크기 조절";
+                if (guideEl) guideEl.textContent = isEn ? "🖱️ Drag: Create Area | ✏️ Click: Edit | ❌ Right-click or [×]: Delete" : "🖱️ 드래그: 영역 생성 | ✏️ 클릭: 구도 편집 | ❌ [×]버튼 또는 우클릭: 삭제";
+                if (treeBtn) treeBtn.querySelector("span:first-child").textContent = isEn ? "📂 10 Category Shot & Angle Explorer" : "📂 10대 캐릭터 시트 구도 탐색기";
+                if (btnSaveCurrent) btnSaveCurrent.textContent = isEn ? "💾 Save Current Preset" : "💾 현재 구도를 새 프리셋으로 등록";
+                if (btnToggleDrawer) btnToggleDrawer.textContent = isEn ? "⚙️ Manage" : "⚙️ 관리";
+                if (btnApplyPrompt) btnApplyPrompt.innerHTML = `<span>${isEn ? "Apply (Ctrl+Enter)" : "적용 (Ctrl+Enter)"}</span>`;
+                if (previewTitle) previewTitle.innerHTML = isEn ? `<span>📋 Final Output Prompt Preview</span>` : `<span>📋 최종 프롬프트 미리보기</span>`;
+                if (btnCopyFullPrompt) btnCopyFullPrompt.innerHTML = isEn ? `<span>📋 Copy</span>` : `<span>📋 복사 (Copy)</span>`;
+                if (btnClear) btnClear.textContent = isEn ? "🗑️ Reset" : "🗑️ 초기화";
+                if (activeAreaTitle && !selectedAreaId) {
+                    activeAreaTitle.textContent = isEn ? "📍 Select an area to edit" : "📍 편집할 영역을 선택하세요";
+                }
             }
 
             function renderGrid() {
@@ -1994,6 +2113,9 @@ app.registerExtension({
                 const wSuffix = node.widgets?.find(w => w.name === "suffix_prompt");
                 if (wSuffix) wSuffix.value = suffixVal;
 
+                const wLang = node.widgets?.find(w => w.name === "ui_language");
+                if (wLang) wLang.value = currentLang;
+
                 const finalPromptStr = generateFullPromptString();
                 if (fullPromptTextarea) {
                     fullPromptTextarea.value = finalPromptStr;
@@ -2019,6 +2141,14 @@ app.registerExtension({
                         if (parsed.character_profile_ko || parsed.characterProfileKo) characterProfileKo = parsed.character_profile_ko || parsed.characterProfileKo;
                         if (parsed.character_profile || parsed.characterProfile) characterProfile = parsed.character_profile || parsed.characterProfile;
                         if (parsed.areas) areas = parsed.areas;
+                        if (parsed.ui_language || parsed.uiLanguage) {
+                            currentLang = parsed.ui_language || parsed.uiLanguage;
+                            if (langSelect) langSelect.value = currentLang;
+                        }
+                        if (parsed.stage_height || parsed.stageHeight) {
+                            stageMaxHeight = parsed.stage_height || parsed.stageHeight;
+                            if (canvasStage) canvasStage.style.height = `${stageMaxHeight}px`;
+                        }
                         
                         colsInput.value = cols;
                         rowsInput.value = rows;
@@ -2038,6 +2168,13 @@ app.registerExtension({
                 const formatW = this.widgets?.find(w => w.name === "format");
                 if (formatW && formatW.value) { currentFormat = formatW.value; formatSelect.value = currentFormat; }
 
+                const langW = this.widgets?.find(w => w.name === "ui_language");
+                if (langW && langW.value) {
+                    currentLang = langW.value;
+                    if (langSelect) langSelect.value = currentLang;
+                }
+
+                updateAllUILanguage();
                 updateCanvasDimensions();
                 renderGrid();
                 syncToWidgets();
@@ -2056,7 +2193,7 @@ app.registerExtension({
                 serialize: false,
                 hideOnZoom: false,
                 getValue() {
-                    return JSON.stringify({ cols, rows, aspect_ratio: currentRatio, white_bg: whiteBg, grid_borders: gridBorders, character_profile: characterProfile, character_profile_ko: characterProfileKo, areas, prefix: prefixVal, suffix: suffixVal, format: currentFormat });
+                    return JSON.stringify({ cols, rows, aspect_ratio: currentRatio, white_bg: whiteBg, grid_borders: gridBorders, character_profile: characterProfile, character_profile_ko: characterProfileKo, areas, prefix: prefixVal, suffix: suffixVal, format: currentFormat, ui_language: currentLang, stage_height: stageMaxHeight });
                 },
                 setValue(v) {
                     if (v) {
@@ -2073,6 +2210,14 @@ app.registerExtension({
                             if (parsed.prefix !== undefined) { prefixVal = parsed.prefix; prefixInput.value = prefixVal; }
                             if (parsed.suffix !== undefined) { suffixVal = parsed.suffix; suffixInput.value = suffixVal; }
                             if (parsed.format !== undefined) { currentFormat = parsed.format; formatSelect.value = currentFormat; }
+                            if (parsed.ui_language !== undefined) {
+                                currentLang = parsed.ui_language;
+                                if (langSelect) langSelect.value = currentLang;
+                            }
+                            if (parsed.stage_height !== undefined) {
+                                stageMaxHeight = parsed.stage_height;
+                                if (canvasStage) canvasStage.style.height = `${stageMaxHeight}px`;
+                            }
                             colsInput.value = cols;
                             rowsInput.value = rows;
                             ratioSelect.value = currentRatio;
@@ -2080,6 +2225,7 @@ app.registerExtension({
                             gridBorderCheck.checked = gridBorders;
                             if (charKoInput) charKoInput.value = characterProfileKo || characterProfile;
                             if (charEnInput) charEnInput.value = characterProfile;
+                            updateAllUILanguage();
                             updateCanvasDimensions();
                             renderGrid();
                         } catch (e) {}
