@@ -780,7 +780,8 @@ app.registerExtension({
                 .vg-input { background: #18181b; color: #f4f4f5; border: 1px solid #3f3f46; border-radius: 4px; padding: 3px 6px; font-size: 11px; }
                 .vg-textarea { background: #18181b; color: #f4f4f5; border: 1px solid #3f3f46; border-radius: 4px; padding: 5px 8px; font-size: 11px; line-height: 1.4; font-family: inherit; resize: vertical; min-height: 32px; box-sizing: border-box; width: 100%; outline: none; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
                 .vg-textarea:focus { border-color: #6366f1; box-shadow: 0 0 8px rgba(99, 102, 241, 0.4); }
-                .vg-grid-wrapper { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #18181b; border: 1px solid #27272a; border-radius: 6px; overflow: hidden; box-sizing: border-box; flex-shrink: 0; max-height: 380px; min-height: 120px; }
+                .vg-canvas-stage { width: 100%; background: #0d0d11; border: 1px solid #27272a; border-radius: 6px; padding: 6px; box-sizing: border-box; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+                .vg-grid-wrapper { position: relative; background: #18181b; border: 1.5px solid #4f46e5; border-radius: 4px; overflow: hidden; box-sizing: border-box; flex-shrink: 0; box-shadow: 0 0 16px rgba(0,0,0,0.6); }
                 .vg-grid-cells { position: absolute; inset: 0; display: grid; pointer-events: none; }
                 .vg-cell { border-right: 2px dashed rgba(255, 255, 255, 0.38); border-bottom: 2px dashed rgba(255, 255, 255, 0.38); box-sizing: border-box; }
                 .vg-area-box { position: absolute; border: 2px solid; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-between; padding: 3px; box-sizing: border-box; cursor: pointer; overflow: hidden; }
@@ -1068,10 +1069,12 @@ app.registerExtension({
             charCard.appendChild(charEnInput);
             container.appendChild(charCard);
 
-            // 4. Interactive Grid Canvas Viewport
+            // 4. Interactive Grid Canvas Viewport (Locked True Mathematical Aspect Ratio Stage)
+            const canvasStage = document.createElement("div");
+            canvasStage.className = "vg-canvas-stage";
+
             const canvasWrapper = document.createElement("div");
             canvasWrapper.className = "vg-grid-wrapper";
-            canvasWrapper.style.height = "220px";
 
             const gridCellsContainer = document.createElement("div");
             gridCellsContainer.className = "vg-grid-cells";
@@ -1085,7 +1088,8 @@ app.registerExtension({
             selectionBox.style.cssText = "position:absolute; border:2px dashed #6366f1; background:rgba(99,102,241,0.25); pointer-events:none; display:none;";
             canvasWrapper.appendChild(selectionBox);
 
-            container.appendChild(canvasWrapper);
+            canvasStage.appendChild(canvasWrapper);
+            container.appendChild(canvasStage);
 
             // Guide text
             const guideEl = document.createElement("div");
@@ -1739,8 +1743,28 @@ app.registerExtension({
                 const ratioParts = currentRatio.split(":");
                 const w = parseFloat(ratioParts[0]) || 16;
                 const h = parseFloat(ratioParts[1]) || 9;
+                const ratio = w / h;
+
+                const availableW = (container && container.clientWidth) ? (container.clientWidth - 28) : 460;
+                const maxAllowedHeight = 360;
+
+                let canvasW = availableW;
+                let canvasH = availableW / ratio;
+
+                if (canvasH > maxAllowedHeight) {
+                    canvasH = maxAllowedHeight;
+                    canvasW = canvasH * ratio;
+                }
+
+                if (canvasW < 120) {
+                    canvasW = 120;
+                    canvasH = canvasW / ratio;
+                }
+
+                canvasWrapper.style.width = `${Math.round(canvasW)}px`;
+                canvasWrapper.style.height = `${Math.round(canvasH)}px`;
                 canvasWrapper.style.aspectRatio = `${w} / ${h}`;
-                canvasWrapper.style.height = "auto";
+
                 renderGrid();
             }
 
