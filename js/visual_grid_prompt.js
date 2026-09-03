@@ -667,6 +667,18 @@ app.registerExtension({
             let gridBorders = true;
             let mockupEnabled = true;
             let characterProfile = "";
+            let characterProfileKo = "";
+            let charPresets = [
+                { label: "20대 한국 여성", ko: "20대 한국 여성, 긴 흑발 포니테일, 검은 뿔테 안경, 자연스러운 메이크업", en: "Korean woman in her 20s, long black hair ponytail, black horn-rimmed glasses, natural makeup" },
+                { label: "30대 비즈니스 남성", ko: "30대 한국 남성, 깔끔한 댄디컷 흑발, 네이비 정장 수트", en: "Korean man in his 30s, neat dandy cut black hair, navy business suit" },
+                { label: "애니메이션 미소녀", ko: "은발 트윈테일, 푸른 눈동자, 세일러복 교복", en: "silver twin-tail hair, blue eyes, sailor school uniform" }
+            ];
+            try {
+                const savedCharPresets = localStorage.getItem("comfyui_vg_char_presets");
+                if (savedCharPresets) {
+                    charPresets = JSON.parse(savedCharPresets);
+                }
+            } catch (e) {}
             let prefixVal = ART_STYLES[0].prefix;
             let suffixVal = ART_STYLES[0].suffix;
             let areas = [];
@@ -770,7 +782,7 @@ app.registerExtension({
                 .vg-textarea:focus { border-color: #6366f1; box-shadow: 0 0 8px rgba(99, 102, 241, 0.4); }
                 .vg-grid-wrapper { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #18181b; border: 1px solid #27272a; border-radius: 6px; overflow: hidden; box-sizing: border-box; flex-shrink: 0; max-height: 380px; min-height: 120px; }
                 .vg-grid-cells { position: absolute; inset: 0; display: grid; pointer-events: none; }
-                .vg-cell { border-right: 1px dashed rgba(255,255,255,0.06); border-bottom: 1px dashed rgba(255,255,255,0.06); }
+                .vg-cell { border-right: 2px dashed rgba(255, 255, 255, 0.38); border-bottom: 2px dashed rgba(255, 255, 255, 0.38); box-sizing: border-box; }
                 .vg-area-box { position: absolute; border: 2px solid; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-between; padding: 3px; box-sizing: border-box; cursor: pointer; overflow: hidden; }
                 .vg-area-box.selected { box-shadow: 0 0 16px var(--area-glow), inset 0 0 8px var(--area-glow); }
                 .vg-area-header { display: flex; justify-content: space-between; align-items: center; width: 100%; z-index: 2; pointer-events: auto; }
@@ -920,21 +932,141 @@ app.registerExtension({
             toggleBar.appendChild(mockupLabel);
             container.appendChild(toggleBar);
 
-            // 3. Character Profile Master Bar
-            const charProfileWrap = document.createElement("div");
-            charProfileWrap.style.cssText = "display:flex; gap:4px; align-items:center; width:100%;";
-            const charProfileInput = document.createElement("textarea");
-            charProfileInput.className = "vg-textarea";
-            charProfileInput.rows = 1;
-            charProfileInput.style.cssText = "min-height:28px; resize:vertical; flex:1;";
-            charProfileInput.placeholder = "👤 인물 공통 외모 (예: 20대 한국 여성, 긴 흑발 포니테일, 안경...)";
-            charProfileInput.value = characterProfile;
-            charProfileInput.addEventListener("input", () => {
-                characterProfile = charProfileInput.value.trim();
+            // 3. Character Profile Master Section (Presets, Ko/En Inputs & Live Auto-Translate)
+            const charCard = document.createElement("div");
+            charCard.className = "vg-char-card";
+            charCard.style.cssText = "background:#18181b; border:1px solid #27272a; border-radius:6px; padding:6px; display:flex; flex-direction:column; gap:5px;";
+
+            const charHeader = document.createElement("div");
+            charHeader.style.cssText = "display:flex; justify-content:space-between; align-items:center; width:100%;";
+
+            const charTitle = document.createElement("div");
+            charTitle.style.cssText = "font-size:11px; font-weight:700; color:#a1a1aa; display:flex; align-items:center; gap:4px;";
+            charTitle.innerHTML = `<span>👤 인물 공통 외모 (Character Profile)</span>`;
+
+            const charPresetsBar = document.createElement("div");
+            charPresetsBar.style.cssText = "display:flex; gap:4px; align-items:center;";
+
+            const charSelect = document.createElement("select");
+            charSelect.className = "vg-select";
+            charSelect.style.cssText = "padding:2px 5px; font-size:10.5px; max-width:160px;";
+            
+            function renderCharPresetsDropdown() {
+                charSelect.innerHTML = `<option value="">▼ 👤 외모 프리셋 (${charPresets.length}개)</option>`;
+                charPresets.forEach((cp, idx) => {
+                    const opt = document.createElement("option");
+                    opt.value = idx;
+                    opt.textContent = `👤 ${cp.label || cp.ko.slice(0, 15)}`;
+                    charSelect.appendChild(opt);
+                });
+            }
+            renderCharPresetsDropdown();
+
+            charSelect.addEventListener("change", (e) => {
+                const idx = e.target.value;
+                if (idx !== "" && charPresets[idx]) {
+                    const cp = charPresets[idx];
+                    charKoInput.value = cp.ko || "";
+                    charEnInput.value = cp.en || "";
+                    characterProfileKo = charKoInput.value;
+                    characterProfile = charEnInput.value || charKoInput.value;
+                    syncToWidgets();
+                    e.target.value = "";
+                }
+            });
+
+            const btnSaveCharPreset = document.createElement("button");
+            btnSaveCharPreset.className = "vg-btn";
+            btnSaveCharPreset.type = "button";
+            btnSaveCharPreset.style.cssText = "padding:2px 6px; font-size:10.5px;";
+            btnSaveCharPreset.textContent = "⭐ 저장";
+            btnSaveCharPreset.addEventListener("click", () => {
+                const ko = charKoInput.value.trim();
+                const en = charEnInput.value.trim();
+                if (!ko && !en) {
+                    alert("저장할 인물 외모 묘사를 먼저 입력해주세요.");
+                    return;
+                }
+                const label = prompt("새 인물 외모 프리셋 이름:", ko.slice(0, 15) || en.slice(0, 15));
+                if (label) {
+                    charPresets.push({ label: label.trim(), ko, en: en || ko });
+                    try { localStorage.setItem("comfyui_vg_char_presets", JSON.stringify(charPresets)); } catch (e) {}
+                    renderCharPresetsDropdown();
+                    btnSaveCharPreset.textContent = "✅ 저장됨";
+                    setTimeout(() => { btnSaveCharPreset.textContent = "⭐ 저장"; }, 1500);
+                }
+            });
+
+            const btnClearChar = document.createElement("button");
+            btnClearChar.className = "vg-btn";
+            btnClearChar.type = "button";
+            btnClearChar.style.cssText = "padding:2px 6px; font-size:10.5px;";
+            btnClearChar.textContent = "비우기";
+            btnClearChar.addEventListener("click", () => {
+                charKoInput.value = "";
+                charEnInput.value = "";
+                characterProfileKo = "";
+                characterProfile = "";
                 syncToWidgets();
             });
-            charProfileWrap.appendChild(charProfileInput);
-            container.appendChild(charProfileWrap);
+
+            charPresetsBar.appendChild(charSelect);
+            charPresetsBar.appendChild(btnSaveCharPreset);
+            charPresetsBar.appendChild(btnClearChar);
+
+            charHeader.appendChild(charTitle);
+            charHeader.appendChild(charPresetsBar);
+            charCard.appendChild(charHeader);
+
+            // Korean Profile Input
+            const charKoInput = document.createElement("textarea");
+            charKoInput.className = "vg-textarea";
+            charKoInput.rows = 1;
+            charKoInput.style.cssText = "min-height:26px; resize:vertical; font-size:11px; padding:4px 6px;";
+            charKoInput.placeholder = "KR: 한글 인물 공통 외모 (예: 한국인, 40대, 여성, 갈색 파마머리, 뿔테 안경...)";
+            charKoInput.value = characterProfileKo || characterProfile;
+
+            // English Profile Input
+            const charEnInput = document.createElement("textarea");
+            charEnInput.className = "vg-textarea";
+            charEnInput.rows = 1;
+            charEnInput.style.cssText = "min-height:26px; resize:vertical; font-size:11px; padding:4px 6px; border-color:#3f3f46; color:#d4d4d8;";
+            charEnInput.placeholder = "US: 영문 인물 공통 외모 (AI 최종 전달용 / 한글 입력 시 실시간 자동 번역)";
+            charEnInput.value = characterProfile;
+
+            // Auto translation debouncer for charKoInput
+            let charTransTimer = null;
+            charKoInput.addEventListener("input", () => {
+                characterProfileKo = charKoInput.value.trim();
+                characterProfile = charEnInput.value.trim() || characterProfileKo;
+                syncToWidgets();
+
+                clearTimeout(charTransTimer);
+                if (charKoInput.value.trim()) {
+                    charTransTimer = setTimeout(async () => {
+                        charEnInput.placeholder = "🌐 번역 중...";
+                        const translated = await translateToEnglishAsync(charKoInput.value.trim());
+                        if (translated) {
+                            charEnInput.value = translated;
+                            characterProfile = translated;
+                            syncToWidgets();
+                        }
+                    }, 400);
+                } else {
+                    charEnInput.value = "";
+                    characterProfile = "";
+                    syncToWidgets();
+                }
+            });
+
+            charEnInput.addEventListener("input", () => {
+                characterProfile = charEnInput.value.trim();
+                syncToWidgets();
+            });
+
+            charCard.appendChild(charKoInput);
+            charCard.appendChild(charEnInput);
+            container.appendChild(charCard);
 
             // 4. Interactive Grid Canvas Viewport
             const canvasWrapper = document.createElement("div");
@@ -1802,7 +1934,9 @@ app.registerExtension({
                     gridBorders,
                     active_art_style: activeArtStyle,
                     character_profile: characterProfile,
+                    character_profile_ko: characterProfileKo,
                     characterProfile,
+                    characterProfileKo,
                     areas: areas.map(a => ({
                         id: a.id,
                         c1: a.c1, c2: a.c2, r1: a.r1, r2: a.r2,
@@ -1858,6 +1992,7 @@ app.registerExtension({
                         if (parsed.aspect_ratio || parsed.aspectRatio) currentRatio = parsed.aspect_ratio || parsed.aspectRatio;
                         if (parsed.white_bg !== undefined || parsed.whiteBg !== undefined) whiteBg = !!(parsed.white_bg ?? parsed.whiteBg);
                         if (parsed.grid_borders !== undefined || parsed.gridBorders !== undefined) gridBorders = !!(parsed.grid_borders ?? parsed.gridBorders);
+                        if (parsed.character_profile_ko || parsed.characterProfileKo) characterProfileKo = parsed.character_profile_ko || parsed.characterProfileKo;
                         if (parsed.character_profile || parsed.characterProfile) characterProfile = parsed.character_profile || parsed.characterProfile;
                         if (parsed.areas) areas = parsed.areas;
                         
@@ -1866,7 +2001,8 @@ app.registerExtension({
                         ratioSelect.value = currentRatio;
                         whiteBgCheck.checked = whiteBg;
                         gridBorderCheck.checked = gridBorders;
-                        charProfileInput.value = characterProfile;
+                        if (charKoInput) charKoInput.value = characterProfileKo || characterProfile;
+                        if (charEnInput) charEnInput.value = characterProfile;
                     } catch (e) {}
                 }
                 const prefixW = this.widgets?.find(w => w.name === "prefix_prompt");
@@ -1896,7 +2032,7 @@ app.registerExtension({
                 serialize: false,
                 hideOnZoom: false,
                 getValue() {
-                    return JSON.stringify({ cols, rows, aspect_ratio: currentRatio, white_bg: whiteBg, grid_borders: gridBorders, character_profile: characterProfile, areas, prefix: prefixVal, suffix: suffixVal, format: currentFormat });
+                    return JSON.stringify({ cols, rows, aspect_ratio: currentRatio, white_bg: whiteBg, grid_borders: gridBorders, character_profile: characterProfile, character_profile_ko: characterProfileKo, areas, prefix: prefixVal, suffix: suffixVal, format: currentFormat });
                 },
                 setValue(v) {
                     if (v) {
@@ -1907,6 +2043,7 @@ app.registerExtension({
                             if (parsed.aspect_ratio) currentRatio = parsed.aspect_ratio;
                             if (parsed.white_bg !== undefined) whiteBg = !!parsed.white_bg;
                             if (parsed.grid_borders !== undefined) gridBorders = !!parsed.grid_borders;
+                            if (parsed.character_profile_ko !== undefined) characterProfileKo = parsed.character_profile_ko;
                             if (parsed.character_profile !== undefined) characterProfile = parsed.character_profile;
                             if (parsed.areas) areas = parsed.areas;
                             if (parsed.prefix !== undefined) { prefixVal = parsed.prefix; prefixInput.value = prefixVal; }
@@ -1917,12 +2054,12 @@ app.registerExtension({
                             ratioSelect.value = currentRatio;
                             whiteBgCheck.checked = whiteBg;
                             gridBorderCheck.checked = gridBorders;
-                            charProfileInput.value = characterProfile;
+                            if (charKoInput) charKoInput.value = characterProfileKo || characterProfile;
+                            if (charEnInput) charEnInput.value = characterProfile;
                             updateCanvasDimensions();
                             renderGrid();
                         } catch (e) {}
                     }
-                }
             });
 
             // Initial Sizing & Setup
