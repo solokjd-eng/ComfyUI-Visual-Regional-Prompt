@@ -150,6 +150,15 @@ const ART_STYLES = [
         suffix: "clean studio void backdrop, physically based rendering (PBR) materials, ambient occlusion, 8k textures, volumetric lighting",
         whiteBg: false,
         gridBorders: true
+    },
+    {
+        id: "none",
+        name: "🚫 없음 (None / Clean)",
+        icon: "🚫",
+        prefix: "",
+        suffix: "",
+        whiteBg: false,
+        gridBorders: true
     }
 ];
 
@@ -411,6 +420,35 @@ function translateToEnglish(text) {
     return res;
 }
 
+async function translateToEnglishAsync(text) {
+    if (!text || typeof text !== "string") return "";
+    let res = text.trim();
+    if (!/[가-힣]/.test(res)) return res;
+
+    // 1. 빠른 규칙 사전 치환
+    res = translateToEnglish(res);
+
+    // 2. 한글이 여전히 포함되어 있으면 Google Translate 무료 API 호출
+    if (/[가-힣]/.test(res) || /[가-힣]/.test(text)) {
+        try {
+            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ko&tl=en&dt=t&q=${encodeURIComponent(text.trim())}`;
+            const resp = await fetch(url);
+            if (resp.ok) {
+                const json = await resp.json();
+                if (json && json[0]) {
+                    const apiTranslated = json[0].map(item => item[0]).join('');
+                    if (apiTranslated && apiTranslated.trim()) {
+                        return apiTranslated.trim();
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn("[VisualGridPrompt] Google Translate API error:", e);
+        }
+    }
+    return res;
+}
+
 // =============================================================================
 // 🧍 Dynamic SVG Silhouette Vector Generator
 // =============================================================================
@@ -648,6 +686,8 @@ app.registerExtension({
                 .vg-btn.active { background: #4f46e5; border-color: #6366f1; color: #fff; font-weight: 600; box-shadow: 0 0 8px rgba(99, 102, 241, 0.4); }
                 .vg-select { background: #18181b; color: #f4f4f5; border: 1px solid #3f3f46; border-radius: 4px; padding: 3px 6px; font-size: 11px; outline: none; }
                 .vg-input { background: #18181b; color: #f4f4f5; border: 1px solid #3f3f46; border-radius: 4px; padding: 3px 6px; font-size: 11px; }
+                .vg-textarea { background: #18181b; color: #f4f4f5; border: 1px solid #3f3f46; border-radius: 4px; padding: 5px 8px; font-size: 11px; line-height: 1.4; font-family: inherit; resize: vertical; min-height: 32px; box-sizing: border-box; width: 100%; outline: none; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+                .vg-textarea:focus { border-color: #6366f1; box-shadow: 0 0 8px rgba(99, 102, 241, 0.4); }
                 .vg-grid-wrapper { position: relative; width: 100%; background: #18181b; border: 1px solid #27272a; border-radius: 6px; overflow: hidden; }
                 .vg-grid-cells { position: absolute; inset: 0; display: grid; pointer-events: none; }
                 .vg-cell { border-right: 1px dashed rgba(255,255,255,0.06); border-bottom: 1px dashed rgba(255,255,255,0.06); }
@@ -688,7 +728,7 @@ app.registerExtension({
                 const b = document.createElement("button");
                 b.className = `vg-btn ${st.id === activeArtStyle ? "active" : ""}`;
                 b.type = "button";
-                b.textContent = `${st.icon} ${st.name.split(' ')[1] || st.name}`;
+                b.textContent = `${st.icon} ${st.id === "none" ? "없음" : (st.name.split(' ')[1] || st.name)}`;
                 b.title = st.name;
                 b.addEventListener("click", () => {
                     activeArtStyle = st.id;
@@ -802,11 +842,11 @@ app.registerExtension({
 
             // 3. Character Profile Master Bar
             const charProfileWrap = document.createElement("div");
-            charProfileWrap.style.cssText = "display:flex; gap:4px; align-items:center;";
-            const charProfileInput = document.createElement("input");
-            charProfileInput.type = "text";
-            charProfileInput.className = "vg-input";
-            charProfileInput.style.flex = "1";
+            charProfileWrap.style.cssText = "display:flex; gap:4px; align-items:center; width:100%;";
+            const charProfileInput = document.createElement("textarea");
+            charProfileInput.className = "vg-textarea";
+            charProfileInput.rows = 1;
+            charProfileInput.style.cssText = "min-height:28px; resize:vertical; flex:1;";
             charProfileInput.placeholder = "👤 인물 공통 외모 (예: 20대 한국 여성, 긴 흑발 포니테일, 안경...)";
             charProfileInput.value = characterProfile;
             charProfileInput.addEventListener("input", () => {
@@ -1049,22 +1089,46 @@ app.registerExtension({
             });
 
             // 7. Area Prompts Inputs (Korean + English)
-            const areaKoInput = document.createElement("input");
-            areaKoInput.className = "vg-input";
-            areaKoInput.placeholder = "🇰🇷 한글 프롬프트 (프리셋 선택 시 1:1 교체)";
+            const areaKoInput = document.createElement("textarea");
+            areaKoInput.className = "vg-textarea";
+            areaKoInput.rows = 2;
+            areaKoInput.placeholder = "🇰🇷 한글 프롬프트 (프리셋 선택 시 1:1 교체, 한글 입력 시 실시간 자동 번역)";
+            
+            let autoTranslateTimer = null;
             areaKoInput.addEventListener("input", () => {
                 const area = getSelectedArea();
                 if (area) {
                     area.ko_prompt = areaKoInput.value;
-                    area.prompt = translateToEnglish(area.ko_prompt);
-                    areaEnInput.value = area.prompt;
+
+                    // 1차: 즉각적인 사전 번역 반영
+                    const fastEn = translateToEnglish(area.ko_prompt);
+                    area.prompt = fastEn;
+                    areaEnInput.value = fastEn;
                     renderGrid();
                     syncToWidgets();
+
+                    // 2차: 한글이 포함된 경우 실시간 구글 번역 호출 (300ms 디바운스)
+                    clearTimeout(autoTranslateTimer);
+                    if (/[가-힣]/.test(area.ko_prompt)) {
+                        autoTranslateTimer = setTimeout(async () => {
+                            const curArea = getSelectedArea();
+                            if (curArea && curArea.id === area.id && areaKoInput.value.trim()) {
+                                const googleEn = await translateToEnglishAsync(areaKoInput.value);
+                                if (googleEn && googleEn.trim()) {
+                                    curArea.prompt = googleEn.trim();
+                                    areaEnInput.value = googleEn.trim();
+                                    renderGrid();
+                                    syncToWidgets();
+                                }
+                            }
+                        }, 300);
+                    }
                 }
             });
 
-            const areaEnInput = document.createElement("input");
-            areaEnInput.className = "vg-input";
+            const areaEnInput = document.createElement("textarea");
+            areaEnInput.className = "vg-textarea";
+            areaEnInput.rows = 2;
             areaEnInput.placeholder = "🇺🇸 영문 프롬프트 (AI 최종 전달용 / 직접 수정 가능)";
             areaEnInput.addEventListener("input", () => {
                 const area = getSelectedArea();
@@ -1084,14 +1148,14 @@ app.registerExtension({
             globalCard.style.cssText = "display:flex; flex-direction:column; gap:4px;";
             
             const prefixInput = document.createElement("textarea");
-            prefixInput.className = "vg-input";
+            prefixInput.className = "vg-textarea";
             prefixInput.rows = 2;
             prefixInput.placeholder = "접두사 (Prefix: Masterpiece, Photorealistic)...";
             prefixInput.value = prefixVal;
             prefixInput.addEventListener("input", () => { prefixVal = prefixInput.value; syncToWidgets(); });
 
             const suffixInput = document.createElement("textarea");
-            suffixInput.className = "vg-input";
+            suffixInput.className = "vg-textarea";
             suffixInput.rows = 2;
             suffixInput.placeholder = "접미사 (Suffix: 8k resolution, cinematic lighting)...";
             suffixInput.value = suffixVal;
@@ -1194,12 +1258,16 @@ app.registerExtension({
                 renderGrid();
             }
 
-            function applyPresetToActiveArea({ ko, en }) {
+            async function applyPresetToActiveArea({ ko, en }) {
                 const area = getSelectedArea();
                 if (!area) return;
                 // 1:1 구도 교체 (Replace)
                 area.ko_prompt = ko || "";
-                area.prompt = en || translateToEnglish(ko);
+                if (en) {
+                    area.prompt = en;
+                } else {
+                    area.prompt = await translateToEnglishAsync(ko);
+                }
                 areaKoInput.value = area.ko_prompt;
                 areaEnInput.value = area.prompt;
                 renderGrid();

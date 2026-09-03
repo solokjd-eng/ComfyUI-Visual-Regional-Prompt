@@ -201,9 +201,12 @@ PROMPT_TRANSLATIONS = [
 ]
 
 
+import urllib.request
+import urllib.parse
+
 def translate_prompt_to_english(text: str) -> str:
     """
-    한글 프롬프트를 영어 프롬프트로 규칙 기반 자동 변환
+    한글 프롬프트를 영어 프롬프트로 변환 (1차 규칙 사전 -> 2차 Google Translate API)
     """
     if not text or not text.strip():
         return ""
@@ -223,6 +226,21 @@ def translate_prompt_to_english(text: str) -> str:
     res = re.sub(r'\s*,\s*', ', ', res)
     res = re.sub(r'(,\s*){2,}', ', ', res)
     res = re.sub(r'^,\s*|,\s*$', '', res)
+
+    # 치환 후에도 한글이 남아있거나 원본 문장이 있을 경우 Google Translate API 호출
+    if re.search(r'[가-힣]', res):
+        try:
+            url = f"https://translate.googleapis.com/translate_a/single?client=gtx&sl=ko&tl=en&dt=t&q={urllib.parse.quote(text.strip())}"
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=2.0) as resp:
+                if resp.status == 200:
+                    data = json.loads(resp.read().decode('utf-8'))
+                    if data and data[0]:
+                        api_translated = "".join(item[0] for item in data[0] if item and item[0])
+                        if api_translated.strip():
+                            return api_translated.strip()
+        except Exception:
+            pass
 
     return res
 
