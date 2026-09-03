@@ -1585,14 +1585,15 @@ app.registerExtension({
 
             function adjustNodeHeight() {
                 if (!node || !container) return;
-                const headerOffset = 45; // LiteGraph title bar & padding
-                const contentH = Math.ceil(container.scrollHeight + headerOffset);
-                const minH = 650;
-                const targetH = Math.max(contentH, minH);
-                const targetW = Math.max(node.size[0] || 520, 480);
-
-                if (node.size[1] < targetH || Math.abs(node.size[1] - targetH) > 40) {
-                    node.setSize([targetW, targetH]);
+                // Widget top offset in LiteGraph node + extra bottom margin
+                const topOffset = 70; // accounts for title bar, slots, widget top margin
+                const minRequiredH = Math.ceil(container.scrollHeight + topOffset + 20);
+                
+                // If current node height is smaller than content needs, expand it
+                if (!node.size || node.size[1] < minRequiredH) {
+                    const currentW = node.size ? Math.max(node.size[0], 360) : 520;
+                    node.size[0] = currentW;
+                    node.size[1] = minRequiredH;
                     if (app && app.canvas) {
                         app.canvas.setDirty(true, true);
                     }
@@ -1606,7 +1607,6 @@ app.registerExtension({
                 canvasWrapper.style.aspectRatio = `${w} / ${h}`;
                 canvasWrapper.style.height = "auto";
                 renderGrid();
-                setTimeout(adjustNodeHeight, 30);
             }
 
             function renderGrid() {
@@ -1877,6 +1877,8 @@ app.registerExtension({
 
                 updateCanvasDimensions();
                 renderGrid();
+                syncToWidgets();
+                setTimeout(adjustNodeHeight, 50);
                 hideAllBackendWidgets(this);
             };
 
@@ -1887,7 +1889,9 @@ app.registerExtension({
             };
 
             // Add DOM Widget
-            node.addDOMWidget("visual_grid_ui", "custom", container, {
+            const domWidget = node.addDOMWidget("visual_grid_ui", "custom", container, {
+                serialize: false,
+                hideOnZoom: false,
                 getValue() {
                     return JSON.stringify({ cols, rows, aspect_ratio: currentRatio, white_bg: whiteBg, grid_borders: gridBorders, character_profile: characterProfile, areas, prefix: prefixVal, suffix: suffixVal, format: currentFormat });
                 },
@@ -1918,10 +1922,17 @@ app.registerExtension({
                 }
             });
 
+            domWidget.computeSize = function(width) {
+                const w = width || (node.size ? node.size[0] : 520);
+                const h = (container && container.scrollHeight) ? (container.scrollHeight + 30) : 750;
+                return [w, h];
+            };
+
             // Initial Sizing & Setup
             updateCanvasDimensions();
             renderGrid();
             syncToWidgets();
+            node.setSize([520, 960]);
 
             // Dynamic ResizeObserver for container content changes
             if (typeof ResizeObserver !== "undefined") {
@@ -1931,12 +1942,12 @@ app.registerExtension({
                 ro.observe(container);
             }
 
-            // LiteGraph Manual Resize Hook
+            // LiteGraph Manual Resize Hook (Allows freely shrinking/expanding width & expanding height)
             const origOnResize = node.onResize;
             node.onResize = function (size) {
                 if (origOnResize) origOnResize.apply(this, arguments);
-                if (size[0] < 460) size[0] = 460;
-                const minH = (container ? container.scrollHeight : 600) + 45;
+                if (size[0] < 360) size[0] = 360;
+                const minH = (container ? container.scrollHeight : 600) + 85;
                 if (size[1] < minH) {
                     size[1] = minH;
                 }
@@ -1944,8 +1955,8 @@ app.registerExtension({
             };
 
             node.computeSize = function () {
-                const w = Math.max(this.size[0] || 520, 480);
-                const h = Math.max((container ? container.scrollHeight + 45 : 850), 650);
+                const w = Math.max(this.size ? this.size[0] : 520, 360);
+                const h = Math.max(this.size ? this.size[1] : 900, (container ? container.scrollHeight : 600) + 85);
                 return [w, h];
             };
 
