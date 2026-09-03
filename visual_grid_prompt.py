@@ -203,44 +203,107 @@ PROMPT_TRANSLATIONS = [
 
 import urllib.request
 import urllib.parse
+import ssl
+
+def google_translate_robust(text: str) -> str:
+    """
+    다중 API 엔드포인트를 통한 고신뢰도 실시간 번역 (Google Clients5 -> Mobile Web -> GTX -> MyMemory)
+    """
+    if not text or not text.strip():
+        return ""
+    trimmed = text.strip()
+    if not re.search(r'[가-힣]', trimmed):
+        return trimmed
+
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+
+    # 1. Google Clients5 API (Chrome Extension Endpoint)
+    try:
+        url = f"https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=ko&tl=en&q={urllib.parse.quote(trimmed)}"
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+        with urllib.request.urlopen(req, context=ctx, timeout=3.0) as resp:
+            data = json.loads(resp.read().decode('utf-8'))
+            if isinstance(data, list) and len(data) > 0:
+                res = data[0]
+                if isinstance(res, list) and len(res) > 0:
+                    res = res[0]
+                if isinstance(res, str) and res.strip():
+                    return res.strip()
+            elif isinstance(data, str) and data.strip():
+                return data.strip()
+    except Exception:
+        pass
+
+    # 2. Google Mobile Web API
+    try:
+        url = f"https://translate.google.com/m?sl=ko&tl=en&q={urllib.parse.quote(trimmed)}"
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+        with urllib.request.urlopen(req, context=ctx, timeout=3.0) as resp:
+            html = resp.read().decode('utf-8')
+            m = re.search(r'class="result-container">([^<]+)</div>', html)
+            if m and m.group(1).strip():
+                return m.group(1).strip()
+    except Exception:
+        pass
+
+    # 3. Google GTX API
+    try:
+        url = f"https://translate.googleapis.com/translate_a/single?client=gtx&sl=ko&tl=en&dt=t&q={urllib.parse.quote(trimmed)}"
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, context=ctx, timeout=3.0) as resp:
+            data = json.loads(resp.read().decode('utf-8'))
+            if data and data[0]:
+                api_trans = "".join(item[0] for item in data[0] if item and item[0])
+                if api_trans.strip():
+                    return api_trans.strip()
+    except Exception:
+        pass
+
+    # 4. MyMemory API Fallback
+    try:
+        url = f"https://api.mymemory.translated.net/get?q={urllib.parse.quote(trimmed)}&langpair=ko|en"
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, context=ctx, timeout=3.0) as resp:
+            data = json.loads(resp.read().decode('utf-8'))
+            trans = data.get("responseData", {}).get("translatedText")
+            if trans and trans.strip():
+                return trans.strip()
+    except Exception:
+        pass
+
+    return trimmed
+
 
 def translate_prompt_to_english(text: str) -> str:
     """
-    한글 프롬프트를 영어 프롬프트로 변환 (1차 규칙 사전 -> 2차 Google Translate API)
+    한글 프롬프트를 영어 프롬프트로 변환:
+    1차: 완전한 원문 문맥 기반 Google Translate API
+    2차 실패 시: AI 표준 키워드 사전 치환 + 한국어 조사/어미 제거
     """
     if not text or not text.strip():
         return ""
 
-    res = text.strip()
+    trimmed = text.strip()
+    if not re.search(r'[가-힣]', trimmed):
+        return trimmed
 
-    # 한글이 포함되어 있지 않으면 원본 반환
-    if not re.search(r'[가-힣]', res):
-        return res
+    # 1. 원문 전체 번역 호출 (문맥 유지)
+    translated = google_translate_robust(trimmed)
+    if translated and not re.search(r'[가-힣]', translated):
+        return translated
 
+    # 2. 번역 API 실패 시 사전 치환 fallback
+    res = trimmed
     for pattern, eng in PROMPT_TRANSLATIONS:
         res = pattern.sub(eng, res)
 
-    # 잔여 한국어 조사 및 불필요 어미 정리
     res = re.sub(r'(\s*이|가|을|를|의|에|에서|으로|로|과|와|하고|하며|있는|있음|한|된|인)\b', ' ', res)
     res = re.sub(r'\s{2,}', ' ', res).strip()
     res = re.sub(r'\s*,\s*', ', ', res)
     res = re.sub(r'(,\s*){2,}', ', ', res)
     res = re.sub(r'^,\s*|,\s*$', '', res)
-
-    # 치환 후에도 한글이 남아있거나 원본 문장이 있을 경우 Google Translate API 호출
-    if re.search(r'[가-힣]', res):
-        try:
-            url = f"https://translate.googleapis.com/translate_a/single?client=gtx&sl=ko&tl=en&dt=t&q={urllib.parse.quote(text.strip())}"
-            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req, timeout=2.0) as resp:
-                if resp.status == 200:
-                    data = json.loads(resp.read().decode('utf-8'))
-                    if data and data[0]:
-                        api_translated = "".join(item[0] for item in data[0] if item and item[0])
-                        if api_translated.strip():
-                            return api_translated.strip()
-        except Exception:
-            pass
 
     return res
 

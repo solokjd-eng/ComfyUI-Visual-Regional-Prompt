@@ -426,45 +426,62 @@ async function translateToEnglishAsync(text) {
     if (!trimmed) return "";
     if (!/[가-힣]/.test(trimmed)) return trimmed;
 
-    // 1. 빠른 규칙 사전 치환
-    let res = translateToEnglish(trimmed);
-
-    // 2. 한글이 남아있으면 ComfyUI 백엔드 프록시 API 호출 (CORS 완전 회피)
-    if (/[가-힣]/.test(res) || /[가-힣]/.test(trimmed)) {
-        try {
-            const resp = await fetch("/visual_grid_prompt/translate", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ text: trimmed })
-            });
-            if (resp.ok) {
-                const data = await resp.json();
-                if (data && data.translated && data.translated.trim()) {
-                    return data.translated.trim();
+    // 1. ComfyUI 백엔드 파이썬 프록시 API 호출 (가장 신뢰도 높음, CORS 및 SSL 완전 해결)
+    try {
+        const resp = await fetch("/visual_grid_prompt/translate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: trimmed })
+        });
+        if (resp.ok) {
+            const data = await resp.json();
+            if (data && data.translated && data.translated.trim()) {
+                const trans = data.translated.trim();
+                if (!/[가-힣]/.test(trans)) {
+                    return trans;
                 }
             }
-        } catch (e) {
-            console.warn("[VisualGridPrompt] Backend translate route error, trying direct API:", e);
         }
-
-        // 3. 브라우저 직접 Google Translate 무료 API 호출
-        try {
-            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ko&tl=en&dt=t&q=${encodeURIComponent(trimmed)}`;
-            const resp = await fetch(url);
-            if (resp.ok) {
-                const json = await resp.json();
-                if (json && json[0]) {
-                    const apiTranslated = json[0].map(item => item[0]).join('');
-                    if (apiTranslated && apiTranslated.trim()) {
-                        return apiTranslated.trim();
-                    }
-                }
-            }
-        } catch (e) {
-            console.warn("[VisualGridPrompt] Google Translate direct API error:", e);
-        }
+    } catch (e) {
+        console.warn("[VisualGridPrompt] Backend translate error, falling back to direct API:", e);
     }
-    return res;
+
+    // 2. Google clients5 API (dict-chrome-ex)
+    try {
+        const url = `https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=ko&tl=en&q=${encodeURIComponent(trimmed)}`;
+        const resp = await fetch(url);
+        if (resp.ok) {
+            const json = await resp.json();
+            if (Array.isArray(json) && json.length > 0) {
+                const res = Array.isArray(json[0]) ? json[0][0] : json[0];
+                if (typeof res === "string" && res.trim() && !/[가-힣]/.test(res)) {
+                    return res.trim();
+                }
+            }
+        }
+    } catch (e) {
+        // continue
+    }
+
+    // 3. Google GTX API
+    try {
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ko&tl=en&dt=t&q=${encodeURIComponent(trimmed)}`;
+        const resp = await fetch(url);
+        if (resp.ok) {
+            const json = await resp.json();
+            if (json && json[0]) {
+                const apiTranslated = json[0].map(item => item[0]).join('');
+                if (apiTranslated && apiTranslated.trim() && !/[가-힣]/.test(apiTranslated)) {
+                    return apiTranslated.trim();
+                }
+            }
+        }
+    } catch (e) {
+        // continue
+    }
+
+    // 4. Fallback: 빠른 규칙 사전 치환
+    return translateToEnglish(trimmed);
 }
 
 // =============================================================================
@@ -1326,6 +1343,158 @@ app.registerExtension({
             formatBar.appendChild(btnClear);
             container.appendChild(formatBar);
 
+            // 10. Live Final Prompt Preview & 1-Click Copy Card
+            const promptPreviewCard = document.createElement("div");
+            promptPreviewCard.className = "vg-prompt-preview-card";
+            promptPreviewCard.style.cssText = "background:#141418; border:1px solid #3f3f46; border-radius:6px; padding:8px; display:flex; flex-direction:column; gap:6px; box-sizing:border-box;";
+
+            const previewHeader = document.createElement("div");
+            previewHeader.style.cssText = "display:flex; justify-content:space-between; align-items:center; width:100%;";
+            
+            const previewTitle = document.createElement("div");
+            previewTitle.style.cssText = "font-size:11.5px; font-weight:700; color:#f4f4f5; display:flex; align-items:center; gap:6px;";
+            previewTitle.innerHTML = `<span>📋 최종 프롬프트 미리보기</span>`;
+
+            const btnCopyFullPrompt = document.createElement("button");
+            btnCopyFullPrompt.className = "vg-btn";
+            btnCopyFullPrompt.type = "button";
+            btnCopyFullPrompt.style.cssText = "padding:4px 10px; font-size:11px; font-weight:700; background:#4f46e5; border-color:#6366f1; color:#fff; display:flex; align-items:center; gap:4px; box-shadow:0 0 8px rgba(99,102,241,0.3);";
+            btnCopyFullPrompt.innerHTML = `<span>📋 복사 (Copy)</span>`;
+
+            btnCopyFullPrompt.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const textToCopy = fullPromptTextarea.value;
+                if (!textToCopy) return;
+
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(textToCopy);
+                } else {
+                    fullPromptTextarea.select();
+                    document.execCommand("copy");
+                }
+
+                btnCopyFullPrompt.innerHTML = `<span>✅ 복사 완료!</span>`;
+                btnCopyFullPrompt.style.background = "#10b981";
+                btnCopyFullPrompt.style.borderColor = "#34d399";
+                setTimeout(() => {
+                    btnCopyFullPrompt.innerHTML = `<span>📋 복사 (Copy)</span>`;
+                    btnCopyFullPrompt.style.background = "#4f46e5";
+                    btnCopyFullPrompt.style.borderColor = "#6366f1";
+                }, 1500);
+            });
+
+            previewHeader.appendChild(previewTitle);
+            previewHeader.appendChild(btnCopyFullPrompt);
+
+            const fullPromptTextarea = document.createElement("textarea");
+            fullPromptTextarea.className = "vg-textarea";
+            fullPromptTextarea.rows = 4;
+            fullPromptTextarea.style.cssText = "min-height:85px; resize:vertical; font-family:Consolas, Monaco, monospace; font-size:11px; line-height:1.45; background:#0c0c10; border-color:#27272a; color:#e4e4e7; width:100%; box-sizing:border-box;";
+            fullPromptTextarea.placeholder = "생성된 최종 프롬프트가 실시간으로 여기에 표시됩니다...";
+            
+            fullPromptTextarea.addEventListener("input", () => {
+                const wPrompt = node.widgets?.find(w => w.name === "prompt_text");
+                if (wPrompt) wPrompt.value = fullPromptTextarea.value;
+            });
+
+            promptPreviewCard.appendChild(previewHeader);
+            promptPreviewCard.appendChild(fullPromptTextarea);
+            container.appendChild(promptPreviewCard);
+
+            function generateFullPromptString() {
+                const parts = [];
+                if (prefixVal && prefixVal.trim()) {
+                    parts.push(prefixVal.trim());
+                }
+
+                const charProfileClean = (characterProfile || "").trim();
+
+                if (currentFormat === "ComfyUI / SD Regional Prompt (BREAK Syntax)") {
+                    const breakParts = [];
+                    if (charProfileClean) {
+                        breakParts.push(`(${charProfileClean}:1.15)`);
+                    }
+                    areas.forEach(a => {
+                        const p = (a.prompt || a.ko_prompt || "").trim();
+                        if (p) {
+                            breakParts.push(`(${p}:1.1)`);
+                        }
+                    });
+                    if (breakParts.length > 0) {
+                        parts.push(breakParts.join(" BREAK\n"));
+                    }
+                } else if (currentFormat === "Structured Tags ([Area 1 | LEFT])") {
+                    const lines = [`[Composition: ${currentRatio} Grid Layout (${cols}x${rows})]`];
+                    if (charProfileClean) {
+                        lines.push(`[Character Profile]: ${charProfileClean}`);
+                    }
+                    areas.forEach(a => {
+                        const p = (a.prompt || a.ko_prompt || "").trim();
+                        const spatial = getNaturalSpatialName(a.c1, a.c2, a.r1, a.r2, cols, rows);
+                        lines.push(`[Area ${a.id} | ${spatial.toUpperCase()}]: ${p}`);
+                    });
+                    parts.push(lines.join("\n"));
+                } else if (currentFormat === "Coordinates Bounding Box (<area_1 bbox=...>)") {
+                    const lines = [`[Canvas Layout: ${currentRatio} | Grid ${cols}x${rows}]`];
+                    if (charProfileClean) {
+                        lines.push(`<character_profile>${charProfileClean}</character_profile>`);
+                    }
+                    areas.forEach(a => {
+                        const xmin = (a.c1 / cols).toFixed(2);
+                        const ymin = (a.r1 / rows).toFixed(2);
+                        const xmax = ((a.c2 + 1) / cols).toFixed(2);
+                        const ymax = ((a.r2 + 1) / rows).toFixed(2);
+                        const p = (a.prompt || a.ko_prompt || "").trim();
+                        lines.push(`<area_${a.id} bbox="[${xmin}, ${ymin}, ${xmax}, ${ymax}]"> ${p} </area_${a.id}>`);
+                    });
+                    parts.push(lines.join("\n"));
+                } else if (currentFormat === "Comma-Separated List") {
+                    const tags = [];
+                    if (charProfileClean) tags.push(charProfileClean);
+                    areas.forEach(a => {
+                        const p = (a.prompt || a.ko_prompt || "").trim();
+                        if (p) tags.push(p);
+                    });
+                    if (tags.length > 0) parts.push(tags.join(", "));
+                } else if (currentFormat === "Raw JSON") {
+                    const jsonObj = {
+                        cols, rows, aspect_ratio: currentRatio,
+                        white_bg: whiteBg, grid_borders: gridBorders,
+                        character_profile: charProfileClean,
+                        areas: areas.map(a => ({
+                            id: a.id, c1: a.c1, c2: a.c2, r1: a.r1, r2: a.r2,
+                            ko_prompt: a.ko_prompt, prompt: a.prompt
+                        }))
+                    };
+                    parts.push(JSON.stringify(jsonObj, null, 2));
+                } else {
+                    // Natural Spatial (Krea/MiniMax/Gemini/GPT)
+                    const lines = [];
+                    lines.push(`A high-definition ${currentRatio} multi-panel composition strictly partitioned into ${areas.length} proportional sections.`);
+                    if (charProfileClean) {
+                        lines.push(`[Subject / Character Profile & Visual Consistency]: ${charProfileClean}, identical character features and costume maintained across all panels.`);
+                    }
+                    lines.push(`[Spatial Layout & Exact Proportional Placement]:`);
+                    areas.forEach(a => {
+                        const spatial = getNaturalSpatialName(a.c1, a.c2, a.r1, a.r2, cols, rows);
+                        const p = (a.prompt || a.ko_prompt || "").trim();
+                        lines.push(`- ${spatial}: ${p}.`);
+                    });
+                    if (gridBorders) {
+                        lines.push(`[Multi-Panel Layout & Strict Proportional Scale]: Split-screen multi-panel collage layout strictly adhering to the exact percentage width and height boundaries specified above for each column and row without shifting, resizing, or distorting relative panel scales. Each panel is cleanly separated by crisp thin black divider lines, clean comic grid panels, pristine artwork without any text, labels, numbers, coordinates, or watermarks.`);
+                    } else {
+                        lines.push(`[Multi-Panel Layout & Strict Proportional Scale]: Split-screen multi-panel collage layout seamlessly blending adjoining sections according to the exact spatial proportions specified above without watermarks or text.`);
+                    }
+                    parts.push(lines.join("\n"));
+                }
+
+                if (suffixVal && suffixVal.trim()) {
+                    parts.push(suffixVal.trim());
+                }
+
+                return parts.join("\n\n");
+            }
+
             // =========================================================================
             // Core Application Logic & Helpers
             // =========================================================================
@@ -1649,8 +1818,13 @@ app.registerExtension({
                 const wSuffix = node.widgets?.find(w => w.name === "suffix_prompt");
                 if (wSuffix) wSuffix.value = suffixVal;
 
+                const finalPromptStr = generateFullPromptString();
+                if (fullPromptTextarea) {
+                    fullPromptTextarea.value = finalPromptStr;
+                }
+
                 const wPrompt = node.widgets?.find(w => w.name === "prompt_text");
-                if (wPrompt) wPrompt.value = areaEnInput.value;
+                if (wPrompt) wPrompt.value = finalPromptStr;
             }
 
             // Workflow Restore / onConfigure
@@ -1733,7 +1907,7 @@ app.registerExtension({
             updateCanvasDimensions();
             renderGrid();
             syncToWidgets();
-            node.setSize([490, 780]);
+            node.setSize([510, 890]);
         };
     }
 });
