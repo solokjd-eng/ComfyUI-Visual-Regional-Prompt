@@ -768,7 +768,7 @@ app.registerExtension({
                 .vg-input { background: #18181b; color: #f4f4f5; border: 1px solid #3f3f46; border-radius: 4px; padding: 3px 6px; font-size: 11px; }
                 .vg-textarea { background: #18181b; color: #f4f4f5; border: 1px solid #3f3f46; border-radius: 4px; padding: 5px 8px; font-size: 11px; line-height: 1.4; font-family: inherit; resize: vertical; min-height: 32px; box-sizing: border-box; width: 100%; outline: none; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
                 .vg-textarea:focus { border-color: #6366f1; box-shadow: 0 0 8px rgba(99, 102, 241, 0.4); }
-                .vg-grid-wrapper { position: relative; width: 100%; background: #18181b; border: 1px solid #27272a; border-radius: 6px; overflow: hidden; }
+                .vg-grid-wrapper { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #18181b; border: 1px solid #27272a; border-radius: 6px; overflow: hidden; box-sizing: border-box; flex-shrink: 0; max-height: 380px; min-height: 120px; }
                 .vg-grid-cells { position: absolute; inset: 0; display: grid; pointer-events: none; }
                 .vg-cell { border-right: 1px dashed rgba(255,255,255,0.06); border-bottom: 1px dashed rgba(255,255,255,0.06); }
                 .vg-area-box { position: absolute; border: 2px solid; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-between; padding: 3px; box-sizing: border-box; cursor: pointer; overflow: hidden; }
@@ -779,7 +779,7 @@ app.registerExtension({
                 .vg-area-close:hover { background: #ef4444; color: #fff; }
                 .vg-area-prompt { font-size: 10px; font-weight: 500; text-shadow: 0 1px 2px rgba(0,0,0,0.8); line-height: 1.2; word-break: break-word; overflow: hidden; z-index: 2; }
                 .mockup-svg { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.28; pointer-events: none; }
-                .vg-tree-drawer { background: #141418; border: 1px solid #4f46e5; border-radius: 6px; max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 8px; box-sizing: border-box; }
+                .vg-tree-drawer { background: #141418; border: 1px solid #4f46e5; border-radius: 6px; max-height: 240px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 8px; box-sizing: border-box; }
                 .vg-tree-drawer.collapsed { display: none; }
                 .tree-folder { font-size: 11.5px; font-weight: 600; color: #f4f4f5; background: #27272a; padding: 6px 8px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
                 .tree-folder:hover { background: #3f3f46; color: #fff; }
@@ -787,7 +787,7 @@ app.registerExtension({
                 .tree-children.collapsed { display: none; }
                 .tree-item { font-size: 11px; color: #e4e4e7; background: #18181b; border: 1px solid #3f3f46; padding: 5px 6px; cursor: pointer; border-radius: 4px; text-align: center; line-height: 1.2; word-break: keep-all; }
                 .tree-item:hover { background: #4f46e5; border-color: #6366f1; color: #fff; font-weight: 600; }
-                .vg-drawer { background: #18181b; border: 1px solid #27272a; border-radius: 6px; padding: 6px; display: flex; flex-direction: column; gap: 6px; }
+                .vg-drawer { background: #18181b; border: 1px solid #27272a; border-radius: 6px; padding: 6px; display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto; box-sizing: border-box; }
                 .vg-drawer.collapsed { display: none; }
                 .custom-chip { display: flex; align-items: center; justify-content: space-between; background: #27272a; border: 1px solid #3f3f46; border-radius: 4px; padding: 3px 6px; font-size: 11px; cursor: grab; }
                 .custom-chip.dragging { opacity: 0.4; }
@@ -1583,15 +1583,30 @@ app.registerExtension({
                 syncToWidgets();
             }
 
+            function adjustNodeHeight() {
+                if (!node || !container) return;
+                const headerOffset = 45; // LiteGraph title bar & padding
+                const contentH = Math.ceil(container.scrollHeight + headerOffset);
+                const minH = 650;
+                const targetH = Math.max(contentH, minH);
+                const targetW = Math.max(node.size[0] || 520, 480);
+
+                if (node.size[1] < targetH || Math.abs(node.size[1] - targetH) > 40) {
+                    node.setSize([targetW, targetH]);
+                    if (app && app.canvas) {
+                        app.canvas.setDirty(true, true);
+                    }
+                }
+            }
+
             function updateCanvasDimensions() {
                 const ratioParts = currentRatio.split(":");
                 const w = parseFloat(ratioParts[0]) || 16;
                 const h = parseFloat(ratioParts[1]) || 9;
-                const r = w / h;
-                let targetH = 220;
-                if (r < 1.0) targetH = 280; // 9:16 portrait
-                canvasWrapper.style.height = `${targetH}px`;
+                canvasWrapper.style.aspectRatio = `${w} / ${h}`;
+                canvasWrapper.style.height = "auto";
                 renderGrid();
+                setTimeout(adjustNodeHeight, 30);
             }
 
             function renderGrid() {
@@ -1907,7 +1922,34 @@ app.registerExtension({
             updateCanvasDimensions();
             renderGrid();
             syncToWidgets();
-            node.setSize([510, 890]);
+
+            // Dynamic ResizeObserver for container content changes
+            if (typeof ResizeObserver !== "undefined") {
+                const ro = new ResizeObserver(() => {
+                    adjustNodeHeight();
+                });
+                ro.observe(container);
+            }
+
+            // LiteGraph Manual Resize Hook
+            const origOnResize = node.onResize;
+            node.onResize = function (size) {
+                if (origOnResize) origOnResize.apply(this, arguments);
+                if (size[0] < 460) size[0] = 460;
+                const minH = (container ? container.scrollHeight : 600) + 45;
+                if (size[1] < minH) {
+                    size[1] = minH;
+                }
+                updateCanvasDimensions();
+            };
+
+            node.computeSize = function () {
+                const w = Math.max(this.size[0] || 520, 480);
+                const h = Math.max((container ? container.scrollHeight + 45 : 850), 650);
+                return [w, h];
+            };
+
+            adjustNodeHeight();
         };
     }
 });
