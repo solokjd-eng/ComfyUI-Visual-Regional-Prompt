@@ -996,25 +996,26 @@ app.registerExtension({
             charCard.style.cssText = "background:#18181b; border:1px solid #27272a; border-radius:6px; padding:6px; display:flex; flex-direction:column; gap:5px;";
 
             const charHeader = document.createElement("div");
-            charHeader.style.cssText = "display:flex; justify-content:space-between; align-items:center; width:100%; gap:6px;";
+            charHeader.style.cssText = "display:flex; justify-content:space-between; align-items:center; width:100%; gap:8px;";
 
             const charTitle = document.createElement("div");
             charTitle.style.cssText = "font-size:11px; font-weight:700; color:#a1a1aa; display:flex; align-items:center; gap:4px; white-space:nowrap;";
-            charTitle.innerHTML = `<span>👤 인물 공통 외모 (Character Profile)</span>`;
+            charTitle.innerHTML = `<span>👤 인물 공통 외모</span>`;
 
             const charPresetsBar = document.createElement("div");
-            charPresetsBar.style.cssText = "display:flex; gap:4px; align-items:center;";
+            charPresetsBar.style.cssText = "display:flex; gap:6px; align-items:center; flex:1; justify-content:flex-end;";
 
             const charSelect = document.createElement("select");
             charSelect.className = "vg-select";
-            charSelect.style.cssText = "padding:2px 5px; font-size:10.5px; max-width:145px;";
+            charSelect.style.cssText = "padding:2px 6px; font-size:10.5px; flex:1; min-width:160px; max-width:260px; text-overflow:ellipsis; overflow:hidden;";
             
             function renderCharPresetsDropdown() {
                 charSelect.innerHTML = `<option value="">▼ 👤 외모 프리셋 (${charPresets.length}개)</option>`;
                 charPresets.forEach((cp, idx) => {
                     const opt = document.createElement("option");
                     opt.value = idx;
-                    opt.textContent = `👤 ${cp.label || cp.ko.slice(0, 15)}`;
+                    const displayTxt = cp.label ? cp.label : (cp.ko ? cp.ko.slice(0, 30) : cp.en.slice(0, 30));
+                    opt.textContent = `👤 ${displayTxt}`;
                     charSelect.appendChild(opt);
                 });
             }
@@ -1037,7 +1038,7 @@ app.registerExtension({
             const btnOpenCharManager = document.createElement("button");
             btnOpenCharManager.className = "vg-btn";
             btnOpenCharManager.type = "button";
-            btnOpenCharManager.style.cssText = "padding:2px 6px; font-size:10.5px; border-color:#6366f1; background:#1e1e2e; color:#c7d2fe; white-space:nowrap;";
+            btnOpenCharManager.style.cssText = "padding:2px 8px; font-size:10.5px; border-color:#6366f1; background:#1e1e2e; color:#c7d2fe; white-space:nowrap;";
             btnOpenCharManager.textContent = currentLang === "English" ? "⚙️ Preset Settings" : "인물 공통 프리셋 설정";
             btnOpenCharManager.title = "인물 외모 프리셋 관리 (추가, 수정, 삭제, 순서 변경)";
 
@@ -2159,9 +2160,10 @@ app.registerExtension({
                 if (whiteBgSpan) whiteBgSpan.textContent = isEn ? " White BG" : " 백색 배경";
                 if (gridBorderSpan) gridBorderSpan.textContent = isEn ? " Grid Borders" : " 격자 실선";
                 if (mockupSpan) mockupSpan.textContent = isEn ? " Silhouette" : " 실루엣";
-                if (charTitle) charTitle.innerHTML = isEn ? `<span>👤 Master Character Profile</span>` : `<span>👤 인물 공통 외모 (Character Profile)</span>`;
+                if (charTitle) charTitle.innerHTML = isEn ? `<span>👤 Character Profile</span>` : `<span>👤 인물 공통 외모</span>`;
+                if (btnOpenCharManager) btnOpenCharManager.textContent = isEn ? "⚙️ Preset Settings" : "인물 공통 프리셋 설정";
                 if (typeof renderCharPresetsDropdown === "function") renderCharPresetsDropdown();
-                if (btnSaveCharPreset) btnSaveCharPreset.textContent = isEn ? "⭐ Save" : "⭐ 저장";
+                if (btnQuickSave) btnQuickSave.innerHTML = `<span>${isEn ? "⭐ Save" : "⭐ 저장"}</span>`;
                 if (btnClearChar) btnClearChar.textContent = isEn ? "Clear" : "비우기";
                 if (charKoInput) charKoInput.placeholder = isEn ? "KR: Korean character profile (Auto-translated to English)" : "KR: 한글 인물 공통 외모 (예: 한국인, 40대, 여성, 갈색 파마머리, 뿔테 안경...)";
                 if (charEnInput) charEnInput.placeholder = isEn ? "US: English character profile (Sent to AI)" : "US: 영문 인물 공통 외모 (AI 최종 전달용 / 한글 입력 시 실시간 자동 번역)";
