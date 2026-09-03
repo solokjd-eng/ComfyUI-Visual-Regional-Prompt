@@ -463,8 +463,8 @@ class VisualGridPromptNode:
             }
         }
 
-    RETURN_TYPES = ("STRING", "STRING", "STRING")
-    RETURN_NAMES = ("prompt", "aspect_ratio", "raw_json")
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("prompt",)
     FUNCTION = "generate"
     CATEGORY = "utils/prompt"
 
@@ -602,8 +602,7 @@ class VisualGridPromptNode:
         separator = ", " if format.startswith("Comma") else "\n\n"
         full_output = separator.join(result_parts)
         
-        raw_json_str = grid_data if isinstance(grid_data, str) else json.dumps(grid_data, ensure_ascii=False)
-        return (full_output, aspect_ratio, raw_json_str)
+        return (full_output,)
 
 
 NODE_CLASS_MAPPINGS = {

@@ -1034,9 +1034,6 @@ app.registerExtension({
                 }
             });
 
-            const btnClearChar = document.createElement("button");
-            btnClearChar.className = "vg-btn";
-            btnClearChar.type = "button";
             const btnTransChar = document.createElement("button");
             btnTransChar.className = "vg-btn";
             btnTransChar.type = "button";
