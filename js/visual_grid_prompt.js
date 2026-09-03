@@ -695,6 +695,22 @@ app.registerExtension({
             let selectedAreaId = null;
             let draggedPresetIndex = null;
 
+            // Enforce strictly 1 output slot ("prompt") on the node (clean up legacy outputs from saved graphs)
+            function enforceSingleOutput(n) {
+                if (!n) return;
+                if (n.outputs && n.outputs.length > 1) {
+                    while (n.outputs.length > 1) {
+                        n.removeOutput(n.outputs.length - 1);
+                    }
+                }
+                if (n.outputs && n.outputs.length === 1) {
+                    n.outputs[0].name = "prompt";
+                    n.outputs[0].type = "STRING";
+                }
+                if (app && app.canvas) app.canvas.setDirty(true, true);
+            }
+            enforceSingleOutput(node);
+
             // Hide backend native widgets for clean UI
             function hideAllBackendWidgets(n) {
                 if (!n.widgets) return;
@@ -705,7 +721,10 @@ app.registerExtension({
                     }
                 }
             }
-            setTimeout(() => hideAllBackendWidgets(node), 10);
+            setTimeout(() => {
+                hideAllBackendWidgets(node);
+                enforceSingleOutput(node);
+            }, 10);
 
             // Container Element
             const container = document.createElement("div");
@@ -804,6 +823,8 @@ app.registerExtension({
                 .tree-item:hover { background: #4f46e5; border-color: #6366f1; color: #fff; font-weight: 600; }
                 .vg-drawer { background: #18181b; border: 1px solid #27272a; border-radius: 6px; padding: 6px; display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto; box-sizing: border-box; }
                 .vg-drawer.collapsed { display: none; }
+                .vg-char-manager-drawer { background: #141418; border: 1px solid #6366f1; border-radius: 6px; padding: 8px; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.6); }
+                .vg-char-item { background: #1c1c24; border: 1px solid #2e2e3a; border-radius: 4px; padding: 6px; display: flex; flex-direction: column; gap: 4px; }
                 .custom-chip { display: flex; align-items: center; justify-content: space-between; background: #27272a; border: 1px solid #3f3f46; border-radius: 4px; padding: 3px 6px; font-size: 11px; cursor: grab; }
                 .custom-chip.dragging { opacity: 0.4; }
                 .custom-chip-del { color: #ef4444; font-weight: 700; cursor: pointer; padding: 0 4px; }
@@ -975,10 +996,10 @@ app.registerExtension({
             charCard.style.cssText = "background:#18181b; border:1px solid #27272a; border-radius:6px; padding:6px; display:flex; flex-direction:column; gap:5px;";
 
             const charHeader = document.createElement("div");
-            charHeader.style.cssText = "display:flex; justify-content:space-between; align-items:center; width:100%;";
+            charHeader.style.cssText = "display:flex; justify-content:space-between; align-items:center; width:100%; gap:6px;";
 
             const charTitle = document.createElement("div");
-            charTitle.style.cssText = "font-size:11px; font-weight:700; color:#a1a1aa; display:flex; align-items:center; gap:4px;";
+            charTitle.style.cssText = "font-size:11px; font-weight:700; color:#a1a1aa; display:flex; align-items:center; gap:4px; white-space:nowrap;";
             charTitle.innerHTML = `<span>👤 인물 공통 외모 (Character Profile)</span>`;
 
             const charPresetsBar = document.createElement("div");
@@ -986,7 +1007,7 @@ app.registerExtension({
 
             const charSelect = document.createElement("select");
             charSelect.className = "vg-select";
-            charSelect.style.cssText = "padding:2px 5px; font-size:10.5px; max-width:160px;";
+            charSelect.style.cssText = "padding:2px 5px; font-size:10.5px; max-width:145px;";
             
             function renderCharPresetsDropdown() {
                 charSelect.innerHTML = `<option value="">▼ 👤 외모 프리셋 (${charPresets.length}개)</option>`;
@@ -1012,89 +1033,41 @@ app.registerExtension({
                 }
             });
 
-            const btnSaveCharPreset = document.createElement("button");
-            btnSaveCharPreset.className = "vg-btn";
-            btnSaveCharPreset.type = "button";
-            btnSaveCharPreset.style.cssText = "padding:2px 6px; font-size:10.5px;";
-            btnSaveCharPreset.textContent = "⭐ 저장";
-            btnSaveCharPreset.addEventListener("click", () => {
-                const ko = charKoInput.value.trim();
-                const en = charEnInput.value.trim();
-                if (!ko && !en) {
-                    alert("저장할 인물 외모 묘사를 먼저 입력해주세요.");
-                    return;
-                }
-                const label = prompt("새 인물 외모 프리셋 이름:", ko.slice(0, 15) || en.slice(0, 15));
-                if (label) {
-                    charPresets.push({ label: label.trim(), ko, en: en || ko });
-                    try { localStorage.setItem("comfyui_vg_char_presets", JSON.stringify(charPresets)); } catch (e) {}
-                    renderCharPresetsDropdown();
-                    btnSaveCharPreset.textContent = "✅ 저장됨";
-                    setTimeout(() => { btnSaveCharPreset.textContent = "⭐ 저장"; }, 1500);
-                }
-            });
-
-            const btnTransChar = document.createElement("button");
-            btnTransChar.className = "vg-btn";
-            btnTransChar.type = "button";
-            btnTransChar.style.cssText = "padding:2px 6px; font-size:10.5px; background:#4f46e5; border-color:#6366f1; color:#fff;";
-            btnTransChar.textContent = currentLang === "English" ? "🌐 Translate" : "🌐 번역";
-            btnTransChar.title = "한글 인물 외모를 영문으로 번역 (Translate to English)";
-            btnTransChar.addEventListener("click", async () => {
-                const text = charKoInput.value.trim() || charEnInput.value.trim();
-                if (!text) return;
-                btnTransChar.textContent = "⏳...";
-                const fastEn = translateToEnglish(text);
-                if (fastEn) {
-                    charEnInput.value = fastEn;
-                    characterProfile = fastEn;
-                    syncToWidgets();
-                }
-                const translated = await translateToEnglishAsync(text);
-                if (translated) {
-                    charEnInput.value = translated;
-                    characterProfile = translated;
-                    syncToWidgets();
-                }
-                btnTransChar.textContent = "✅";
-                setTimeout(() => { btnTransChar.textContent = currentLang === "English" ? "🌐 Translate" : "🌐 번역"; }, 1000);
-            });
-
-            const btnClearChar = document.createElement("button");
-            btnClearChar.className = "vg-btn";
-            btnClearChar.type = "button";
-            btnClearChar.style.cssText = "padding:2px 6px; font-size:10.5px;";
-            btnClearChar.textContent = "비우기";
-            btnClearChar.addEventListener("click", () => {
-                charKoInput.value = "";
-                charEnInput.value = "";
-                characterProfileKo = "";
-                characterProfile = "";
-                syncToWidgets();
-            });
+            // Preset Manager Settings Button
+            const btnOpenCharManager = document.createElement("button");
+            btnOpenCharManager.className = "vg-btn";
+            btnOpenCharManager.type = "button";
+            btnOpenCharManager.style.cssText = "padding:2px 6px; font-size:10.5px; border-color:#6366f1; background:#1e1e2e; color:#c7d2fe; white-space:nowrap;";
+            btnOpenCharManager.textContent = currentLang === "English" ? "⚙️ Preset Settings" : "인물 공통 프리셋 설정";
+            btnOpenCharManager.title = "인물 외모 프리셋 관리 (추가, 수정, 삭제, 순서 변경)";
 
             charPresetsBar.appendChild(charSelect);
-            charPresetsBar.appendChild(btnTransChar);
-            charPresetsBar.appendChild(btnSaveCharPreset);
-            charPresetsBar.appendChild(btnClearChar);
+            charPresetsBar.appendChild(btnOpenCharManager);
 
             charHeader.appendChild(charTitle);
             charHeader.appendChild(charPresetsBar);
             charCard.appendChild(charHeader);
 
+            // 2-Column Body Grid (Left: Textareas, Right: Action Buttons)
+            const charBodyRow = document.createElement("div");
+            charBodyRow.style.cssText = "display:flex; gap:6px; align-items:stretch; width:100%; box-sizing:border-box;";
+
+            const charInputsCol = document.createElement("div");
+            charInputsCol.style.cssText = "flex:1; display:flex; flex-direction:column; gap:4px; min-width:0;";
+
             // Korean Profile Input
             const charKoInput = document.createElement("textarea");
             charKoInput.className = "vg-textarea";
             charKoInput.rows = 1;
-            charKoInput.style.cssText = "min-height:26px; resize:vertical; font-size:11px; padding:4px 6px;";
-            charKoInput.placeholder = "KR: 한글 인물 공통 외모 (예: 한국인, 40대, 여성, 갈색 파마머리, 뿔테 안경...)";
+            charKoInput.style.cssText = "min-height:26px; resize:vertical; font-size:11px; padding:4px 6px; width:100%; box-sizing:border-box;";
+            charKoInput.placeholder = "KR: 한글 인물 공통 외모 (예: 한국인, 남성, 30살, 배불뚝이...)";
             charKoInput.value = characterProfileKo || (/[가-힣]/.test(characterProfile) ? characterProfile : "");
 
             // English Profile Input
             const charEnInput = document.createElement("textarea");
             charEnInput.className = "vg-textarea";
             charEnInput.rows = 1;
-            charEnInput.style.cssText = "min-height:26px; resize:vertical; font-size:11px; padding:4px 6px; border-color:#3f3f46; color:#d4d4d8;";
+            charEnInput.style.cssText = "min-height:26px; resize:vertical; font-size:11px; padding:4px 6px; border-color:#3f3f46; color:#d4d4d8; width:100%; box-sizing:border-box;";
             charEnInput.placeholder = "US: 영문 인물 공통 외모 (AI 최종 전달용 / 한글 입력 시 실시간 자동 번역)";
             charEnInput.value = !/[가-힣]/.test(characterProfile) ? characterProfile : "";
 
@@ -1148,9 +1121,268 @@ app.registerExtension({
                 });
             }
 
-            charCard.appendChild(charKoInput);
-            charCard.appendChild(charEnInput);
+            charInputsCol.appendChild(charKoInput);
+            charInputsCol.appendChild(charEnInput);
+
+            // Right Action Column
+            const charActionsCol = document.createElement("div");
+            charActionsCol.style.cssText = "width:52px; display:flex; flex-direction:column; gap:4px; justify-content:space-between; flex-shrink:0;";
+
+            const btnQuickSave = document.createElement("button");
+            btnQuickSave.className = "vg-btn";
+            btnQuickSave.type = "button";
+            btnQuickSave.style.cssText = "flex:1; padding:2px 4px; font-size:10.5px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:2px; background:#22222a; border-color:#eab308; color:#fef08a;";
+            btnQuickSave.innerHTML = `<span>⭐ 저장</span>`;
+            btnQuickSave.title = "현재 입력된 외모를 새 프리셋으로 빠른 추가";
+
+            btnQuickSave.addEventListener("click", () => {
+                const ko = charKoInput.value.trim();
+                const en = charEnInput.value.trim();
+                if (!ko && !en) {
+                    alert("저장할 인물 외모 묘사를 먼저 입력해주세요.");
+                    return;
+                }
+                const defaultLabel = ko.slice(0, 14) || en.slice(0, 14);
+                const label = prompt("새 인물 외모 프리셋 이름:", defaultLabel);
+                if (label) {
+                    charPresets.push({ label: label.trim(), ko, en: en || ko });
+                    try { localStorage.setItem("comfyui_vg_char_presets", JSON.stringify(charPresets)); } catch (e) {}
+                    renderCharPresetsDropdown();
+                    btnQuickSave.innerHTML = `<span>✅ 완료</span>`;
+                    setTimeout(() => { btnQuickSave.innerHTML = `<span>⭐ 저장</span>`; }, 1200);
+                }
+            });
+
+            const btnClearChar = document.createElement("button");
+            btnClearChar.className = "vg-btn";
+            btnClearChar.type = "button";
+            btnClearChar.style.cssText = "flex:1; padding:2px 4px; font-size:10.5px; display:flex; align-items:center; justify-content:center; background:#22222a; color:#a1a1aa;";
+            btnClearChar.textContent = "비우기";
+            btnClearChar.addEventListener("click", () => {
+                charKoInput.value = "";
+                charEnInput.value = "";
+                characterProfileKo = "";
+                characterProfile = "";
+                syncToWidgets();
+            });
+
+            charActionsCol.appendChild(btnQuickSave);
+            charActionsCol.appendChild(btnClearChar);
+
+            charBodyRow.appendChild(charInputsCol);
+            charBodyRow.appendChild(charActionsCol);
+            charCard.appendChild(charBodyRow);
             container.appendChild(charCard);
+
+            // 3-B. Dedicated Character Preset Management Modal / Drawer
+            const charManagerDrawer = document.createElement("div");
+            charManagerDrawer.className = "vg-char-manager-drawer";
+            charManagerDrawer.style.display = "none";
+
+            function renderCharManagerList() {
+                charManagerDrawer.innerHTML = "";
+                
+                // Header
+                const mHeader = document.createElement("div");
+                mHeader.style.cssText = "display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #3f3f46; padding-bottom:4px;";
+                mHeader.innerHTML = `<div style="font-size:11.5px; font-weight:700; color:#c7d2fe; display:flex; align-items:center; gap:4px;">⚙️ ${currentLang === "English" ? "Character Presets Manager" : "인물 외모 프리셋 관리"} <span style="font-size:10px; color:#a1a1aa;">(${charPresets.length})</span></div>`;
+
+                const btnCloseM = document.createElement("button");
+                btnCloseM.className = "vg-btn";
+                btnCloseM.type = "button";
+                btnCloseM.style.cssText = "padding:1px 6px; font-size:12px; line-height:1;";
+                btnCloseM.textContent = "×";
+                btnCloseM.addEventListener("click", () => {
+                    charManagerDrawer.style.display = "none";
+                    setTimeout(updateHeightOnDrawerToggle, 30);
+                });
+                mHeader.appendChild(btnCloseM);
+                charManagerDrawer.appendChild(mHeader);
+
+                // List Container
+                const listContainer = document.createElement("div");
+                listContainer.style.cssText = "max-height:220px; overflow-y:auto; display:flex; flex-direction:column; gap:5px; padding-right:2px;";
+
+                charPresets.forEach((cp, idx) => {
+                    const item = document.createElement("div");
+                    item.className = "vg-char-item";
+
+                    const itemTop = document.createElement("div");
+                    itemTop.style.cssText = "display:flex; gap:4px; align-items:center;";
+
+                    // Move Up / Down
+                    const btnUp = document.createElement("button");
+                    btnUp.className = "vg-btn";
+                    btnUp.type = "button";
+                    btnUp.style.cssText = "padding:1px 4px; font-size:9.5px;";
+                    btnUp.textContent = "▲";
+                    btnUp.disabled = idx === 0;
+                    btnUp.addEventListener("click", () => {
+                        if (idx > 0) {
+                            const tmp = charPresets[idx];
+                            charPresets[idx] = charPresets[idx - 1];
+                            charPresets[idx - 1] = tmp;
+                            saveAndRefreshPresets();
+                        }
+                    });
+
+                    const btnDown = document.createElement("button");
+                    btnDown.className = "vg-btn";
+                    btnDown.type = "button";
+                    btnDown.style.cssText = "padding:1px 4px; font-size:9.5px;";
+                    btnDown.textContent = "▼";
+                    btnDown.disabled = idx === charPresets.length - 1;
+                    btnDown.addEventListener("click", () => {
+                        if (idx < charPresets.length - 1) {
+                            const tmp = charPresets[idx];
+                            charPresets[idx] = charPresets[idx + 1];
+                            charPresets[idx + 1] = tmp;
+                            saveAndRefreshPresets();
+                        }
+                    });
+
+                    // Preset Title input
+                    const inputTitle = document.createElement("input");
+                    inputTitle.className = "vg-input";
+                    inputTitle.type = "text";
+                    inputTitle.style.cssText = "flex:1; font-weight:700; font-size:11px; padding:2px 5px;";
+                    inputTitle.value = cp.label || "";
+                    inputTitle.placeholder = "프리셋 이름";
+                    inputTitle.addEventListener("input", () => {
+                        cp.label = inputTitle.value;
+                        try { localStorage.setItem("comfyui_vg_char_presets", JSON.stringify(charPresets)); } catch (e) {}
+                        renderCharPresetsDropdown();
+                    });
+
+                    // Delete button
+                    const btnDel = document.createElement("button");
+                    btnDel.className = "vg-btn";
+                    btnDel.type = "button";
+                    btnDel.style.cssText = "padding:1px 5px; font-size:10px; color:#f87171; border-color:#7f1d1d;";
+                    btnDel.textContent = "🗑️";
+                    btnDel.title = "프리셋 삭제";
+                    btnDel.addEventListener("click", () => {
+                        if (confirm(`'${cp.label}' 프리셋을 삭제하시겠습니까?`)) {
+                            charPresets.splice(idx, 1);
+                            saveAndRefreshPresets();
+                        }
+                    });
+
+                    itemTop.appendChild(btnUp);
+                    itemTop.appendChild(btnDown);
+                    itemTop.appendChild(inputTitle);
+                    itemTop.appendChild(btnDel);
+                    item.appendChild(itemTop);
+
+                    // Korean / English Textareas with auto-trans
+                    const inputKo = document.createElement("textarea");
+                    inputKo.className = "vg-textarea";
+                    inputKo.rows = 1;
+                    inputKo.style.cssText = "min-height:22px; font-size:10.5px; padding:2px 4px;";
+                    inputKo.value = cp.ko || "";
+                    inputKo.placeholder = "KR: 한글 인물 외모";
+                    inputKo.addEventListener("input", () => {
+                        cp.ko = inputKo.value;
+                        try { localStorage.setItem("comfyui_vg_char_presets", JSON.stringify(charPresets)); } catch (e) {}
+                    });
+
+                    const inputEn = document.createElement("textarea");
+                    inputEn.className = "vg-textarea";
+                    inputEn.rows = 1;
+                    inputEn.style.cssText = "min-height:22px; font-size:10.5px; padding:2px 4px; border-color:#3f3f46; color:#d4d4d8;";
+                    inputEn.value = cp.en || "";
+                    inputEn.placeholder = "US: 영문 인물 외모";
+                    inputEn.addEventListener("input", () => {
+                        cp.en = inputEn.value;
+                        try { localStorage.setItem("comfyui_vg_char_presets", JSON.stringify(charPresets)); } catch (e) {}
+                    });
+
+                    // Inline translate for this preset
+                    inputKo.addEventListener("blur", async () => {
+                        if (inputKo.value.trim() && (!inputEn.value.trim() || /[가-힣]/.test(inputEn.value))) {
+                            const fast = translateToEnglish(inputKo.value.trim());
+                            if (fast) { inputEn.value = fast; cp.en = fast; }
+                            const res = await translateToEnglishAsync(inputKo.value.trim());
+                            if (res) {
+                                inputEn.value = res;
+                                cp.en = res;
+                                try { localStorage.setItem("comfyui_vg_char_presets", JSON.stringify(charPresets)); } catch (e) {}
+                            }
+                        }
+                    });
+
+                    item.appendChild(inputKo);
+                    item.appendChild(inputEn);
+                    listContainer.appendChild(item);
+                });
+
+                charManagerDrawer.appendChild(listContainer);
+
+                // Footer Bar (Add New, Reset Default, Save & Close)
+                const mFooter = document.createElement("div");
+                mFooter.style.cssText = "display:flex; justify-content:space-between; align-items:center; gap:4px; padding-top:4px; border-top:1px solid #3f3f46;";
+
+                const btnAddRow = document.createElement("button");
+                btnAddRow.className = "vg-btn";
+                btnAddRow.type = "button";
+                btnAddRow.style.cssText = "padding:3px 7px; font-size:10.5px; background:#4f46e5; border-color:#6366f1; color:#fff;";
+                btnAddRow.textContent = "➕ 새 프리셋 추가";
+                btnAddRow.addEventListener("click", () => {
+                    charPresets.unshift({ label: "새 인물 외모", ko: "", en: "" });
+                    saveAndRefreshPresets();
+                });
+
+                const btnResetDefaults = document.createElement("button");
+                btnResetDefaults.className = "vg-btn";
+                btnResetDefaults.type = "button";
+                btnResetDefaults.style.cssText = "padding:3px 6px; font-size:10.5px;";
+                btnResetDefaults.textContent = "🔄 초기화";
+                btnResetDefaults.title = "기본 프리셋으로 초기화";
+                btnResetDefaults.addEventListener("click", () => {
+                    if (confirm("모든 외모 프리셋을 기본값으로 초기화하시겠습니까?")) {
+                        charPresets = [
+                            { label: "20대 한국 여성", ko: "20대 한국 여성, 긴 흑발 포니테일, 검은 뿔테 안경, 자연스러운 메이크업", en: "Korean woman in her 20s, long black hair ponytail, black horn-rimmed glasses, natural makeup" },
+                            { label: "30대 비즈니스 남성", ko: "30대 한국 남성, 깔끔한 쉼표머리 헤어스타일, 네이비 정장 수트, 지적인 인상", en: "Korean man in his 30s, neat comma hairstyle, navy business suit, intellectual look" },
+                            { label: "애니메이션 미소녀", ko: "밝은 은발 트윈테일, 에메랄드 보석 눈동자, 고양이 귀, 귀여운 후드티", en: "bright silver twintail hair, emerald jewel eyes, cat ears, cute oversized hoodie" },
+                            { label: "40대 여성 파마머리", ko: "한국인, 40대, 여성, 뽀글뽀글 파마머리, 갈색 머리, 검정색 뿔테 안경, 큰키, 글래머", en: "Korean, 40s, female, permed hair, brown hair, black horn-rimmed glasses, tall, glamorous" }
+                        ];
+                        saveAndRefreshPresets();
+                    }
+                });
+
+                const btnCloseFooter = document.createElement("button");
+                btnCloseFooter.className = "vg-btn";
+                btnCloseFooter.type = "button";
+                btnCloseFooter.style.cssText = "padding:3px 8px; font-size:10.5px; background:#10b981; border-color:#34d399; color:#fff; font-weight:700;";
+                btnCloseFooter.textContent = "💾 완료";
+                btnCloseFooter.addEventListener("click", () => {
+                    charManagerDrawer.style.display = "none";
+                    setTimeout(updateHeightOnDrawerToggle, 30);
+                });
+
+                mFooter.appendChild(btnAddRow);
+                mFooter.appendChild(btnResetDefaults);
+                mFooter.appendChild(btnCloseFooter);
+                charManagerDrawer.appendChild(mFooter);
+            }
+
+            function saveAndRefreshPresets() {
+                try { localStorage.setItem("comfyui_vg_char_presets", JSON.stringify(charPresets)); } catch (e) {}
+                renderCharPresetsDropdown();
+                renderCharManagerList();
+            }
+
+            btnOpenCharManager.addEventListener("click", () => {
+                if (charManagerDrawer.style.display === "none") {
+                    renderCharManagerList();
+                    charManagerDrawer.style.display = "flex";
+                } else {
+                    charManagerDrawer.style.display = "none";
+                }
+                setTimeout(updateHeightOnDrawerToggle, 30);
+            });
+
+            container.appendChild(charManagerDrawer);
 
             // 4. Interactive Grid Canvas Viewport (Stage with Corner Drag Resizing & Locked True Aspect Ratio)
             const canvasStage = document.createElement("div");
@@ -2240,11 +2472,13 @@ app.registerExtension({
                 syncToWidgets();
                 setTimeout(updateHeightOnDrawerToggle, 50);
                 hideAllBackendWidgets(this);
+                enforceSingleOutput(this);
             };
 
             const onDrawForeground = node.onDrawForeground;
             node.onDrawForeground = function (ctx) {
                 hideAllBackendWidgets(this);
+                enforceSingleOutput(this);
                 if (onDrawForeground) onDrawForeground.apply(this, arguments);
             };
 
