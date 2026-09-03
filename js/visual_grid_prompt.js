@@ -1037,6 +1037,35 @@ app.registerExtension({
             const btnClearChar = document.createElement("button");
             btnClearChar.className = "vg-btn";
             btnClearChar.type = "button";
+            const btnTransChar = document.createElement("button");
+            btnTransChar.className = "vg-btn";
+            btnTransChar.type = "button";
+            btnTransChar.style.cssText = "padding:2px 6px; font-size:10.5px; background:#4f46e5; border-color:#6366f1; color:#fff;";
+            btnTransChar.textContent = currentLang === "English" ? "🌐 Translate" : "🌐 번역";
+            btnTransChar.title = "한글 인물 외모를 영문으로 번역 (Translate to English)";
+            btnTransChar.addEventListener("click", async () => {
+                const text = charKoInput.value.trim() || charEnInput.value.trim();
+                if (!text) return;
+                btnTransChar.textContent = "⏳...";
+                const fastEn = translateToEnglish(text);
+                if (fastEn) {
+                    charEnInput.value = fastEn;
+                    characterProfile = fastEn;
+                    syncToWidgets();
+                }
+                const translated = await translateToEnglishAsync(text);
+                if (translated) {
+                    charEnInput.value = translated;
+                    characterProfile = translated;
+                    syncToWidgets();
+                }
+                btnTransChar.textContent = "✅";
+                setTimeout(() => { btnTransChar.textContent = currentLang === "English" ? "🌐 Translate" : "🌐 번역"; }, 1000);
+            });
+
+            const btnClearChar = document.createElement("button");
+            btnClearChar.className = "vg-btn";
+            btnClearChar.type = "button";
             btnClearChar.style.cssText = "padding:2px 6px; font-size:10.5px;";
             btnClearChar.textContent = "비우기";
             btnClearChar.addEventListener("click", () => {
@@ -1048,6 +1077,7 @@ app.registerExtension({
             });
 
             charPresetsBar.appendChild(charSelect);
+            charPresetsBar.appendChild(btnTransChar);
             charPresetsBar.appendChild(btnSaveCharPreset);
             charPresetsBar.appendChild(btnClearChar);
 
@@ -1061,7 +1091,7 @@ app.registerExtension({
             charKoInput.rows = 1;
             charKoInput.style.cssText = "min-height:26px; resize:vertical; font-size:11px; padding:4px 6px;";
             charKoInput.placeholder = "KR: 한글 인물 공통 외모 (예: 한국인, 40대, 여성, 갈색 파마머리, 뿔테 안경...)";
-            charKoInput.value = characterProfileKo || characterProfile;
+            charKoInput.value = characterProfileKo || (/[가-힣]/.test(characterProfile) ? characterProfile : "");
 
             // English Profile Input
             const charEnInput = document.createElement("textarea");
@@ -1069,17 +1099,21 @@ app.registerExtension({
             charEnInput.rows = 1;
             charEnInput.style.cssText = "min-height:26px; resize:vertical; font-size:11px; padding:4px 6px; border-color:#3f3f46; color:#d4d4d8;";
             charEnInput.placeholder = "US: 영문 인물 공통 외모 (AI 최종 전달용 / 한글 입력 시 실시간 자동 번역)";
-            charEnInput.value = characterProfile;
+            charEnInput.value = !/[가-힣]/.test(characterProfile) ? characterProfile : "";
 
             // Auto translation debouncer for charKoInput
             let charTransTimer = null;
             charKoInput.addEventListener("input", () => {
                 characterProfileKo = charKoInput.value.trim();
-                characterProfile = charEnInput.value.trim() || characterProfileKo;
-                syncToWidgets();
+                const fastEn = translateToEnglish(characterProfileKo);
+                if (fastEn && fastEn !== characterProfileKo) {
+                    charEnInput.value = fastEn;
+                    characterProfile = fastEn;
+                    syncToWidgets();
+                }
 
                 clearTimeout(charTransTimer);
-                if (charKoInput.value.trim()) {
+                if (characterProfileKo) {
                     charTransTimer = setTimeout(async () => {
                         charEnInput.placeholder = "🌐 번역 중...";
                         const translated = await translateToEnglishAsync(charKoInput.value.trim());
@@ -1088,7 +1122,7 @@ app.registerExtension({
                             characterProfile = translated;
                             syncToWidgets();
                         }
-                    }, 400);
+                    }, 250);
                 } else {
                     charEnInput.value = "";
                     characterProfile = "";
@@ -1100,6 +1134,22 @@ app.registerExtension({
                 characterProfile = charEnInput.value.trim();
                 syncToWidgets();
             });
+
+            // If initial charEnInput is empty and charKoInput has Korean, auto-translate immediately!
+            if (charKoInput.value.trim() && (!charEnInput.value.trim() || /[가-힣]/.test(charEnInput.value))) {
+                const fast = translateToEnglish(charKoInput.value.trim());
+                if (fast && fast !== charKoInput.value.trim()) {
+                    charEnInput.value = fast;
+                    characterProfile = fast;
+                }
+                translateToEnglishAsync(charKoInput.value.trim()).then(res => {
+                    if (res) {
+                        charEnInput.value = res;
+                        characterProfile = res;
+                        syncToWidgets();
+                    }
+                });
+            }
 
             charCard.appendChild(charKoInput);
             charCard.appendChild(charEnInput);
@@ -1627,7 +1677,20 @@ app.registerExtension({
                     parts.push(prefixVal.trim());
                 }
 
-                const charProfileClean = (characterProfile || "").trim();
+                let charProfileClean = (characterProfile || "").trim();
+                if (!charProfileClean && characterProfileKo) {
+                    charProfileClean = translateToEnglish(characterProfileKo);
+                } else if (/[가-힣]/.test(charProfileClean)) {
+                    charProfileClean = translateToEnglish(charProfileClean);
+                }
+
+                function getCleanAreaPrompt(a) {
+                    let p = (a.prompt || "").trim();
+                    if (!p || /[가-힣]/.test(p)) {
+                        p = translateToEnglish(a.ko_prompt || a.koPrompt || p);
+                    }
+                    return p.trim();
+                }
 
                 if (currentFormat === "ComfyUI / SD Regional Prompt (BREAK Syntax)") {
                     const breakParts = [];
@@ -1635,7 +1698,7 @@ app.registerExtension({
                         breakParts.push(`(${charProfileClean}:1.15)`);
                     }
                     areas.forEach(a => {
-                        const p = (a.prompt || a.ko_prompt || "").trim();
+                        const p = getCleanAreaPrompt(a);
                         if (p) {
                             breakParts.push(`(${p}:1.1)`);
                         }
@@ -1649,7 +1712,7 @@ app.registerExtension({
                         lines.push(`[Character Profile]: ${charProfileClean}`);
                     }
                     areas.forEach(a => {
-                        const p = (a.prompt || a.ko_prompt || "").trim();
+                        const p = getCleanAreaPrompt(a);
                         const spatial = getNaturalSpatialName(a.c1, a.c2, a.r1, a.r2, cols, rows);
                         lines.push(`[Area ${a.id} | ${spatial.toUpperCase()}]: ${p}`);
                     });
@@ -1664,7 +1727,7 @@ app.registerExtension({
                         const ymin = (a.r1 / rows).toFixed(2);
                         const xmax = ((a.c2 + 1) / cols).toFixed(2);
                         const ymax = ((a.r2 + 1) / rows).toFixed(2);
-                        const p = (a.prompt || a.ko_prompt || "").trim();
+                        const p = getCleanAreaPrompt(a);
                         lines.push(`<area_${a.id} bbox="[${xmin}, ${ymin}, ${xmax}, ${ymax}]"> ${p} </area_${a.id}>`);
                     });
                     parts.push(lines.join("\n"));
@@ -1672,7 +1735,7 @@ app.registerExtension({
                     const tags = [];
                     if (charProfileClean) tags.push(charProfileClean);
                     areas.forEach(a => {
-                        const p = (a.prompt || a.ko_prompt || "").trim();
+                        const p = getCleanAreaPrompt(a);
                         if (p) tags.push(p);
                     });
                     if (tags.length > 0) parts.push(tags.join(", "));
@@ -1683,7 +1746,7 @@ app.registerExtension({
                         character_profile: charProfileClean,
                         areas: areas.map(a => ({
                             id: a.id, c1: a.c1, c2: a.c2, r1: a.r1, r2: a.r2,
-                            ko_prompt: a.ko_prompt, prompt: a.prompt
+                            ko_prompt: a.ko_prompt, prompt: getCleanAreaPrompt(a)
                         }))
                     };
                     parts.push(JSON.stringify(jsonObj, null, 2));
@@ -1697,7 +1760,7 @@ app.registerExtension({
                     lines.push(`[Spatial Layout & Exact Proportional Placement]:`);
                     areas.forEach(a => {
                         const spatial = getNaturalSpatialName(a.c1, a.c2, a.r1, a.r2, cols, rows);
-                        const p = (a.prompt || a.ko_prompt || "").trim();
+                        const p = getCleanAreaPrompt(a);
                         lines.push(`- ${spatial}: ${p}.`);
                     });
                     if (gridBorders) {
