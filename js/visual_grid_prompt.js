@@ -834,6 +834,16 @@ app.registerExtension({
                 .custom-chip { display: flex; align-items: center; justify-content: space-between; background: #27272a; border: 1px solid #3f3f46; border-radius: 4px; padding: 3px 6px; font-size: 11px; cursor: grab; }
                 .custom-chip.dragging { opacity: 0.4; }
                 .custom-chip-del { color: #ef4444; font-weight: 700; cursor: pointer; padding: 0 4px; }
+                .vg-stepper-input::-webkit-outer-spin-button,
+                .vg-stepper-input::-webkit-inner-spin-button {
+                    -webkit-appearance: none !important;
+                    margin: 0 !important;
+                    display: none !important;
+                }
+                .vg-stepper-input {
+                    -moz-appearance: textfield !important;
+                    appearance: textfield !important;
+                }
             `;
             container.appendChild(styleTag);
 
@@ -914,7 +924,7 @@ app.registerExtension({
                 syncToWidgets();
             });
 
-            // Clean & Comfortable Steppers for Columns and Rows
+            // Clean & Comfortable Steppers for Columns and Rows (Zero spinner arrows)
             function createStepper(initialVal, min, max, onChange) {
                 const wrap = document.createElement("div");
                 wrap.style.cssText = "display:inline-flex; align-items:center; background:#18181b; border:1px solid #3f3f46; border-radius:4px; overflow:hidden; vertical-align:middle;";
@@ -924,22 +934,26 @@ app.registerExtension({
                 btnMinus.className = "vg-btn";
                 btnMinus.textContent = "−";
                 btnMinus.title = "감소 (Decrease)";
-                btnMinus.style.cssText = "width:20px; height:24px; padding:0; font-size:14px; font-weight:bold; display:flex; align-items:center; justify-content:center; border:none; border-radius:0; background:#27272a; color:#d4d4d8; cursor:pointer;";
+                btnMinus.style.cssText = "width:22px; height:24px; padding:0; font-size:14px; font-weight:bold; display:flex; align-items:center; justify-content:center; border:none; border-radius:0; background:#27272a; color:#d4d4d8; cursor:pointer;";
 
                 const numInput = document.createElement("input");
-                numInput.type = "number";
-                numInput.className = "vg-input";
+                numInput.type = "text";
+                numInput.inputMode = "numeric";
+                numInput.pattern = "[0-9]*";
+                numInput.className = "vg-input vg-stepper-input";
                 numInput.value = initialVal;
-                numInput.min = min;
-                numInput.max = max;
-                numInput.style.cssText = "width:26px; height:24px; padding:0; font-size:12px; font-weight:700; text-align:center; border:none; background:transparent; color:#fff; -moz-appearance:textfield;";
+                numInput.style.cssText = "width:24px; height:24px; padding:0; font-size:12px; font-weight:700; text-align:center; border:none; background:transparent; color:#fff; outline:none;";
+
+                numInput.addEventListener("input", () => {
+                    numInput.value = numInput.value.replace(/[^0-9]/g, "");
+                });
 
                 const btnPlus = document.createElement("button");
                 btnPlus.type = "button";
                 btnPlus.className = "vg-btn";
                 btnPlus.textContent = "+";
                 btnPlus.title = "증가 (Increase)";
-                btnPlus.style.cssText = "width:20px; height:24px; padding:0; font-size:14px; font-weight:bold; display:flex; align-items:center; justify-content:center; border:none; border-radius:0; background:#27272a; color:#d4d4d8; cursor:pointer;";
+                btnPlus.style.cssText = "width:22px; height:24px; padding:0; font-size:14px; font-weight:bold; display:flex; align-items:center; justify-content:center; border:none; border-radius:0; background:#27272a; color:#d4d4d8; cursor:pointer;";
 
                 btnMinus.addEventListener("click", (e) => {
                     e.preventDefault();
@@ -2356,16 +2370,29 @@ app.registerExtension({
                 }
             }
 
-            let stageMaxHeight = 320;
+            function syncContainerWidth() {
+                if (container && node && node.size) {
+                    const targetW = Math.max(420, node.size[0] - 20);
+                    container.style.width = `${targetW}px`;
+                    container.style.maxWidth = `${targetW}px`;
+                }
+            }
 
             function updateCanvasDimensions() {
+                syncContainerWidth();
                 const ratioParts = currentRatio.split(":");
                 const w = parseFloat(ratioParts[0]) || 16;
                 const h = parseFloat(ratioParts[1]) || 9;
                 const ratio = w / h;
 
-                const stageWidth = (canvasStage && canvasStage.clientWidth) ? (canvasStage.clientWidth - 16) : ((container && container.clientWidth) ? container.clientWidth - 28 : 460);
-                const stageHeight = (canvasStage && canvasStage.clientHeight) ? (canvasStage.clientHeight - 16) : stageMaxHeight;
+                const stageWidth = (canvasStage && canvasStage.clientWidth && canvasStage.clientWidth > 100) 
+                    ? (canvasStage.clientWidth - 16) 
+                    : ((container && container.clientWidth && container.clientWidth > 100) 
+                        ? container.clientWidth - 28 
+                        : (node && node.size ? node.size[0] - 48 : 460));
+                const stageHeight = (canvasStage && canvasStage.clientHeight && canvasStage.clientHeight > 80) 
+                    ? (canvasStage.clientHeight - 16) 
+                    : stageMaxHeight;
 
                 let canvasW = stageWidth;
                 let canvasH = stageWidth / ratio;
@@ -2732,6 +2759,7 @@ app.registerExtension({
             node.onDrawForeground = function (ctx) {
                 hideAllBackendWidgets(this);
                 enforceSingleOutput(this);
+                syncContainerWidth();
                 if (onDrawForeground) onDrawForeground.apply(this, arguments);
             };
 
@@ -2781,17 +2809,41 @@ app.registerExtension({
             });
 
             // Initial Sizing & Setup
+            syncContainerWidth();
             updateCanvasDimensions();
             renderGrid();
             syncToWidgets();
             node.setSize([510, 880]);
 
-            // LiteGraph Manual Resize Hook (Allows freely shrinking/expanding width & expanding height)
+            // LiteGraph Minimum Size Boundary Hook (Prevents shrinking past minimum bounds)
+            node.computeSize = function (out) {
+                const minW = 420;
+                let minH = 750;
+                const isTreeOpen = treeDrawer && !treeDrawer.classList.contains("collapsed");
+                const isCharOpen = charManagerDrawer && charManagerDrawer.style.display !== "none";
+                const isCustomOpen = customManagerDrawer && customManagerDrawer.style.display !== "none";
+                if (isTreeOpen) minH += 220;
+                if (isCharOpen) minH += 240;
+                if (isCustomOpen) minH += 240;
+                
+                const curW = (this.size && this.size[0] > minW) ? this.size[0] : minW;
+                const curH = (this.size && this.size[1] > minH) ? this.size[1] : minH;
+                if (out) {
+                    out[0] = curW;
+                    out[1] = curH;
+                    return out;
+                }
+                return [curW, curH];
+            };
+
+            // LiteGraph Dynamic Resize Hook (Scales width and height freely while strictly respecting minimum bounds)
             const origOnResize = node.onResize;
             node.onResize = function (size) {
                 if (origOnResize) origOnResize.apply(this, arguments);
-                if (size[0] < 360) size[0] = 360;
-                if (size[1] < 450) size[1] = 450;
+                const minSize = node.computeSize();
+                if (size[0] < minSize[0]) size[0] = minSize[0];
+                if (size[1] < minSize[1]) size[1] = minSize[1];
+                syncContainerWidth();
                 updateCanvasDimensions();
             };
         };
