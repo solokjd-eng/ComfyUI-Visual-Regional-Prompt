@@ -1028,6 +1028,7 @@ app.registerExtension({
                     const isOpen = !fChildren.classList.contains("collapsed");
                     fChildren.classList.toggle("collapsed", isOpen);
                     fHead.querySelector("span:last-child").textContent = `(${grp.items.length}) ${isOpen ? "▶" : "▼"}`;
+                    updateHeightOnDrawerToggle();
                 });
 
                 fWrap.appendChild(fHead);
@@ -1051,6 +1052,7 @@ app.registerExtension({
             treeBtn.addEventListener("click", (e) => {
                 e.stopPropagation();
                 treeDrawer.classList.toggle("collapsed");
+                updateHeightOnDrawerToggle();
             });
 
             editorCard.appendChild(treeBtn);
@@ -1089,6 +1091,11 @@ app.registerExtension({
             btnToggleDrawer.className = "vg-btn";
             btnToggleDrawer.type = "button";
             btnToggleDrawer.textContent = "⚙️ 관리";
+            btnToggleDrawer.addEventListener("click", (e) => {
+                e.stopPropagation();
+                customDrawer.classList.toggle("collapsed");
+                updateHeightOnDrawerToggle();
+            });
             
             customPresetsBar.appendChild(customSelect);
             customPresetsBar.appendChild(btnToggleDrawer);
@@ -1583,20 +1590,16 @@ app.registerExtension({
                 syncToWidgets();
             }
 
-            function adjustNodeHeight() {
-                if (!node || !container) return;
-                // Widget top offset in LiteGraph node + extra bottom margin
-                const topOffset = 70; // accounts for title bar, slots, widget top margin
-                const minRequiredH = Math.ceil(container.scrollHeight + topOffset + 20);
-                
-                // If current node height is smaller than content needs, expand it
-                if (!node.size || node.size[1] < minRequiredH) {
-                    const currentW = node.size ? Math.max(node.size[0], 360) : 520;
-                    node.size[0] = currentW;
-                    node.size[1] = minRequiredH;
-                    if (app && app.canvas) {
-                        app.canvas.setDirty(true, true);
-                    }
+            function updateHeightOnDrawerToggle() {
+                if (!node || !node.size) return;
+                const isTreeOpen = treeDrawer && !treeDrawer.classList.contains("collapsed");
+                const isCustomOpen = customDrawer && !customDrawer.classList.contains("collapsed");
+                let targetH = 880;
+                if (isTreeOpen) targetH += 220;
+                if (isCustomOpen) targetH += 140;
+                if (node.size[1] < targetH) {
+                    node.size[1] = targetH;
+                    if (app && app.canvas) app.canvas.setDirty(true, true);
                 }
             }
 
@@ -1878,7 +1881,7 @@ app.registerExtension({
                 updateCanvasDimensions();
                 renderGrid();
                 syncToWidgets();
-                setTimeout(adjustNodeHeight, 50);
+                setTimeout(updateHeightOnDrawerToggle, 50);
                 hideAllBackendWidgets(this);
             };
 
@@ -1922,45 +1925,20 @@ app.registerExtension({
                 }
             });
 
-            domWidget.computeSize = function(width) {
-                const w = width || (node.size ? node.size[0] : 520);
-                const h = (container && container.scrollHeight) ? (container.scrollHeight + 30) : 750;
-                return [w, h];
-            };
-
             // Initial Sizing & Setup
             updateCanvasDimensions();
             renderGrid();
             syncToWidgets();
-            node.setSize([520, 960]);
-
-            // Dynamic ResizeObserver for container content changes
-            if (typeof ResizeObserver !== "undefined") {
-                const ro = new ResizeObserver(() => {
-                    adjustNodeHeight();
-                });
-                ro.observe(container);
-            }
+            node.setSize([510, 880]);
 
             // LiteGraph Manual Resize Hook (Allows freely shrinking/expanding width & expanding height)
             const origOnResize = node.onResize;
             node.onResize = function (size) {
                 if (origOnResize) origOnResize.apply(this, arguments);
                 if (size[0] < 360) size[0] = 360;
-                const minH = (container ? container.scrollHeight : 600) + 85;
-                if (size[1] < minH) {
-                    size[1] = minH;
-                }
+                if (size[1] < 450) size[1] = 450;
                 updateCanvasDimensions();
             };
-
-            node.computeSize = function () {
-                const w = Math.max(this.size ? this.size[0] : 520, 360);
-                const h = Math.max(this.size ? this.size[1] : 900, (container ? container.scrollHeight : 600) + 85);
-                return [w, h];
-            };
-
-            adjustNodeHeight();
         };
     }
 });
